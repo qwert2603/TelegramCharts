@@ -1,6 +1,7 @@
 package com.qwert2603.telegram_charts;
 
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -9,6 +10,9 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import com.qwert2603.telegram_charts.entity.ChartData;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChartView extends View {
 
@@ -72,10 +76,30 @@ public class ChartView extends View {
     private ObjectAnimator maxYAnimator;
     private ObjectAnimator totalMaxYAnimator;
 
+    private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
+
     public void setLineVisible(String name, boolean visible) {
-        for (ChartData.Line line : chartData.lines) {
+        for (final ChartData.Line line : chartData.lines) {
             if (line.name.equals(name)) {
-                line.isVisible = visible;
+
+                ValueAnimator prev = opacityAnimators.get(name);
+                if (prev != null) prev.cancel();
+
+                line.isVisibleOrWillBe = visible;
+                ValueAnimator animator = ValueAnimator
+                        .ofInt(line.alpha, visible ? 0xFF : 0x00)
+                        .setDuration(200);
+                animator.setInterpolator(new DecelerateInterpolator());
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        line.alpha = (int) animation.getAnimatedValue();
+                        invalidate();
+                    }
+                });
+                opacityAnimators.put(name, animator);
+                animator.start();
+
                 break;
             }
         }
@@ -208,8 +232,9 @@ public class ChartView extends View {
 
         for (int c = 0; c < chartData.lines.size(); c++) {
             ChartData.Line line = chartData.lines.get(c);
-            if (line.isVisible) {
-                linesPaint.setColor(line.color);
+            if (line.isVisible()) {
+                int color = line.color & 0x00FFFFFF | line.alpha << 24;
+                linesPaint.setColor(color);
 
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {

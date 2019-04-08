@@ -4,7 +4,7 @@
     <dimen name="period_selector_height">50dp</dimen>
     <dimen name="chart_view_height">350dp</dimen>
     <dimen name="min_period_selector_width">54dp</dimen>
-    <dimen name="period_selector_draggable_width">16dp</dimen>
+    <dimen name="period_selector_draggable_width">24dp</dimen>
     <dimen name="line_width">2dp</dimen>
     <dimen name="chart_padding">16dp</dimen>
     <dimen name="dp2">2dp</dimen>

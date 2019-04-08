@@ -9,7 +9,13 @@ public class ChartData {
         public String name;
         public int[] values;
 
-        public boolean isVisible = true;
+        public int alpha = 0xFF;
+
+        public boolean isVisible() {
+            return alpha > 0;
+        }
+
+        public boolean isVisibleOrWillBe = true;
     }
 
     public long[] xValues;
@@ -22,7 +28,7 @@ public class ChartData {
         int totalMaxY = Integer.MIN_VALUE;
 
         for (ChartData.Line line : lines) {
-            if (line.isVisible) {
+            if (line.isVisibleOrWillBe) {
                 int[] values = line.values;
                 for (int i = startIndex; i < endIndex; i++) {
                     int y = values[i];
