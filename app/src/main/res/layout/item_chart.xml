@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/name_TextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp12"
+        android:textColor="#2332DC"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Chart #1" />
+
     <!--<com.qwert2603.telegram_charts.ChartView-->
-        <!--android:id="@+id/chartView"-->
+    <!--android:id="@+id/chartView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="@dimen/chart_view_height" />-->
+
+    <!--<include layout="@layout/item_checkbox" />-->
+
+    <!--<include layout="@layout/item_checkbox" />-->
+
+    <!--<include layout="@layout/item_checkbox" />-->
+
+    <!--<View-->
         <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="@dimen/chart_view_height" />-->
-
-    <!--<include layout="@layout/item_checkbox" />-->
-
-    <!--<include layout="@layout/item_checkbox" />-->
-
-    <!--<include layout="@layout/item_checkbox" />-->
+        <!--android:layout_height="24dp"-->
+        <!--android:background="#e0e0e0" />-->
 
 </LinearLayout>

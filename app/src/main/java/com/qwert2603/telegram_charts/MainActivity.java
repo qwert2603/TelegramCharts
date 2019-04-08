@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.qwert2603.telegram_charts.entity.ChartData;
 
@@ -27,6 +29,9 @@ public class MainActivity extends Activity {
         for (int i = 0; i < chartDataList.size(); i++) {
             ViewGroup view = (ViewGroup) getLayoutInflater().inflate(R.layout.item_chart, linearLayout, false);
             linearLayout.addView(view);
+
+            TextView nameTextView = view.findViewById(R.id.name_TextView);
+            nameTextView.setText("Chart #" + i);
 
             final ChartData chartData = chartDataList.get(i);
             final ChartView chartView = new ChartView(this, chartData);
@@ -49,6 +54,10 @@ public class MainActivity extends Activity {
                 });
             }
 
+            LinearLayout.LayoutParams qLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.dp12) * 2);
+            View child = new View(this);
+            child.setBackgroundColor(0xffe0e0e0);
+            view.addView(child, qLayoutParams);
         }
     }
 
