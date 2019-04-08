@@ -1,7 +1,6 @@
 package com.qwert2603.telegram_charts;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;

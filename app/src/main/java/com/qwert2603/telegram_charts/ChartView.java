@@ -2,6 +2,7 @@ package com.qwert2603.telegram_charts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -30,6 +31,8 @@ public class ChartView extends View {
         this.chartData = chartData;
         points = new float[chartData.xValues.length * 4];
 
+        periodPaint = new Paint();
+
         setPeriodIndices(0, chartData.xValues.length);
 
         totalMinX = minX;
@@ -40,6 +43,12 @@ public class ChartView extends View {
         maxY = yLimits[1];
         totalMinY = yLimits[2];
         totalMaxY = yLimits[3];
+
+        textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(0xBB888888);
+        textPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        textPaint.setTextSize(dp12);
     }
 
     private final float chartHeight = getResources().getDimension(R.dimen.chart_height);
@@ -58,6 +67,9 @@ public class ChartView extends View {
     private final Paint linesPaint;
     private final float[] points;
 
+    private final Paint periodPaint;
+    private final Paint textPaint;
+
     private int startIndex;
     private int endIndex;
 
@@ -66,6 +78,8 @@ public class ChartView extends View {
 
     private final long totalMinX;
     private final long totalMaxX;
+
+    private float stepY;
 
     private int minY;
     private int maxY;
@@ -119,11 +133,15 @@ public class ChartView extends View {
         animateMaxY();
     }
 
+    private static final int HOR_LINES = 6;
+
     private void animateMaxY() {
         if (maxYAnimator != null) maxYAnimator.cancel();
         if (totalMaxYAnimator != null) totalMaxYAnimator.cancel();
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
+
+        stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
 
         ObjectAnimator animator = ObjectAnimator
                 .ofInt(this, "maxY", yLimits[1])
@@ -230,6 +248,15 @@ public class ChartView extends View {
 
         float drawingWidth = getWidth() - 2 * chartPadding;
 
+        linesPaint.setStrokeWidth(lineWidth / 2f);
+        linesPaint.setColor(0x99CCCCCC);
+
+        for (int i = 0; i < HOR_LINES; i++) {
+            float y = (1 - (stepY * i / maxY)) * chartHeight;
+            canvas.drawLine(chartPadding, y, getWidth() - chartPadding, y, linesPaint);
+            canvas.drawText(formatY(stepY * i), chartPadding, y - dp6, textPaint);
+        }
+
         for (int c = 0; c < chartData.lines.size(); c++) {
             ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
@@ -284,7 +311,6 @@ public class ChartView extends View {
         float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
         float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
 
-        Paint periodPaint = new Paint();
         periodPaint.setStyle(Paint.Style.FILL);
         periodPaint.setColor(0x18000000);
 
@@ -377,5 +403,12 @@ public class ChartView extends View {
 
     public void setTotalMaxY(int totalMaxY) {
         this.totalMaxY = totalMaxY;
+    }
+
+    @SuppressLint("DefaultLocale")
+    private static String formatY(float y) {
+        if (y > 1000000) return String.format("%.1fM", y / 1000000);
+        if (y > 1000) return String.format("%.1fK", y / 1000);
+        return String.format("%.0f", y);
     }
 }
