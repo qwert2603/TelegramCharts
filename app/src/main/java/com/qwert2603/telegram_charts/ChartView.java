@@ -195,14 +195,17 @@ public class ChartView extends View {
                     if (Math.abs(selectorCenter - selectorWidth / 2 - x) < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_START;
+                        getParent().requestDisallowInterceptTouchEvent(true);
                     } else if (Math.abs(selectorCenter + selectorWidth / 2 - x) < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_END;
+                        getParent().requestDisallowInterceptTouchEvent(true);
                     } else if (Math.abs(selectorCenter - x) < (selectorWidth - periodSelectorDraggableWidth) / 2) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_SELECTOR;
                         selectorDragCenterOffset = selectorCenter - x;
                         movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
+                        getParent().requestDisallowInterceptTouchEvent(true);
                     }
                 }
                 break;
