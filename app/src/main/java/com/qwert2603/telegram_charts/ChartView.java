@@ -22,7 +22,6 @@ public class ChartView extends View {
 
         linesPaint = new Paint();
         linesPaint.setAntiAlias(true);
-//        linesPaint.setStrokeJoin(Paint.Join.ROUND);
         linesPaint.setStrokeCap(Paint.Cap.SQUARE);
         linesPaint.setStyle(Paint.Style.STROKE);
 
