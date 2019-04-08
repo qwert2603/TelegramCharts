@@ -3,7 +3,6 @@ package com.qwert2603.telegram_charts;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,7 +17,8 @@ public class ChartView extends View {
 
         linesPaint = new Paint();
         linesPaint.setAntiAlias(true);
-        linesPaint.setStrokeJoin(Paint.Join.ROUND);
+//        linesPaint.setStrokeJoin(Paint.Join.ROUND);
+        linesPaint.setStrokeCap(Paint.Cap.ROUND);
         linesPaint.setStyle(Paint.Style.STROKE);
 
         this.setLayerType(LAYER_TYPE_HARDWARE, null);
@@ -43,6 +43,12 @@ public class ChartView extends View {
     private final float minPeriodSelectorWidth = getResources().getDimension(R.dimen.min_period_selector_width);
     private final float periodSelectorDraggableWidth = getResources().getDimension(R.dimen.period_selector_draggable_width);
     private final float lineWidth = getResources().getDimension(R.dimen.line_width);
+    private final float chartPadding = getResources().getDimension(R.dimen.chart_padding);
+    private final float dp2 = getResources().getDimension(R.dimen.dp2);
+    private final float dp4 = getResources().getDimension(R.dimen.dp4);
+    private final float dp6 = getResources().getDimension(R.dimen.dp6);
+    private final float dp8 = getResources().getDimension(R.dimen.dp8);
+    private final float dp12 = getResources().getDimension(R.dimen.dp12);
 
     private final ChartData chartData;
     private final Paint linesPaint;
@@ -174,7 +180,6 @@ public class ChartView extends View {
                 break;
         }
 
-//        invalidate();
         return true;
     }
 
@@ -199,6 +204,8 @@ public class ChartView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        float drawingWidth = getWidth() - 2 * chartPadding;
+
         for (int c = 0; c < chartData.lines.size(); c++) {
             ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible) {
@@ -206,7 +213,7 @@ public class ChartView extends View {
 
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - minX) / (maxX - minX) * getWidth();
+                    final float _x = ((float) chartData.xValues[i] - minX) / (maxX - minX) * drawingWidth;
                     final float _y = (1 - ((float) line.values[i] - minY) / (maxY - minY)) * chartHeight;
 
                     points[q++] = _x;
@@ -218,11 +225,15 @@ public class ChartView extends View {
                 }
 
                 linesPaint.setStrokeWidth(lineWidth);
+
+                canvas.save();
+                canvas.translate(chartPadding, 0);
                 canvas.drawLines(points, linesPaint);
+                canvas.restore();
 
                 q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - totalMinX) / (totalMaxX - totalMinX) * getWidth();
+                    final float _x = ((float) chartData.xValues[i] - totalMinX) / (totalMaxX - totalMinX) * drawingWidth;
                     final float _y = chartHeight + (1 - ((float) line.values[i] - totalMinY) / (totalMaxY - totalMinY)) * periodSelectorHeight;
 
                     points[q++] = _x;
@@ -234,16 +245,56 @@ public class ChartView extends View {
                 }
 
                 linesPaint.setStrokeWidth(lineWidth / 2f);
-                canvas.drawLines(points, linesPaint);
 
-                linesPaint.setColor(Color.BLACK);
-                float startX = startIndex * 1f / chartData.xValues.length * getWidth();
-                float endX = endIndex * 1f / chartData.xValues.length * getWidth();
-                canvas.drawLine(startX, chartHeight, startX, chartHeight + periodSelectorHeight, linesPaint);
-                canvas.drawLine(endX, chartHeight, endX, chartHeight + periodSelectorHeight, linesPaint);
+                canvas.save();
+                canvas.translate(chartPadding, 0);
+                canvas.drawLines(points, linesPaint);
+                canvas.restore();
             }
         }
 
+        canvas.save();
+        canvas.translate(chartPadding, 0);
+
+        float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
+        float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
+
+        Paint periodPaint = new Paint();
+        periodPaint.setStyle(Paint.Style.FILL);
+        periodPaint.setColor(0x18000000);
+
+        canvas.drawRect(0, chartHeight, startX, chartHeight + periodSelectorHeight, periodPaint);
+        canvas.drawRect(endX, chartHeight, drawingWidth, chartHeight + periodSelectorHeight, periodPaint);
+
+        periodPaint.setColor(0x88000000);
+
+        final float borderHor = dp2;
+        final float borderVer = dp12;
+
+        canvas.drawRect(startX + borderVer, chartHeight, endX - borderVer, chartHeight + borderHor, periodPaint);
+        canvas.drawRect(startX + borderVer, chartHeight + periodSelectorHeight - borderHor, endX - borderVer, chartHeight + periodSelectorHeight, periodPaint);
+
+        canvas.drawRect(startX, chartHeight, startX + borderVer, chartHeight + periodSelectorHeight, periodPaint);
+        canvas.drawRect(endX - borderVer, chartHeight, endX, chartHeight + periodSelectorHeight, periodPaint);
+
+        periodPaint.setColor(0xD7FFFFFF);
+
+        canvas.drawRect(
+                startX + borderVer / 2 - dp2,
+                chartHeight + periodSelectorHeight / 2 - dp8,
+                startX + borderVer / 2 + dp2,
+                chartHeight + periodSelectorHeight / 2 + dp8,
+                periodPaint
+        );
+        canvas.drawRect(
+                endX - borderVer / 2 - dp2,
+                chartHeight + periodSelectorHeight / 2 - dp8,
+                endX - borderVer / 2 + dp2,
+                chartHeight + periodSelectorHeight / 2 + dp8,
+                periodPaint
+        );
+
+        canvas.restore();
     }
 
     public long getMinX() {
