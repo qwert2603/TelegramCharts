@@ -23,10 +23,10 @@ public class ChartView extends View {
         linesPaint = new Paint();
         linesPaint.setAntiAlias(true);
 //        linesPaint.setStrokeJoin(Paint.Join.ROUND);
-        linesPaint.setStrokeCap(Paint.Cap.ROUND);
+        linesPaint.setStrokeCap(Paint.Cap.SQUARE);
         linesPaint.setStyle(Paint.Style.STROKE);
 
-        this.setLayerType(LAYER_TYPE_HARDWARE, null);
+        this.setLayerType(LAYER_TYPE_HARDWARE, linesPaint);
 
         this.chartData = chartData;
         points = new float[chartData.xValues.length * 4];
