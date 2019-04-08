@@ -82,6 +82,7 @@ public class ChartView extends View {
 
     private int stepX;
     private float stepY;
+    private float prevStepY;
 
     private int minY;
     private int maxY;
@@ -154,6 +155,7 @@ public class ChartView extends View {
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
 
+        prevStepY = stepY;
         stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
 
         ObjectAnimator animator = ObjectAnimator
@@ -264,11 +266,27 @@ public class ChartView extends View {
         linesPaint.setStrokeWidth(lineWidth / 2f);
         linesPaint.setColor(0x99CCCCCC);
 
+        linesPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0xFF));
+        textPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0xFF));
+
         for (int i = 0; i < HOR_LINES; i++) {
             float y = (1 - (stepY * i / maxY)) * chartHeight;
             canvas.drawLine(chartPadding, y, getWidth() - chartPadding, y, linesPaint);
             canvas.drawText(formatY(stepY * i), chartPadding, y - dp6, textPaint);
         }
+        if (prevStepY > 0) {
+            linesPaint.setAlpha((int) (0xFF - maxYAnimator.getAnimatedFraction() * 0xFF));
+            textPaint.setAlpha((int) (0xFF - maxYAnimator.getAnimatedFraction() * 0xFF));
+
+            for (int i = 0; i < HOR_LINES; i++) {
+                float y = (1 - (prevStepY * i / maxY)) * chartHeight;
+                canvas.drawLine(chartPadding, y, getWidth() - chartPadding, y, linesPaint);
+                canvas.drawText(formatY(prevStepY * i), chartPadding, y - dp6, textPaint);
+            }
+        }
+
+        linesPaint.setAlpha(0xFF);
+        textPaint.setAlpha(0xFF);
 
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
@@ -278,13 +296,11 @@ public class ChartView extends View {
             canvas.drawText(chartData.dates[i * stepX], x, chartHeight + dp12 + dp2, textPaint);
         }
 
-        textPaint.setAlpha(0xFF);
-
         for (int c = 0; c < chartData.lines.size(); c++) {
             ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
-                int color = line.color & 0x00FFFFFF | line.alpha << 24;
-                linesPaint.setColor(color);
+                linesPaint.setColor(line.color);
+                linesPaint.setAlpha(line.alpha);
 
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
