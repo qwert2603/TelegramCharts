@@ -1,14 +1,16 @@
-package com.qwert2603.telegram_charts;
+package com.qwert2603.telegram_charts.entity;
+
+import android.graphics.Color;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RawData {
-    List<List<Object>> columns;
-    Map<String, String> types;
-    Map<String, String> names;
-    Map<String, String> colors;
+    public List<List<Object>> columns;
+    public Map<String, String> types;
+    public Map<String, String> names;
+    public Map<String, String> colors;
 
     public ChartData toChartData() {
         ChartData chartData = new ChartData();
@@ -24,7 +26,7 @@ public class RawData {
             ChartData.Line line = new ChartData.Line();
             chartData.lines.add(line);
             line.name = names.get(name);
-            line.color = colors.get(name);
+            line.color = Color.parseColor(colors.get(name));
             line.values = new int[valuesCount];
 
             List<Object> values = null;

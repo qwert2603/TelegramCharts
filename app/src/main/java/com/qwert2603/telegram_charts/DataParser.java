@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.qwert2603.telegram_charts.entity.ChartData;
+import com.qwert2603.telegram_charts.entity.RawData;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

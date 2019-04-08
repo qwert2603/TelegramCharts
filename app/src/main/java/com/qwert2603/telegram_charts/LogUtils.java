@@ -4,6 +4,8 @@ import android.util.Log;
 
 public class LogUtils {
     static void d(String message) {
-        Log.d("AASSDD", message);
+        if (BuildConfig.DEBUG) {
+            Log.d("AASSDD", message);
+        }
     }
 }

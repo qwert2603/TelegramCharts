@@ -1,30 +1,56 @@
 package com.qwert2603.telegram_charts;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+
+import com.qwert2603.telegram_charts.entity.ChartData;
 
 import java.util.List;
 
 public class MainActivity extends Activity {
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         List<ChartData> chartDataList = DataParser.parseData(getApplicationContext());
 
-        ListView listView = findViewById(R.id.listView);
-        listView.setDivider(null);
-        listView.setAdapter(new ChartsAdapter(this, 0, chartDataList));
+        LinearLayout linearLayout = findViewById(R.id.linearLayout);
+        for (int i = 0; i < chartDataList.size(); i++) {
+            ViewGroup view = (ViewGroup) getLayoutInflater().inflate(R.layout.item_chart, linearLayout, false);
+            linearLayout.addView(view);
+
+            final ChartData chartData = chartDataList.get(i);
+            final ChartView chartView = new ChartView(this, chartData);
+            int chartHeight = (int) getResources().getDimension(R.dimen.chart_view_height);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartHeight);
+            view.addView(chartView, layoutParams);
+
+            for (final ChartData.Line line : chartData.lines) {
+                CheckBox checkBox = (CheckBox) getLayoutInflater().inflate(R.layout.item_checkbox, view, false);
+                view.addView(checkBox);
+                checkBox.setText(line.name);
+                checkBox.setTextColor(line.color);
+//   todo             checkBox.setButtonTintList(ColorStateList.valueOf(line.color));
+                checkBox.setChecked(true);
+                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        chartView.setLineVisible(line.name, isChecked);
+                    }
+                });
+            }
+
+        }
     }
 
     @Override
@@ -41,18 +67,17 @@ public class MainActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-    static class ChartsAdapter extends ArrayAdapter<ChartData> {
-        public ChartsAdapter(Context context, int resource, List<ChartData> objects) {
-            super(context, resource, objects);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-            ChartView chartView = (ChartView) layoutInflater.inflate(R.layout.item_chart, parent, false);
-            chartView.setChartData(getItem(position));
-            return chartView;
-        }
-    }
 }
+
+
+/*
+ * маленький график снизу
+ * выделение периода на мал.графике
+ * оси
+ * горизонтальные линии
+ * значения по Х
+ * значения по У
+ * чекбоксы -- линии
+ * ночной режим
+ * анимация изменения пределов по оси У
+ */
