@@ -115,6 +115,7 @@ public class ChartView extends View {
     private static final int DRAG_END = 3;
     private int dragPointerId = -1;
     private int currentDrag = 0;
+    private float selectorDragCenterOffset = 0f;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -129,14 +130,17 @@ public class ChartView extends View {
             case MotionEvent.ACTION_DOWN:
                 if (event.getY() > chartHeight) {
                     if (Math.abs(selectorCenter - selectorWidth / 2 - x) < periodSelectorDraggableWidth) {
+                        dragPointerId = pointerId;
                         currentDrag = DRAG_START;
                     } else if (Math.abs(selectorCenter + selectorWidth / 2 - x) < periodSelectorDraggableWidth) {
+                        dragPointerId = pointerId;
                         currentDrag = DRAG_END;
-                    } else {
+                    } else if (Math.abs(selectorCenter - x) < (selectorWidth - periodSelectorDraggableWidth) / 2) {
+                        dragPointerId = pointerId;
                         currentDrag = DRAG_SELECTOR;
-                        movePeriodSelectorTo(x, selectorWidth);
+                        selectorDragCenterOffset = selectorCenter - x;
+                        movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
                     }
-                    dragPointerId = pointerId;
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -157,7 +161,7 @@ public class ChartView extends View {
                             setPeriodIndices(startIndex, newEndIndex);
                             break;
                         case DRAG_SELECTOR:
-                            movePeriodSelectorTo(x, selectorWidth);
+                            movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
                             break;
                     }
                 }
