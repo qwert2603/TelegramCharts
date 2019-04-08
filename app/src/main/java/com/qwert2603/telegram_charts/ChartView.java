@@ -17,6 +17,8 @@ import java.util.Map;
 
 public class ChartView extends View {
 
+    private static final long ANIMATION_DURATION = 200L;
+
     public ChartView(Context context, ChartData chartData) {
         super(context);
 
@@ -104,7 +106,7 @@ public class ChartView extends View {
                 line.isVisibleOrWillBe = visible;
                 ValueAnimator animator = ValueAnimator
                         .ofInt(line.alpha, visible ? 0xFF : 0x00)
-                        .setDuration(200);
+                        .setDuration(ANIMATION_DURATION);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
@@ -159,14 +161,14 @@ public class ChartView extends View {
 
         ObjectAnimator animator = ObjectAnimator
                 .ofInt(this, "maxY", yLimits[1])
-                .setDuration(200);
+                .setDuration(ANIMATION_DURATION);
         animator.setInterpolator(new DecelerateInterpolator());
         maxYAnimator = animator;
         maxYAnimator.start();
 
         ObjectAnimator animator1 = ObjectAnimator
                 .ofInt(this, "totalMaxY", yLimits[3])
-                .setDuration(200);
+                .setDuration(ANIMATION_DURATION);
         animator.setInterpolator(new DecelerateInterpolator());
         totalMaxYAnimator = animator1;
         totalMaxYAnimator.start();
