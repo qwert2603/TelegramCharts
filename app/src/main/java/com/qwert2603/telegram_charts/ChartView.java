@@ -80,6 +80,7 @@ public class ChartView extends View {
     private final long totalMinX;
     private final long totalMaxX;
 
+    private int stepX;
     private float stepY;
 
     private int minY;
@@ -131,10 +132,21 @@ public class ChartView extends View {
         minX = chartData.xValues[startIndex];
         maxX = chartData.xValues[endIndex - 1];
 
+        stepX = (endIndex - startIndex) / VER_DATES;
+        int m = 0;
+        while (stepX > 1) {
+            stepX >>= 1;
+            ++m;
+        }
+        for (int i = 0; i < m; i++) {
+            stepX <<= 1;
+        }
+
         animateMaxY();
     }
 
     private static final int HOR_LINES = 6;
+    private static final int VER_DATES = 4;
 
     private void animateMaxY() {
         if (maxYAnimator != null) maxYAnimator.cancel();
@@ -256,6 +268,14 @@ public class ChartView extends View {
             float y = (1 - (stepY * i / maxY)) * chartHeight;
             canvas.drawLine(chartPadding, y, getWidth() - chartPadding, y, linesPaint);
             canvas.drawText(formatY(stepY * i), chartPadding, y - dp6, textPaint);
+        }
+
+        float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
+        int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
+        for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
+            float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
+            textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0xFF : oddDatesAlpha);
+            canvas.drawText(chartData.dates[i * stepX], x, chartHeight + dp12 + dp2, textPaint);
         }
 
         for (int c = 0; c < chartData.lines.size(); c++) {

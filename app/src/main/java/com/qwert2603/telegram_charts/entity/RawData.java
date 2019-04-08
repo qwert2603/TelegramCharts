@@ -2,11 +2,16 @@ package com.qwert2603.telegram_charts.entity;
 
 import android.graphics.Color;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public class RawData {
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd MMM");
+
     public List<List<Object>> columns;
     public Map<String, String> types;
     public Map<String, String> names;
@@ -16,8 +21,11 @@ public class RawData {
         ChartData chartData = new ChartData();
         int valuesCount = columns.get(0).size() - 1;
         chartData.xValues = new long[valuesCount];
+        chartData.dates = new String[valuesCount];
         for (int i = 0; i < valuesCount; i++) {
-            chartData.xValues[i] = ((Double) columns.get(0).get(i + 1)).longValue();
+            long millis = ((Double) columns.get(0).get(i + 1)).longValue();
+            chartData.xValues[i] = millis;
+            chartData.dates[i] = DATE_FORMAT.format(new Date(chartData.xValues[i]));
         }
 
         chartData.lines = new ArrayList<>();
