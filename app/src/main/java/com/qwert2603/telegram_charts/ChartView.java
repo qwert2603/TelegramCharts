@@ -52,6 +52,7 @@ public class ChartView extends View {
     }
 
     private final float chartHeight = getResources().getDimension(R.dimen.chart_height);
+    private final float datesHeight = getResources().getDimension(R.dimen.dates_height);
     private final float periodSelectorHeight = getResources().getDimension(R.dimen.period_selector_height);
     private final float minPeriodSelectorWidth = getResources().getDimension(R.dimen.min_period_selector_width);
     private final float periodSelectorDraggableWidth = getResources().getDimension(R.dimen.period_selector_draggable_width);
@@ -286,7 +287,7 @@ public class ChartView extends View {
                 q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = ((float) chartData.xValues[i] - totalMinX) / (totalMaxX - totalMinX) * drawingWidth;
-                    final float _y = chartHeight + (1 - ((float) line.values[i] - totalMinY) / (totalMaxY - totalMinY)) * periodSelectorHeight;
+                    final float _y = chartHeight + datesHeight + (1 - ((float) line.values[i] - totalMinY) / (totalMaxY - totalMinY)) * periodSelectorHeight;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -306,7 +307,7 @@ public class ChartView extends View {
         }
 
         canvas.save();
-        canvas.translate(chartPadding, 0);
+        canvas.translate(chartPadding, chartHeight + datesHeight);
 
         float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
         float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
@@ -314,34 +315,34 @@ public class ChartView extends View {
         periodPaint.setStyle(Paint.Style.FILL);
         periodPaint.setColor(0x18000000);
 
-        canvas.drawRect(0, chartHeight, startX, chartHeight + periodSelectorHeight, periodPaint);
-        canvas.drawRect(endX, chartHeight, drawingWidth, chartHeight + periodSelectorHeight, periodPaint);
+        canvas.drawRect(0, 0, startX, periodSelectorHeight, periodPaint);
+        canvas.drawRect(endX, 0, drawingWidth, periodSelectorHeight, periodPaint);
 
         periodPaint.setColor(0x88000000);
 
         final float borderHor = dp2;
         final float borderVer = dp12;
 
-        canvas.drawRect(startX + borderVer, chartHeight, endX - borderVer, chartHeight + borderHor, periodPaint);
-        canvas.drawRect(startX + borderVer, chartHeight + periodSelectorHeight - borderHor, endX - borderVer, chartHeight + periodSelectorHeight, periodPaint);
+        canvas.drawRect(startX + borderVer, 0, endX - borderVer, borderHor, periodPaint);
+        canvas.drawRect(startX + borderVer, periodSelectorHeight - borderHor, endX - borderVer, periodSelectorHeight, periodPaint);
 
-        canvas.drawRect(startX, chartHeight, startX + borderVer, chartHeight + periodSelectorHeight, periodPaint);
-        canvas.drawRect(endX - borderVer, chartHeight, endX, chartHeight + periodSelectorHeight, periodPaint);
+        canvas.drawRect(startX, 0, startX + borderVer, periodSelectorHeight, periodPaint);
+        canvas.drawRect(endX - borderVer, 0, endX, periodSelectorHeight, periodPaint);
 
         periodPaint.setColor(0xD7FFFFFF);
 
         canvas.drawRect(
                 startX + borderVer / 2 - dp2,
-                chartHeight + periodSelectorHeight / 2 - dp8,
+                periodSelectorHeight / 2 - dp8,
                 startX + borderVer / 2 + dp2,
-                chartHeight + periodSelectorHeight / 2 + dp8,
+                periodSelectorHeight / 2 + dp8,
                 periodPaint
         );
         canvas.drawRect(
                 endX - borderVer / 2 - dp2,
-                chartHeight + periodSelectorHeight / 2 - dp8,
+                periodSelectorHeight / 2 - dp8,
                 endX - borderVer / 2 + dp2,
-                chartHeight + periodSelectorHeight / 2 + dp8,
+                periodSelectorHeight / 2 + dp8,
                 periodPaint
         );
 
