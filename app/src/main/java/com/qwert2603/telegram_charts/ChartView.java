@@ -278,6 +278,8 @@ public class ChartView extends View {
             canvas.drawText(chartData.dates[i * stepX], x, chartHeight + dp12 + dp2, textPaint);
         }
 
+        textPaint.setAlpha(0xFF);
+
         for (int c = 0; c < chartData.lines.size(); c++) {
             ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
