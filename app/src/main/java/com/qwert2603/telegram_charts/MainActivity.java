@@ -30,11 +30,8 @@ public class MainActivity extends Activity {
             ViewGroup view = (ViewGroup) getLayoutInflater().inflate(R.layout.item_chart, linearLayout, false);
             linearLayout.addView(view);
 
-            TextView nameTextView = view.findViewById(R.id.name_TextView);
-            nameTextView.setText("Chart #" + i);
-
             final ChartData chartData = chartDataList.get(i);
-            final ChartView chartView = new ChartView(this, chartData);
+            final ChartView chartView = new ChartView(this, "Chart #" + i, chartData);
             int chartHeight = (int) getResources().getDimension(R.dimen.chart_view_height);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartHeight);
             view.addView(chartView, layoutParams);

@@ -4,10 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -21,8 +21,10 @@ public class ChartView extends View {
 
     private static final long ANIMATION_DURATION = 200L;
 
-    public ChartView(Context context, ChartData chartData) {
+    public ChartView(Context context, String title, ChartData chartData) {
         super(context);
+
+        this.title = title;
 
         linesPaint = new Paint();
         linesPaint.setAntiAlias(true);
@@ -52,10 +54,18 @@ public class ChartView extends View {
         textPaint.setColor(0xBB888888);
         textPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         textPaint.setTextSize(dp12);
+
+        titlePaint = new Paint();
+        titlePaint.setAntiAlias(true);
+        titlePaint.setColor(0xFF2332DC);
+        titlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        titlePaint.setTextSize(dp12 + dp4);
+        titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
     private final float chartHeight = getResources().getDimension(R.dimen.chart_height);
     private final float datesHeight = getResources().getDimension(R.dimen.dates_height);
+    private final float chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height);
     private final float periodSelectorHeight = getResources().getDimension(R.dimen.period_selector_height);
     private final float minPeriodSelectorWidth = getResources().getDimension(R.dimen.min_period_selector_width);
     private final float periodSelectorDraggableWidth = getResources().getDimension(R.dimen.period_selector_draggable_width);
@@ -67,12 +77,14 @@ public class ChartView extends View {
     private final float dp8 = getResources().getDimension(R.dimen.dp8);
     private final float dp12 = getResources().getDimension(R.dimen.dp12);
 
+    private final String title;
     private final ChartData chartData;
     private final Paint linesPaint;
     private final float[] points;
 
     private final Paint periodPaint;
     private final Paint textPaint;
+    private final Paint titlePaint;
 
     private int startIndex;
     private int endIndex;
@@ -164,9 +176,16 @@ public class ChartView extends View {
                 .ofInt(this, "maxY", yLimits[1])
                 .setDuration(ANIMATION_DURATION);
         animator.addListener(new AnimatorListenerAdapter() {
+            private boolean isCanceled = false;
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                isCanceled = true;
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
-                prevStepY = stepY;//todo:check
+                if (!isCanceled) prevStepY = stepY;
             }
         });
         animator.setInterpolator(new DecelerateInterpolator());
@@ -271,6 +290,10 @@ public class ChartView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
+
+        canvas.translate(0, chartTitleHeight);
 
         float drawingWidth = getWidth() - 2 * chartPadding;
 
@@ -455,7 +478,6 @@ public class ChartView extends View {
         this.totalMaxY = totalMaxY;
     }
 
-    @SuppressLint("DefaultLocale")
     private static String formatY(float y) {
         if (y > 1000000) return String.format("%.1fM", y / 1000000);
         if (y > 1000) return String.format("%.1fK", y / 1000);
