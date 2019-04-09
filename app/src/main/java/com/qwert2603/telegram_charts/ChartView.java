@@ -106,8 +106,7 @@ public class ChartView extends View {
     private int totalMinY;
     private int totalMaxY;
 
-    private ObjectAnimator maxYAnimator;
-    private ObjectAnimator totalMaxYAnimator;
+    private ValueAnimator maxYAnimator;
 
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
 
@@ -167,16 +166,29 @@ public class ChartView extends View {
 
     private void animateMaxY() {
         if (maxYAnimator != null) maxYAnimator.cancel();
-        if (totalMaxYAnimator != null) totalMaxYAnimator.cancel();
 
-        int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
+        final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
 
         stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
 
-        ObjectAnimator animator = ObjectAnimator
-                .ofInt(this, "maxY", yLimits[1])
+        final float startMaxY = maxY;
+        final float endMaxY = yLimits[1];
+        final float startTotalMaxY = totalMaxY;
+        final float endTotalMaxY = yLimits[3];
+
+        maxYAnimator = ValueAnimator
+                .ofFloat(0f, 1f)
                 .setDuration(ANIMATION_DURATION);
-        animator.addListener(new AnimatorListenerAdapter() {
+        maxYAnimator.setInterpolator(new DecelerateInterpolator());
+        maxYAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                maxY = (int) (startMaxY + (endMaxY - startMaxY) * animation.getAnimatedFraction());
+                totalMaxY = (int) (startTotalMaxY + (endTotalMaxY - startTotalMaxY) * animation.getAnimatedFraction());
+                invalidate();
+            }
+        });
+        maxYAnimator.addListener(new AnimatorListenerAdapter() {
             private boolean isCanceled = false;
 
             @Override
@@ -189,16 +201,7 @@ public class ChartView extends View {
                 if (!isCanceled) prevStepY = stepY;
             }
         });
-        animator.setInterpolator(new DecelerateInterpolator());
-        maxYAnimator = animator;
         maxYAnimator.start();
-
-        ObjectAnimator animator1 = ObjectAnimator
-                .ofInt(this, "totalMaxY", yLimits[3])
-                .setDuration(ANIMATION_DURATION);
-        animator.setInterpolator(new DecelerateInterpolator());
-        totalMaxYAnimator = animator1;
-        totalMaxYAnimator.start();
     }
 
     private static final int DRAG_SELECTOR = 1;
@@ -437,63 +440,6 @@ public class ChartView extends View {
         );
 
         canvas.restore();
-    }
-
-    public long getMinX() {
-        return minX;
-    }
-
-    public void setMinX(long minX) {
-        this.minX = minX;
-    }
-
-    public long getMaxX() {
-        return maxX;
-    }
-
-    public void setMaxX(long maxX) {
-        this.maxX = maxX;
-    }
-
-    public int getMinY() {
-        return minY;
-    }
-
-    public void setMinY(int minY) {
-        this.minY = minY;
-    }
-
-    public int getMaxY() {
-        return maxY;
-    }
-
-    public void setMaxY(int maxY) {
-        this.maxY = maxY;
-        invalidate();
-    }
-
-    public long getTotalMinX() {
-        return totalMinX;
-    }
-
-    public long getTotalMaxX() {
-        return totalMaxX;
-    }
-
-    public int getTotalMinY() {
-        return totalMinY;
-    }
-
-    public void setTotalMinY(int totalMinY) {
-        this.totalMinY = totalMinY;
-    }
-
-    public int getTotalMaxY() {
-        return totalMaxY;
-    }
-
-    public void setTotalMaxY(int totalMaxY) {
-        this.totalMaxY = totalMaxY;
     }
 
     private static String formatY(float y) {
