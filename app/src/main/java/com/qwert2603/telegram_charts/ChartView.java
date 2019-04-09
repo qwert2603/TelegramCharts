@@ -365,6 +365,7 @@ public class ChartView extends View {
 
                 canvas.save();
                 canvas.translate(chartPadding, 0);
+                linesPaint.setStrokeCap(Paint.Cap.SQUARE);
                 canvas.drawLines(points, linesPaint);
                 canvas.restore();
 
@@ -390,6 +391,7 @@ public class ChartView extends View {
 
                 canvas.save();
                 canvas.translate(chartPadding, 0);
+                linesPaint.setStrokeCap(Paint.Cap.BUTT);
                 canvas.drawLines(points, 0, q, linesPaint);
                 canvas.restore();
             }
