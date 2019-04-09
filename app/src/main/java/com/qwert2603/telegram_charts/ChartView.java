@@ -28,7 +28,6 @@ public class ChartView extends View {
 
         linesPaint = new Paint();
         linesPaint.setAntiAlias(true);
-        linesPaint.setStrokeCap(Paint.Cap.SQUARE);
         linesPaint.setStyle(Paint.Style.STROKE);
 
         this.setLayerType(LAYER_TYPE_HARDWARE, linesPaint);
