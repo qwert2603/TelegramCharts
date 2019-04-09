@@ -2,7 +2,6 @@ package com.qwert2603.telegram_charts;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -19,7 +18,7 @@ import java.util.Map;
 
 public class ChartView extends View {
 
-    private static final long ANIMATION_DURATION = 200L;
+    private static final long ANIMATION_DURATION = 170L;
 
     public ChartView(Context context, String title, ChartData chartData) {
         super(context);
@@ -299,9 +298,19 @@ public class ChartView extends View {
         setPeriodIndices(newStartIndex, newEndIndex);
     }
 
+    private long nanos;
+
+    private void logMillis(String s) {
+        LogUtils.d(s + " " + (System.nanoTime() - nanos) / 1000.0);
+        nanos = System.nanoTime();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        nanos = System.nanoTime();
+        logMillis("start");
 
         canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
 
@@ -334,6 +343,8 @@ public class ChartView extends View {
         linesPaint.setAlpha(0xFF);
         textPaint.setAlpha(0xFF);
 
+        logMillis("lines Y");
+
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
         for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
@@ -341,6 +352,8 @@ public class ChartView extends View {
             textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0xFF : oddDatesAlpha);
             canvas.drawText(chartData.dates[i * stepX], x, chartHeight + dp12 + dp2, textPaint);
         }
+
+        logMillis("dates");
 
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
@@ -363,6 +376,8 @@ public class ChartView extends View {
                     }
                 }
 
+                logMillis("points[]");
+
                 linesPaint.setStrokeWidth(lineWidth);
 
                 canvas.save();
@@ -370,6 +385,8 @@ public class ChartView extends View {
                 linesPaint.setStrokeCap(Paint.Cap.SQUARE);
                 canvas.drawLines(points, linesPaint);
                 canvas.restore();
+
+                logMillis("drawLines[]");
 
                 q = 0;
                 final float widP = (totalMaxX - totalMinX) / drawingWidth;
@@ -389,6 +406,8 @@ public class ChartView extends View {
                     }
                 }
 
+                logMillis("points period");
+
                 linesPaint.setStrokeWidth(lineWidth / 2f);
 
                 canvas.save();
@@ -396,6 +415,8 @@ public class ChartView extends View {
                 linesPaint.setStrokeCap(Paint.Cap.BUTT);
                 canvas.drawLines(points, 0, q, linesPaint);
                 canvas.restore();
+
+                logMillis("drawLines period");
             }
         }
 
@@ -440,6 +461,8 @@ public class ChartView extends View {
         );
 
         canvas.restore();
+
+        logMillis("period selector");
     }
 
     private static String formatY(float y) {
