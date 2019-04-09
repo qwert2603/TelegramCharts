@@ -1,5 +1,7 @@
 package com.qwert2603.telegram_charts;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
@@ -156,12 +158,17 @@ public class ChartView extends View {
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
 
-        prevStepY = stepY;
         stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
 
         ObjectAnimator animator = ObjectAnimator
                 .ofInt(this, "maxY", yLimits[1])
                 .setDuration(ANIMATION_DURATION);
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                prevStepY = stepY;//todo:check
+            }
+        });
         animator.setInterpolator(new DecelerateInterpolator());
         maxYAnimator = animator;
         maxYAnimator.start();
