@@ -331,15 +331,17 @@ public class ChartView extends View {
         }
 
         for (int c = 0; c < chartData.lines.size(); c++) {
-            ChartData.Line line = chartData.lines.get(c);
+            final ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
                 linesPaint.setColor(line.color);
                 linesPaint.setAlpha(line.alpha);
 
                 int q = 0;
+                final float wid = (maxX - minX) / drawingWidth;
+                final float hei = (maxY - minY) / chartHeight;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - minX) / (maxX - minX) * drawingWidth;
-                    final float _y = (1 - ((float) line.values[i] - minY) / (maxY - minY)) * chartHeight;
+                    final float _x = ((float) chartData.xValues[i] - minX) / wid;
+                    final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -357,9 +359,12 @@ public class ChartView extends View {
                 canvas.restore();
 
                 q = 0;
+                final float widP = (totalMaxX - totalMinX) / drawingWidth;
+                final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
+                final float dYP = chartHeight + datesHeight + periodSelectorHeight;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - totalMinX) / (totalMaxX - totalMinX) * drawingWidth;
-                    final float _y = chartHeight + datesHeight + (1 - ((float) line.values[i] - totalMinY) / (totalMaxY - totalMinY)) * periodSelectorHeight;
+                    final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
+                    final float _y = dYP - ((float) line.values[i] - totalMinY) / heiP;
 
                     points[q++] = _x;
                     points[q++] = _y;
