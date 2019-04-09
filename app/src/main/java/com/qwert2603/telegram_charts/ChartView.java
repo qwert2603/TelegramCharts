@@ -86,6 +86,8 @@ public class ChartView extends View {
     private final Paint textPaint;
     private final Paint titlePaint;
 
+    private float periodStartX = 0;
+    private float periodEndX = 1;
     private int startIndex;
     private int endIndex;
 
@@ -210,24 +212,27 @@ public class ChartView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        int pointerId = event.getPointerId(event.getActionIndex());
+        final int pointerId = event.getPointerId(event.getActionIndex());
 
-        float selectorCenter = (endIndex + startIndex - 1) / 2f / chartData.xValues.length * getWidth();
-        float selectorWidth = (endIndex - startIndex) * 1f / chartData.xValues.length * getWidth();
-        float x = event.getX();
+        final float selectorCenter = (periodStartX + periodEndX) / 2f;
+        final float selectorWidth = periodEndX - periodStartX;
+        final float selectorWidthPixels = getWidth() - 2 * chartPadding;
+        float x = (event.getX() - chartPadding) / selectorWidthPixels;
+
+        final float minSelectorWidthRel = minPeriodSelectorWidth * 1f / selectorWidthPixels;
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getY() > chartHeight) {
-                    if (Math.abs(selectorCenter - selectorWidth / 2 - x) < periodSelectorDraggableWidth) {
+                if (chartTitleHeight + chartHeight + datesHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight) {
+                    if (Math.abs(periodStartX - x) * selectorWidthPixels < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_START;
                         getParent().requestDisallowInterceptTouchEvent(true);
-                    } else if (Math.abs(selectorCenter + selectorWidth / 2 - x) < periodSelectorDraggableWidth) {
+                    } else if (Math.abs(periodEndX - x) * selectorWidthPixels < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_END;
                         getParent().requestDisallowInterceptTouchEvent(true);
-                    } else if (Math.abs(selectorCenter - x) < (selectorWidth - periodSelectorDraggableWidth) / 2) {
+                    } else if (periodStartX < x && x < periodEndX) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_SELECTOR;
                         selectorDragCenterOffset = selectorCenter - x;
@@ -240,17 +245,19 @@ public class ChartView extends View {
                 if (pointerId == dragPointerId) {
                     switch (currentDrag) {
                         case DRAG_START:
-                            if (x > selectorCenter - minPeriodSelectorWidth / 2) {
-                                x = selectorCenter - minPeriodSelectorWidth / 2;
+                            if (x > selectorCenter - minSelectorWidthRel) {
+                                x = selectorCenter - minSelectorWidthRel;
                             }
-                            int newStartIndex = (int) (x / getWidth() * chartData.xValues.length);
+                            periodStartX = x;
+                            int newStartIndex = (int) (x * chartData.xValues.length);
                             setPeriodIndices(newStartIndex, endIndex);
                             break;
                         case DRAG_END:
-                            if (x < selectorCenter + minPeriodSelectorWidth / 2) {
-                                x = selectorCenter + minPeriodSelectorWidth / 2;
+                            if (x < selectorCenter + minSelectorWidthRel) {
+                                x = selectorCenter + minSelectorWidthRel;
                             }
-                            int newEndIndex = (int) (x / getWidth() * chartData.xValues.length);
+                            periodEndX = x;
+                            int newEndIndex = (int) (x * chartData.xValues.length);
                             setPeriodIndices(startIndex, newEndIndex);
                             break;
                         case DRAG_SELECTOR:
@@ -277,13 +284,16 @@ public class ChartView extends View {
             newMin = 0;
             newMax = selectorWidth;
         }
-        if (newMax > getWidth()) {
-            newMin = getWidth() - selectorWidth;
-            newMax = getWidth();
+        if (newMax > 1) {
+            newMin = 1 - selectorWidth;
+            newMax = 1;
         }
 
-        int newStartIndex = (int) (newMin / getWidth() * chartData.xValues.length);
-        int newEndIndex = (int) (newMax / getWidth() * chartData.xValues.length);
+        periodStartX = newMin;
+        periodEndX = newMax;
+
+        int newStartIndex = (int) (newMin * chartData.xValues.length);
+        int newEndIndex = (int) (newMax * chartData.xValues.length);
         setPeriodIndices(newStartIndex, newEndIndex);
     }
 
@@ -362,13 +372,15 @@ public class ChartView extends View {
                 final float widP = (totalMaxX - totalMinX) / drawingWidth;
                 final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
                 final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-                for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
-                    final float _y = dYP - ((float) line.values[i] - totalMinY) / heiP;
+                final int div = 2;
+                for (int i = 0; i < chartData.xValues.length / div; i++) {
+                    final int ii = i * div;
+                    final float _x = ((float) chartData.xValues[ii] - totalMinX) / widP;
+                    final float _y = dYP - ((float) line.values[ii] - totalMinY) / heiP;
 
                     points[q++] = _x;
                     points[q++] = _y;
-                    if (i != 0 && i != chartData.xValues.length - 1) {
+                    if (ii != 0 && ii != chartData.xValues.length / div - 1) {
                         points[q++] = _x;
                         points[q++] = _y;
                     }
@@ -378,7 +390,7 @@ public class ChartView extends View {
 
                 canvas.save();
                 canvas.translate(chartPadding, 0);
-                canvas.drawLines(points, linesPaint);
+                canvas.drawLines(points, 0, q, linesPaint);
                 canvas.restore();
             }
         }
