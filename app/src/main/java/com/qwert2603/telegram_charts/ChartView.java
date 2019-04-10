@@ -311,6 +311,8 @@ public class ChartView extends View {
 
     private void updateSelectedIndex(float x) {
         selectedIndex = (int) (startIndex + (endIndex - 1 - startIndex) * x);
+        if (selectedIndex < 0) selectedIndex = 0;
+        if (selectedIndex > endIndex - 1) selectedIndex = endIndex - 1;
         invalidate();
     }
 
@@ -369,6 +371,7 @@ public class ChartView extends View {
 //        nanos = System.nanoTime();
 //        logMillis("start");
 
+        titlePaint.setColor(Color.BLACK);
         titlePaint.setTextSize(dp12 + dp4);
         canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
         titlePaint.setTextSize(dp12 + dp2);
@@ -419,9 +422,9 @@ public class ChartView extends View {
 //        logMillis("dates");
 
         final float wid = (maxX - minX) / drawingWidth;
-        final float hei = (maxY - minY) / chartHeight;
+        final float hei = (maxY - 0/*minY*/) / chartHeight;
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
-        final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
+        final float heiP = (totalMaxY - 0/*totalMinY*/) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
         final int div = 2;
 
@@ -437,7 +440,7 @@ public class ChartView extends View {
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = ((float) chartData.xValues[i] - minX) / wid;
-                    final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
+                    final float _y = chartHeight - ((float) line.values[i] - 0/*minY*/) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -460,7 +463,7 @@ public class ChartView extends View {
                 for (int i = 0; i < chartData.xValues.length / div; i++) {
                     final int ii = i * div;
                     final float _x = ((float) chartData.xValues[ii] - totalMinX) / widP;
-                    final float _y = dYP - ((float) line.values[ii] - totalMinY) / heiP;
+                    final float _y = dYP - ((float) line.values[ii] - 0/*totalMinY*/) / heiP;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -485,21 +488,66 @@ public class ChartView extends View {
             linesPaint.setStrokeWidth(lineWidth / 2f);
             linesPaint.setColor(0x99CCCCCC);
             final float _x = ((float) chartData.xValues[selectedIndex] - minX) / wid;
+            final boolean panelLefted = _x < getWidth() / 2 - chartPadding;
+            final float panelLeft = _x + (panelLefted ? dp12 * -1 : dp12 * -11);
+            final float panelRight = _x + (panelLefted ? dp12 * 11 : dp12 * 1);
             canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
 
             linesPaint.setStrokeWidth(lineWidth);
             periodPaint.setColor(Color.WHITE);
+
+            final float lineHeight = dp12 * 2;
+            float lineY = lineHeight;
+
             for (int c = 0; c < chartData.lines.size(); c++) {
                 final ChartData.Line line = chartData.lines.get(c);
-                if (line.isVisible()) {
+                if (line.isVisibleOrWillBe) {
                     linesPaint.setColor(line.color);
                     linesPaint.setAlpha(line.alpha);
 
-                    final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
+                    final float _y = chartHeight - ((float) line.values[selectedIndex] - 0/*minY*/) / hei;
                     canvas.drawCircle(_x, _y, dp4, periodPaint);
                     canvas.drawCircle(_x, _y, dp4, linesPaint);
+
+                    lineY += lineHeight;
                 }
             }
+
+            final float panelPadding = dp12;
+            canvas.drawRoundRect(
+                    panelLeft - panelPadding,
+                    0,
+                    panelRight + panelPadding,
+                    lineY + panelPadding,
+                    dp4, dp4, periodPaint);
+
+            lineY = lineHeight;
+
+            canvas.drawText(chartData.selectedDates[selectedIndex], panelLeft, lineY, titlePaint);
+
+            titlePaint.setTypeface(Typeface.DEFAULT);
+            for (int c = 0; c < chartData.lines.size(); c++) {
+                final ChartData.Line line = chartData.lines.get(c);
+                if (line.isVisibleOrWillBe) {
+                    lineY += lineHeight;
+                    canvas.drawText(line.name, panelLeft, lineY, titlePaint);
+                }
+            }
+            titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
+
+            lineY = lineHeight;
+
+            for (int c = 0; c < chartData.lines.size(); c++) {
+                final ChartData.Line line = chartData.lines.get(c);
+                if (line.isVisibleOrWillBe) {
+                    titlePaint.setColor(line.color);
+                    lineY += lineHeight;
+                    String formatY = formatY(line.values[selectedIndex]);
+                    float valueWidth = titlePaint.measureText(formatY);
+                    canvas.drawText(formatY, panelRight - valueWidth, lineY, titlePaint);
+                }
+            }
+
         }
 
         canvas.restore();
@@ -513,19 +561,19 @@ public class ChartView extends View {
         periodPaint.setStyle(Paint.Style.FILL);
         periodPaint.setColor(0x18000000);
 
-        canvas.drawRect(0, 0, startX, periodSelectorHeight, periodPaint);
-        canvas.drawRect(endX, 0, drawingWidth, periodSelectorHeight, periodPaint);
+        canvas.drawRoundRect(0, 0, startX, periodSelectorHeight, dp2, dp2, periodPaint);
+        canvas.drawRoundRect(endX, 0, drawingWidth, periodSelectorHeight, dp2, dp2, periodPaint);
 
         periodPaint.setColor(0x88000000);
 
         final float borderHor = dp2;
         final float borderVer = dp12;
 
-        canvas.drawRect(startX + borderVer, 0, endX - borderVer, borderHor, periodPaint);
-        canvas.drawRect(startX + borderVer, periodSelectorHeight - borderHor, endX - borderVer, periodSelectorHeight, periodPaint);
+        canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodPaint);
+        canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodPaint);
 
-        canvas.drawRect(startX, 0, startX + borderVer, periodSelectorHeight, periodPaint);
-        canvas.drawRect(endX - borderVer, 0, endX, periodSelectorHeight, periodPaint);
+        canvas.drawRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, periodPaint);
+        canvas.drawRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, periodPaint);
 
         periodPaint.setColor(0xD7FFFFFF);
 
@@ -551,20 +599,18 @@ public class ChartView extends View {
 //        LogUtils.d("onDraw " + title + " " + (System.nanoTime() - onDrawBegin) / 1_000_000.0);
     }
 
-    private static String formatY(int y) {
+    public static String formatY(int y) {
         if (FORMATTED_CACHE[y] != null) return FORMATTED_CACHE[y];
 
         final String formatted;
-        if (y < 1000) {
+        if (y < 1_000) {
             formatted = Integer.toString(y);
-        } else if (y < 1000000) {
-            int div = y % 1000000 / 10000;
-            if (div % 10 == 0) div /= 10;
-            formatted = Integer.toString(y / 1000) + "." + Integer.toString(div) + "K";
+        } else if (y < 1_000_000) {
+            final int div = y % 1_000 / 100;
+            formatted = Integer.toString(y / 1_000) + "." + Integer.toString(div) + "K";
         } else {
-            int div = y % 1000 / 10;
-            if (div % 10 == 0) div /= 10;
-            formatted = Integer.toString(y / 1000000) + "." + Integer.toString(div) + "M";
+            final int div = y % 1_000_000 / 100_000;
+            formatted = Integer.toString(y / 1_000_000) + "." + Integer.toString(div) + "M";
         }
         FORMATTED_CACHE[y] = formatted;
         return formatted;

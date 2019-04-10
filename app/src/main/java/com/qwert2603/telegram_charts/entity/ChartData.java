@@ -21,6 +21,7 @@ public class ChartData {
     public long[] xValues;
     public String[] dates;
     public String[] fullDates;
+    public String[] selectedDates;
     public List<Line> lines;
 
     public int[] calcYLimits(int startIndex, int endIndex) {

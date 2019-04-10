@@ -12,6 +12,7 @@ public class RawData {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMM");
     private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy");
+    private static final SimpleDateFormat SELECTED_DATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy");
 
     public List<List<Object>> columns;
     public Map<String, String> types;
@@ -24,11 +25,13 @@ public class RawData {
         chartData.xValues = new long[valuesCount];
         chartData.dates = new String[valuesCount];
         chartData.fullDates = new String[valuesCount];
+        chartData.selectedDates = new String[valuesCount];
         for (int i = 0; i < valuesCount; i++) {
             long millis = ((Double) columns.get(0).get(i + 1)).longValue();
             chartData.xValues[i] = millis;
             chartData.dates[i] = DATE_FORMAT.format(new Date(chartData.xValues[i]));
             chartData.fullDates[i] = FULL_DATE_FORMAT.format(new Date(chartData.xValues[i]));
+            chartData.selectedDates[i] = SELECTED_DATE_FORMAT.format(new Date(chartData.xValues[i]));
         }
 
         chartData.lines = new ArrayList<>();
