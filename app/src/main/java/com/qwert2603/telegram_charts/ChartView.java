@@ -29,10 +29,10 @@ public class ChartView extends View {
         linesPaint.setAntiAlias(true);
         linesPaint.setStyle(Paint.Style.STROKE);
 
-        this.setLayerType(LAYER_TYPE_HARDWARE, linesPaint);
+//        this.setLayerType(LAYER_TYPE_HARDWARE, linesPaint);
 
         this.chartData = chartData;
-        points = new float[chartData.xValues.length * 4];
+        points = new float[(chartData.xValues.length - 1) * 4];
 
         periodPaint = new Paint();
 
@@ -99,6 +99,9 @@ public class ChartView extends View {
     private float stepY;
     private float prevStepY;
 
+    private final String[] formattedYSteps = new String[HOR_LINES];
+    private final String[] formattedPrevYSteps = new String[HOR_LINES];
+
     private int minY;
     private int maxY;
 
@@ -164,21 +167,28 @@ public class ChartView extends View {
     private static final int VER_DATES = 4;
 
     private void animateMaxY() {
-        if (maxYAnimator != null) maxYAnimator.cancel();
+        if (maxYAnimator == null) {
+            maxYAnimator = ValueAnimator.ofFloat(0f, 1f);
+            maxYAnimator.setInterpolator(new DecelerateInterpolator());
+            maxYAnimator.setDuration(ANIMATION_DURATION);
+        } else {
+            maxYAnimator.cancel();
+            maxYAnimator.removeAllUpdateListeners();
+            maxYAnimator.removeAllListeners();
+        }
 
         final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
 
         stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
+        for (int i = 0; i < formattedYSteps.length; i++) {
+            formattedYSteps[i] = formatY(stepY * i);
+        }
 
         final float startMaxY = maxY;
         final float endMaxY = yLimits[1];
         final float startTotalMaxY = totalMaxY;
         final float endTotalMaxY = yLimits[3];
 
-        maxYAnimator = ValueAnimator
-                .ofFloat(0f, 1f)
-                .setDuration(ANIMATION_DURATION);
-        maxYAnimator.setInterpolator(new DecelerateInterpolator());
         maxYAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -197,7 +207,11 @@ public class ChartView extends View {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (!isCanceled) prevStepY = stepY;
+                if (!isCanceled) {
+                    prevStepY = stepY;
+                    System.arraycopy(formattedYSteps, 0, formattedPrevYSteps, 0, HOR_LINES);
+                }
+
             }
         });
         maxYAnimator.start();
@@ -301,13 +315,34 @@ public class ChartView extends View {
     private long nanos;
 
     private void logMillis(String s) {
-        LogUtils.d(s + " " + (System.nanoTime() - nanos) / 1000.0);
-        nanos = System.nanoTime();
+        long nanoTime = System.nanoTime();
+        LogUtils.d(s + " " + (nanoTime - nanos) / 1_000_000.0);
+        nanos = nanoTime;
     }
+
+    float[] floats = new float[26000];
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+        LogUtils.d("onDraw " + canvas.isHardwareAccelerated());
+
+        final long onDrawBegin = System.nanoTime();
+
+//        int q = 0;
+//        for (int i = 0; i < floats.length / 4; i++) {
+//            final float _x = i % 2 == 0 ? i / 10f : 600;
+//            final float _y = i / 20f;
+//
+//            floats[q++] = _x;
+//            floats[q++] = _y;
+//            if (i != 0 && i != floats.length / 4 - 1) {
+//                floats[q++] = _x;
+//                floats[q++] = _y;
+//            }
+//        }
+//
+//        linesPaint.setColor(Color.RED);
+//        canvas.drawLines(floats, linesPaint);
 
         nanos = System.nanoTime();
         logMillis("start");
@@ -327,7 +362,7 @@ public class ChartView extends View {
         for (int i = 0; i < HOR_LINES; i++) {
             float y = (1 - (stepY * i / maxY)) * chartHeight;
             canvas.drawLine(chartPadding, y, getWidth() - chartPadding, y, linesPaint);
-            canvas.drawText(formatY(stepY * i), chartPadding, y - dp6, textPaint);
+            canvas.drawText(formattedYSteps[i], chartPadding, y - dp6, textPaint);
         }
         if (prevStepY > 0) {
             linesPaint.setAlpha((int) (0xFF - maxYAnimator.getAnimatedFraction() * 0xFF));
@@ -336,7 +371,7 @@ public class ChartView extends View {
             for (int i = 0; i < HOR_LINES; i++) {
                 float y = (1 - (prevStepY * i / maxY)) * chartHeight;
                 canvas.drawLine(chartPadding, y, getWidth() - chartPadding, y, linesPaint);
-                canvas.drawText(formatY(prevStepY * i), chartPadding, y - dp6, textPaint);
+                canvas.drawText(formattedPrevYSteps[i], chartPadding, y - dp6, textPaint);
             }
         }
 
@@ -463,6 +498,8 @@ public class ChartView extends View {
         canvas.restore();
 
         logMillis("period selector");
+
+        LogUtils.d("onDraw " + title + " " + (System.nanoTime() - onDrawBegin) / 1_000_000.0);
     }
 
     private static String formatY(float y) {
