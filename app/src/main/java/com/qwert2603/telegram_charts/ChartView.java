@@ -312,21 +312,21 @@ public class ChartView extends View {
         setPeriodIndices(newStartIndex, newEndIndex);
     }
 
-    private long nanos;
+//    private long nanos;
 
-    private void logMillis(String s) {
-        long nanoTime = System.nanoTime();
-        LogUtils.d(s + " " + (nanoTime - nanos) / 1_000_000.0);
-        nanos = nanoTime;
-    }
+//    private void logMillis(String s) {
+//        long nanoTime = System.nanoTime();
+//        LogUtils.d(s + " " + (nanoTime - nanos) / 1_000_000.0);
+//        nanos = nanoTime;
+//    }
 
-    float[] floats = new float[26000];
+//    float[] floats = new float[26000];
 
     @Override
     protected void onDraw(Canvas canvas) {
-        LogUtils.d("onDraw " + canvas.isHardwareAccelerated());
+//        LogUtils.d("onDraw " + canvas.isHardwareAccelerated());
 
-        final long onDrawBegin = System.nanoTime();
+//        final long onDrawBegin = System.nanoTime();
 
 //        int q = 0;
 //        for (int i = 0; i < floats.length / 4; i++) {
@@ -344,8 +344,8 @@ public class ChartView extends View {
 //        linesPaint.setColor(Color.RED);
 //        canvas.drawLines(floats, linesPaint);
 
-        nanos = System.nanoTime();
-        logMillis("start");
+//        nanos = System.nanoTime();
+//        logMillis("start");
 
         canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
 
@@ -378,7 +378,7 @@ public class ChartView extends View {
         linesPaint.setAlpha(0xFF);
         textPaint.setAlpha(0xFF);
 
-        logMillis("lines Y");
+//        logMillis("lines Y");
 
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
@@ -388,7 +388,7 @@ public class ChartView extends View {
             canvas.drawText(chartData.dates[i * stepX], x, chartHeight + dp12 + dp2, textPaint);
         }
 
-        logMillis("dates");
+//        logMillis("dates");
 
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
@@ -411,7 +411,7 @@ public class ChartView extends View {
                     }
                 }
 
-                logMillis("points[]");
+//                logMillis("points[]");
 
                 linesPaint.setStrokeWidth(lineWidth);
 
@@ -421,7 +421,7 @@ public class ChartView extends View {
                 canvas.drawLines(points, linesPaint);
                 canvas.restore();
 
-                logMillis("drawLines[]");
+//                logMillis("drawLines[]");
 
                 q = 0;
                 final float widP = (totalMaxX - totalMinX) / drawingWidth;
@@ -435,13 +435,13 @@ public class ChartView extends View {
 
                     points[q++] = _x;
                     points[q++] = _y;
-                    if (ii != 0 && ii != chartData.xValues.length / div - 1) {
+                    if (i != 0 && i != chartData.xValues.length / div - 1) {
                         points[q++] = _x;
                         points[q++] = _y;
                     }
                 }
 
-                logMillis("points period");
+//                logMillis("points period");
 
                 linesPaint.setStrokeWidth(lineWidth / 2f);
 
@@ -451,7 +451,7 @@ public class ChartView extends View {
                 canvas.drawLines(points, 0, q, linesPaint);
                 canvas.restore();
 
-                logMillis("drawLines period");
+//                logMillis("drawLines period");
             }
         }
 
@@ -497,9 +497,9 @@ public class ChartView extends View {
 
         canvas.restore();
 
-        logMillis("period selector");
+//        logMillis("period selector");
 
-        LogUtils.d("onDraw " + title + " " + (System.nanoTime() - onDrawBegin) / 1_000_000.0);
+//        LogUtils.d("onDraw " + title + " " + (System.nanoTime() - onDrawBegin) / 1_000_000.0);
     }
 
     private static String formatY(float y) {
