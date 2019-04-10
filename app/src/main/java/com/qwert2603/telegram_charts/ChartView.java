@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,8 +27,7 @@ public class ChartView extends View {
 
         this.title = title;
 
-        linesPaint = new Paint();
-        linesPaint.setAntiAlias(true);
+        linesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         linesPaint.setStyle(Paint.Style.STROKE);
 
 //        this.setLayerType(LAYER_TYPE_HARDWARE, linesPaint);
@@ -35,7 +35,7 @@ public class ChartView extends View {
         this.chartData = chartData;
         points = new float[(chartData.xValues.length - 1) * 4];
 
-        periodPaint = new Paint();
+        periodPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         setPeriodIndices(0, chartData.xValues.length);
 
@@ -48,14 +48,12 @@ public class ChartView extends View {
         totalMinY = yLimits[2];
         totalMaxY = yLimits[3];
 
-        textPaint = new Paint();
-        textPaint.setAntiAlias(true);
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(0xBB888888);
         textPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         textPaint.setTextSize(dp12);
 
-        titlePaint = new Paint();
-        titlePaint.setAntiAlias(true);
+        titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setColor(Color.BLACK);
         titlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
@@ -74,6 +72,12 @@ public class ChartView extends View {
     private final float dp6 = getResources().getDimension(R.dimen.dp6);
     private final float dp8 = getResources().getDimension(R.dimen.dp8);
     private final float dp12 = getResources().getDimension(R.dimen.dp12);
+
+    // period selector
+    final float fillRadius = dp4;
+    final Path path = new Path();
+    final float[] radiiLeft = {fillRadius, fillRadius, 0, 0, 0, 0, fillRadius, fillRadius};
+    final float[] radiiRight = {0, 0, fillRadius, fillRadius, fillRadius, fillRadius, 0, 0};
 
     private final String title;
     private final ChartData chartData;
@@ -561,22 +565,33 @@ public class ChartView extends View {
         periodPaint.setStyle(Paint.Style.FILL);
         periodPaint.setColor(0x18000000);
 
-        canvas.drawRoundRect(0, 0, startX, periodSelectorHeight, dp2, dp2, periodPaint);
-        canvas.drawRoundRect(endX, 0, drawingWidth, periodSelectorHeight, dp2, dp2, periodPaint);
+        final float borderHor = dp2 / 2;
+        final float borderVer = dp12;
+
+        // period's outside.
+        path.addRoundRect(0, 0, startX + borderVer, periodSelectorHeight, radiiLeft, Path.Direction.CW);
+        canvas.drawPath(path, periodPaint);
+        path.reset();
+        path.addRoundRect(endX - borderVer, 0, drawingWidth, periodSelectorHeight, radiiRight, Path.Direction.CW);
+        canvas.drawPath(path, periodPaint);
+        path.reset();
 
         periodPaint.setColor(0x88000000);
 
-        final float borderHor = dp2;
-        final float borderVer = dp12;
-
+        // horizontal borders
         canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodPaint);
         canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodPaint);
 
-        canvas.drawRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, periodPaint);
-        canvas.drawRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, periodPaint);
+        // vertical borders
+        path.addRoundRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, radiiLeft, Path.Direction.CW);
+        canvas.drawPath(path, periodPaint);
+        path.reset();
+        path.addRoundRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, radiiRight, Path.Direction.CW);
+        canvas.drawPath(path, periodPaint);
+        path.reset();
 
+        // white drag rects
         periodPaint.setColor(0xD7FFFFFF);
-
         canvas.drawRect(
                 startX + borderVer / 2 - dp2,
                 periodSelectorHeight / 2 - dp8,
