@@ -509,6 +509,8 @@ public class ChartView extends View {
     }
 
     private static String formatY(int y) {
+        if (FORMATTED_CACHE[y] != null) return FORMATTED_CACHE[y];
+
         final String formatted;
         if (y < 1000) {
             formatted = Integer.toString(y);
@@ -521,6 +523,9 @@ public class ChartView extends View {
             if (div % 10 == 0) div /= 10;
             formatted = Integer.toString(y / 1000000) + "." + Integer.toString(div) + "M";
         }
+        FORMATTED_CACHE[y] = formatted;
         return formatted;
     }
+
+    private static final String[] FORMATTED_CACHE = new String[10000000];
 }
