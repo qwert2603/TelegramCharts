@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class ChartView extends View {
 
-    private static final long ANIMATION_DURATION = 170L;
+    private static final long ANIMATION_DURATION = 200L;
 
     public ChartView(Context context, String title, ChartData chartData) {
         super(context);
@@ -92,6 +92,7 @@ public class ChartView extends View {
     private int endIndex;
 
     private int selectedIndex = -1;
+    private int prevSelectedIndex = -1;
 
     private long minX;
     private long maxX;
@@ -113,6 +114,7 @@ public class ChartView extends View {
     private int totalMaxY;
 
     private ValueAnimator maxYAnimator;
+    private ValueAnimator selectedIndexAnimator;
 
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
 
@@ -173,7 +175,31 @@ public class ChartView extends View {
     private static final int HOR_LINES = 6;
     private static final int VER_DATES = 4;
 
+    private float pendingMaxY;
+    private float pendingTotalMaxY;
+
     private void animateMaxY() {
+        final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
+
+        final float startMaxY = maxY;
+        final float endMaxY = yLimits[1];
+        final float startTotalMaxY = totalMaxY;
+        final float endTotalMaxY = yLimits[3];
+
+        if (pendingMaxY == endMaxY && pendingTotalMaxY == endTotalMaxY) {
+            invalidate();
+            return;
+        }
+
+        pendingMaxY = endMaxY;
+        pendingTotalMaxY = endTotalMaxY;
+
+        stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
+        final int stepYInt = (int) stepY;
+        for (int i = 0; i < formattedYSteps.length; i++) {
+            formattedYSteps[i] = formatY(stepYInt * i);
+        }
+
         if (maxYAnimator == null) {
             maxYAnimator = ValueAnimator.ofFloat(0f, 1f);
             maxYAnimator.setInterpolator(new DecelerateInterpolator());
@@ -198,19 +224,6 @@ public class ChartView extends View {
         } else {
             maxYAnimator.removeAllUpdateListeners();
         }
-
-        final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
-
-        stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
-        final int stepYInt = (int) stepY;
-        for (int i = 0; i < formattedYSteps.length; i++) {
-            formattedYSteps[i] = formatY(stepYInt * i);
-        }
-
-        final float startMaxY = maxY;
-        final float endMaxY = yLimits[1];
-        final float startTotalMaxY = totalMaxY;
-        final float endTotalMaxY = yLimits[3];
 
         maxYAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -308,10 +321,27 @@ public class ChartView extends View {
     }
 
     private void updateSelectedIndex(float x) {
-        selectedIndex = (int) (startIndex + (endIndex - 1 - startIndex) * x);
-        if (selectedIndex < 0) selectedIndex = 0;
-        if (selectedIndex > endIndex - 1) selectedIndex = endIndex - 1;
-        invalidate();
+        int newSelectedIndex = (int) (startIndex + (endIndex - 1 - startIndex) * x);
+        if (newSelectedIndex < 0) newSelectedIndex = 0;
+        if (newSelectedIndex > endIndex - 1) newSelectedIndex = endIndex - 1;
+
+        if (newSelectedIndex == selectedIndex) return;
+        prevSelectedIndex = selectedIndex;
+        selectedIndex = newSelectedIndex;
+
+        if (selectedIndexAnimator == null) {
+            selectedIndexAnimator = ValueAnimator.ofFloat(0f, 1f);
+            selectedIndexAnimator.setInterpolator(new DecelerateInterpolator());
+            selectedIndexAnimator.setDuration(ANIMATION_DURATION);
+            selectedIndexAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    invalidate();
+                }
+            });
+        }
+
+        selectedIndexAnimator.start();
     }
 
     private void movePeriodSelectorTo(float x, float selectorWidth) {
@@ -484,7 +514,15 @@ public class ChartView extends View {
 
             lineY = lineHeight;
 
-            canvas.drawText(chartData.selectedDates[selectedIndex], panelLeft, lineY, titlePaint);
+            final float fraction = selectedIndexAnimator.getAnimatedFraction();
+            titlePaint.setAlpha((int) (0xFF * fraction));
+            final boolean isBack = selectedIndex < prevSelectedIndex;
+            canvas.drawText(chartData.selectedDates[selectedIndex], panelLeft, lineY + (1 - fraction) * dp12 * (isBack ? -1 : 1), titlePaint);
+            if (prevSelectedIndex >= 0) {
+                titlePaint.setAlpha(0XFF - (int) (0xFF * fraction));
+                canvas.drawText(chartData.selectedDates[prevSelectedIndex], panelLeft, lineY - fraction * dp12 * (isBack ? -1 : 1), titlePaint);
+            }
+            titlePaint.setAlpha(0xFF);
 
             titlePaint.setTypeface(Typeface.DEFAULT);
             for (int c = 0; c < chartData.lines.size(); c++) {
