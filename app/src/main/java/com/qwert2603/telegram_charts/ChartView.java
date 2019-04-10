@@ -473,6 +473,14 @@ public class ChartView extends View {
                     panelRight + panelPadding,
                     lineY + panelPadding,
                     dp4, dp4, periodPaint);
+            linesPaint.setStrokeWidth(lineWidth / 2f);
+            linesPaint.setColor(0x99CCCCCC);
+            canvas.drawRoundRect(
+                    panelLeft - panelPadding,
+                    0,
+                    panelRight + panelPadding,
+                    lineY + panelPadding,
+                    dp4, dp4, linesPaint);
 
             lineY = lineHeight;
 
