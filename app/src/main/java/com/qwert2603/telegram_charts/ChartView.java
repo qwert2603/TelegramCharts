@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.view.MotionEvent;
@@ -55,9 +56,8 @@ public class ChartView extends View {
 
         titlePaint = new Paint();
         titlePaint.setAntiAlias(true);
-        titlePaint.setColor(0xFF2332DC);
+        titlePaint.setColor(Color.BLACK);
         titlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        titlePaint.setTextSize(dp12 + dp4);
         titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
@@ -353,7 +353,12 @@ public class ChartView extends View {
 //        nanos = System.nanoTime();
 //        logMillis("start");
 
+        titlePaint.setTextSize(dp12 + dp4);
         canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
+        titlePaint.setTextSize(dp12 + dp2);
+        final String text = chartData.fullDates[startIndex] + " - " + chartData.fullDates[endIndex - 1];
+        final float measureText = titlePaint.measureText(text);
+        canvas.drawText(text, getWidth() - chartPadding - measureText, dp12 + dp12 + dp4, titlePaint);
 
         canvas.translate(0, chartTitleHeight);
 
@@ -391,7 +396,8 @@ public class ChartView extends View {
         for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
             float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
             textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0xFF : oddDatesAlpha);
-            canvas.drawText(chartData.dates[i * stepX], x, chartHeight + dp12 + dp2, textPaint);
+            final float dateTextWidth = textPaint.measureText(chartData.dates[i * stepX]);
+            canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp2, textPaint);
         }
 
 //        logMillis("dates");
