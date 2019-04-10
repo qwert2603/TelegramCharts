@@ -571,10 +571,10 @@ public class ChartView extends View {
         // period's outside.
         path.addRoundRect(0, 0, startX + borderVer, periodSelectorHeight, radiiLeft, Path.Direction.CW);
         canvas.drawPath(path, periodPaint);
-        path.reset();
+        path.rewind();
         path.addRoundRect(endX - borderVer, 0, drawingWidth, periodSelectorHeight, radiiRight, Path.Direction.CW);
         canvas.drawPath(path, periodPaint);
-        path.reset();
+        path.rewind();
 
         periodPaint.setColor(0x88000000);
 
@@ -585,10 +585,10 @@ public class ChartView extends View {
         // vertical borders
         path.addRoundRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, radiiLeft, Path.Direction.CW);
         canvas.drawPath(path, periodPaint);
-        path.reset();
+        path.rewind();
         path.addRoundRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, radiiRight, Path.Direction.CW);
         canvas.drawPath(path, periodPaint);
-        path.reset();
+        path.rewind();
 
         // white drag rects
         periodPaint.setColor(0xD7FFFFFF);
@@ -615,21 +615,33 @@ public class ChartView extends View {
     }
 
     public static String formatY(int y) {
-        if (FORMATTED_CACHE[y] != null) return FORMATTED_CACHE[y];
-
-        final String formatted;
         if (y < 1_000) {
-            formatted = Integer.toString(y);
+            return formatYLessThousand(y);
         } else if (y < 1_000_000) {
+            final int q = y / 100;
+            if (FORMATTED_CACHE_K[q] != null) return FORMATTED_CACHE_K[q];
             final int div = y % 1_000 / 100;
-            formatted = Integer.toString(y / 1_000) + "." + Integer.toString(div) + "K";
+            final String formatted = formatYLessThousand(y / 1_000) + "." + formatYLessThousand(div) + "K";
+            FORMATTED_CACHE_K[q] = formatted;
+            return formatted;
         } else {
+            final int q = y / 100_000;
+            if (FORMATTED_CACHE_M[q] != null) return FORMATTED_CACHE_M[q];
             final int div = y % 1_000_000 / 100_000;
-            formatted = Integer.toString(y / 1_000_000) + "." + Integer.toString(div) + "M";
+            final String formatted = formatYLessThousand(y / 1_000_000) + "." + formatYLessThousand(div) + "M";
+            FORMATTED_CACHE_M[q] = formatted;
+            return formatted;
         }
+    }
+
+    private static String formatYLessThousand(int y) {
+        if (FORMATTED_CACHE[y] != null) return FORMATTED_CACHE[y];
+        final String formatted = Integer.toString(y);
         FORMATTED_CACHE[y] = formatted;
         return formatted;
     }
 
-    private static final String[] FORMATTED_CACHE = new String[10000000];
+    private static final String[] FORMATTED_CACHE = new String[1000];
+    private static final String[] FORMATTED_CACHE_K = new String[10000];
+    private static final String[] FORMATTED_CACHE_M = new String[10000];
 }
