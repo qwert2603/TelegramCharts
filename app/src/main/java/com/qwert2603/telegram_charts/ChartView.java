@@ -136,8 +136,6 @@ public class ChartView extends View {
                         }
                     });
                     opacityAnimators.put(name, animator);
-                } else {
-                    animator.cancel();
                 }
 
                 line.isVisibleOrWillBe = visible;
@@ -182,10 +180,25 @@ public class ChartView extends View {
             maxYAnimator = ValueAnimator.ofFloat(0f, 1f);
             maxYAnimator.setInterpolator(new DecelerateInterpolator());
             maxYAnimator.setDuration(ANIMATION_DURATION);
+            maxYAnimator.addListener(new AnimatorListenerAdapter() {
+                private boolean isCanceled = false;
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    isCanceled = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (!isCanceled) {
+                        prevStepY = stepY;
+                        System.arraycopy(formattedYSteps, 0, formattedPrevYSteps, 0, HOR_LINES);
+                    }
+
+                }
+            });
         } else {
-            maxYAnimator.cancel();
             maxYAnimator.removeAllUpdateListeners();
-            maxYAnimator.removeAllListeners();
         }
 
         final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
@@ -207,23 +220,6 @@ public class ChartView extends View {
                 maxY = (int) (startMaxY + (endMaxY - startMaxY) * animation.getAnimatedFraction());
                 totalMaxY = (int) (startTotalMaxY + (endTotalMaxY - startTotalMaxY) * animation.getAnimatedFraction());
                 invalidate();
-            }
-        });
-        maxYAnimator.addListener(new AnimatorListenerAdapter() {
-            private boolean isCanceled = false;
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                isCanceled = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (!isCanceled) {
-                    prevStepY = stepY;
-                    System.arraycopy(formattedYSteps, 0, formattedPrevYSteps, 0, HOR_LINES);
-                }
-
             }
         });
         maxYAnimator.start();
@@ -432,7 +428,6 @@ public class ChartView extends View {
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
         final int div = 2;
 
-        canvas.save();
         canvas.translate(chartPadding, 0);
 
         for (int c = 0; c < chartData.lines.size(); c++) {
@@ -554,10 +549,7 @@ public class ChartView extends View {
 
         }
 
-        canvas.restore();
-
-        canvas.save();
-        canvas.translate(chartPadding, chartHeight + datesHeight);
+        canvas.translate(0, chartHeight + datesHeight);
 
         float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
         float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
@@ -610,8 +602,6 @@ public class ChartView extends View {
                 dp2,
                 periodPaint
         );
-
-        canvas.restore();
 
 //        logMillis("period selector");
 
