@@ -180,8 +180,9 @@ public class ChartView extends View {
         final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
 
         stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
+        final int stepYInt = (int) stepY;
         for (int i = 0; i < formattedYSteps.length; i++) {
-            formattedYSteps[i] = formatY(stepY * i);
+            formattedYSteps[i] = formatY(stepYInt * i);
         }
 
         final float startMaxY = maxY;
@@ -502,9 +503,19 @@ public class ChartView extends View {
 //        LogUtils.d("onDraw " + title + " " + (System.nanoTime() - onDrawBegin) / 1_000_000.0);
     }
 
-    private static String formatY(float y) {
-        if (y > 1000000) return String.format("%.1fM", y / 1000000);
-        if (y > 1000) return String.format("%.1fK", y / 1000);
-        return String.format("%.0f", y);
+    private static String formatY(int y) {
+        final String formatted;
+        if (y < 1000) {
+            formatted = Integer.toString(y);
+        } else if (y < 1000000) {
+            int div = y % 1000000 / 10000;
+            if (div % 10 == 0) div /= 10;
+            formatted = Integer.toString(y / 1000) + "." + Integer.toString(div) + "K";
+        } else {
+            int div = y % 1000 / 10;
+            if (div % 10 == 0) div /= 10;
+            formatted = Integer.toString(y / 1000000) + "." + Integer.toString(div) + "M";
+        }
+        return formatted;
     }
 }
