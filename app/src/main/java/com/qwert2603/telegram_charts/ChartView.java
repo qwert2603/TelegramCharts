@@ -116,22 +116,27 @@ public class ChartView extends View {
         for (final ChartData.Line line : chartData.lines) {
             if (line.name.equals(name)) {
 
-                ValueAnimator prev = opacityAnimators.get(name);
-                if (prev != null) prev.cancel();
+                ValueAnimator animator = opacityAnimators.get(name);
+                if (animator == null) {
+                    animator = ValueAnimator
+                            .ofInt(0x00)
+                            .setDuration(ANIMATION_DURATION);
+                    animator.setInterpolator(new DecelerateInterpolator());
+                    animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            line.alpha = (int) animation.getAnimatedValue();
+                            invalidate();
+                        }
+                    });
+                    opacityAnimators.put(name, animator);
+                } else {
+                    animator.cancel();
+                }
 
                 line.isVisibleOrWillBe = visible;
-                ValueAnimator animator = ValueAnimator
-                        .ofInt(line.alpha, visible ? 0xFF : 0x00)
-                        .setDuration(ANIMATION_DURATION);
-                animator.setInterpolator(new DecelerateInterpolator());
-                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        line.alpha = (int) animation.getAnimatedValue();
-                        invalidate();
-                    }
-                });
-                opacityAnimators.put(name, animator);
+
+                animator.setIntValues(line.alpha, visible ? 0xFF : 0x00);
                 animator.start();
 
                 break;
