@@ -89,6 +89,8 @@ public class ChartView extends View {
     private int startIndex;
     private int endIndex;
 
+    private int selectedIndex = -1;
+
     private long minX;
     private long maxX;
 
@@ -226,6 +228,7 @@ public class ChartView extends View {
     private static final int DRAG_SELECTOR = 1;
     private static final int DRAG_START = 2;
     private static final int DRAG_END = 3;
+    private static final int DRAG_SELECTED_INDEX = 4;
     private int dragPointerId = -1;
     private int currentDrag = 0;
     private float selectorDragCenterOffset = 0f;
@@ -260,6 +263,11 @@ public class ChartView extends View {
                         movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
                         getParent().requestDisallowInterceptTouchEvent(true);
                     }
+                } else if (chartTitleHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight) {
+                    dragPointerId = pointerId;
+                    currentDrag = DRAG_SELECTED_INDEX;
+                    updateSelectedIndex(x);
+                    getParent().requestDisallowInterceptTouchEvent(true);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -284,6 +292,9 @@ public class ChartView extends View {
                         case DRAG_SELECTOR:
                             movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
                             break;
+                        case DRAG_SELECTED_INDEX:
+                            updateSelectedIndex(x);
+                            break;
                     }
                 }
                 break;
@@ -296,6 +307,11 @@ public class ChartView extends View {
         }
 
         return true;
+    }
+
+    private void updateSelectedIndex(float x) {
+        selectedIndex = (int) (startIndex + (endIndex - 1 - startIndex) * x);
+        invalidate();
     }
 
     private void movePeriodSelectorTo(float x, float selectorWidth) {
@@ -402,6 +418,16 @@ public class ChartView extends View {
 
 //        logMillis("dates");
 
+        final float wid = (maxX - minX) / drawingWidth;
+        final float hei = (maxY - minY) / chartHeight;
+        final float widP = (totalMaxX - totalMinX) / drawingWidth;
+        final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
+        final float dYP = chartHeight + datesHeight + periodSelectorHeight;
+        final int div = 2;
+
+        canvas.save();
+        canvas.translate(chartPadding, 0);
+
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
@@ -409,8 +435,6 @@ public class ChartView extends View {
                 linesPaint.setAlpha(line.alpha);
 
                 int q = 0;
-                final float wid = (maxX - minX) / drawingWidth;
-                final float hei = (maxY - minY) / chartHeight;
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = ((float) chartData.xValues[i] - minX) / wid;
                     final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
@@ -427,19 +451,12 @@ public class ChartView extends View {
 
                 linesPaint.setStrokeWidth(lineWidth);
 
-                canvas.save();
-                canvas.translate(chartPadding, 0);
                 linesPaint.setStrokeCap(Paint.Cap.SQUARE);
                 canvas.drawLines(points, linesPaint);
-                canvas.restore();
 
 //                logMillis("drawLines[]");
 
                 q = 0;
-                final float widP = (totalMaxX - totalMinX) / drawingWidth;
-                final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
-                final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-                final int div = 2;
                 for (int i = 0; i < chartData.xValues.length / div; i++) {
                     final int ii = i * div;
                     final float _x = ((float) chartData.xValues[ii] - totalMinX) / widP;
@@ -457,15 +474,35 @@ public class ChartView extends View {
 
                 linesPaint.setStrokeWidth(lineWidth / 2f);
 
-                canvas.save();
-                canvas.translate(chartPadding, 0);
                 linesPaint.setStrokeCap(Paint.Cap.BUTT);
                 canvas.drawLines(points, 0, q, linesPaint);
-                canvas.restore();
 
 //                logMillis("drawLines period");
             }
         }
+
+        if (selectedIndex >= 0) {
+            linesPaint.setStrokeWidth(lineWidth / 2f);
+            linesPaint.setColor(0x99CCCCCC);
+            final float _x = ((float) chartData.xValues[selectedIndex] - minX) / wid;
+            canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
+
+            linesPaint.setStrokeWidth(lineWidth);
+            periodPaint.setColor(Color.WHITE);
+            for (int c = 0; c < chartData.lines.size(); c++) {
+                final ChartData.Line line = chartData.lines.get(c);
+                if (line.isVisible()) {
+                    linesPaint.setColor(line.color);
+                    linesPaint.setAlpha(line.alpha);
+
+                    final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
+                    canvas.drawCircle(_x, _y, dp4, periodPaint);
+                    canvas.drawCircle(_x, _y, dp4, linesPaint);
+                }
+            }
+        }
+
+        canvas.restore();
 
         canvas.save();
         canvas.translate(chartPadding, chartHeight + datesHeight);
