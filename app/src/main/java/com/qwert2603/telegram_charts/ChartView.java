@@ -524,10 +524,12 @@ public class ChartView extends View {
             final int commonChars = Utils.commonEnd(prevDate, selectedDate);
             final String changeOfSelected = selectedDate.substring(0, selectedDate.length() - commonChars);
 
-            canvas.drawText(changeOfSelected, panelLeft, lineY + (1 - changeFraction) * dp12 * (isBack ? -1 : 1), titlePaint);
+            final float translationAppear = (1 - changeFraction) * dp12 * (isBack ? -1 : 1);
+            final float translationDisappear = -changeFraction * dp12 * (isBack ? -1 : 1);
+            canvas.drawText(changeOfSelected, panelLeft, lineY + translationAppear, titlePaint);
             if (prevSelectedIndex >= 0) {
                 titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
-                canvas.drawText(prevDate.substring(0, prevDate.length() - commonChars), panelLeft, lineY - changeFraction * dp12 * (isBack ? -1 : 1), titlePaint);
+                canvas.drawText(prevDate.substring(0, prevDate.length() - commonChars), panelLeft, lineY + translationDisappear, titlePaint);
             }
             titlePaint.setAlpha(0xFF);
 
@@ -549,13 +551,28 @@ public class ChartView extends View {
                 final ChartData.Line line = chartData.lines.get(c);
                 if (line.isVisibleOrWillBe) {
                     titlePaint.setColor(line.color);
+                    titlePaint.setAlpha((int) (0xFF * changeFraction));
                     lineY += lineHeight;
                     String formatY = formatY(line.values[selectedIndex]);
                     float valueWidth = titlePaint.measureText(formatY);
-                    canvas.drawText(formatY, panelRight - valueWidth, lineY, titlePaint);
+                    canvas.drawText(formatY, panelRight - valueWidth, lineY + translationAppear, titlePaint);
                 }
             }
-
+            if (prevSelectedIndex >= 0) {
+                lineY = lineHeight;
+                for (int c = 0; c < chartData.lines.size(); c++) {
+                    final ChartData.Line line = chartData.lines.get(c);
+                    if (line.isVisibleOrWillBe) {
+                        titlePaint.setColor(line.color);
+                        titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                        lineY += lineHeight;
+                        String formatY = formatY(line.values[prevSelectedIndex]);
+                        float valueWidth = titlePaint.measureText(formatY);
+                        canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, titlePaint);
+                    }
+                }
+            }
+            titlePaint.setAlpha(0xFF);
         }
 
         canvas.translate(0, chartHeight + datesHeight);
