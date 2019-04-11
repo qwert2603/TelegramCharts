@@ -30,7 +30,7 @@ public class ChartViewDelegate {
         float getWidth();
     }
 
-    private static final long ANIMATION_DURATION = 230L;
+    private static final long ANIMATION_DURATION = 200L;
 
     private final Resources resources;
     private final Context context;
