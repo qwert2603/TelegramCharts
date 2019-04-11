@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 
@@ -32,11 +33,13 @@ public class ChartViewDelegate {
     private static final long ANIMATION_DURATION = 230L;
 
     private final Resources resources;
+    private final Context context;
 
     private final Callbacks callbacks;
 
-    public ChartViewDelegate(Context context, String title, ChartData chartData, Callbacks callbacks) {
+    public ChartViewDelegate(Context context, String title, final ChartData chartData, Callbacks callbacks) {
         this.callbacks = callbacks;
+        this.context = context;
         this.resources = context.getResources();
 
         this.title = title;
@@ -96,11 +99,40 @@ public class ChartViewDelegate {
         chipPadding = dp12 + dp12;
         chipTextSize = dp12 + dp2;
         chipHeight = chipPadding + chipTextSize;
+
+        gestureDetector = new GestureDetector(this.context, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
+                    for (ChartData.Line line : chartData.lines) {
+                        if (line.rectOnScreen.contains(e.getX(), e.getY())) {
+                            setLineVisible(line.name, !line.isVisibleOrWillBe);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+                if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
+                    for (ChartData.Line line : chartData.lines) {
+                        if (line.rectOnScreen.contains(e.getX(), e.getY())) {
+                            setOnlyOneLineVisible(line.name);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private Resources getResources() {
         return resources;
     }
+
+    private final GestureDetector gestureDetector;
 
     private final float chartHeight;
     private final float datesHeight;
@@ -188,11 +220,40 @@ public class ChartViewDelegate {
         return (int) (currentLineY + chipHeight + chipMargin);
     }
 
-    public void setLineVisible(String name, boolean visible) {
+    private void setOnlyOneLineVisible(String name) {
+        for (final ChartData.Line line : chartData.lines) {
+            final boolean visible = line.name.equals(name);
+
+            ValueAnimator animator = opacityAnimators.get(line.name);
+            if (animator == null) {
+                animator = ValueAnimator
+                        .ofInt(0x00)
+                        .setDuration(ANIMATION_DURATION);
+                animator.setInterpolator(new DecelerateInterpolator());
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        line.alpha = (int) animation.getAnimatedValue();
+                        callbacks.invalidate();
+                    }
+                });
+                opacityAnimators.put(line.name, animator);
+            }
+
+            line.isVisibleOrWillBe = visible;
+
+            animator.setIntValues(line.alpha, visible ? 0xFF : 0x00);
+            animator.start();
+        }
+
+        animateMaxY();
+    }
+
+    void setLineVisible(String name, boolean visible) {
         for (final ChartData.Line line : chartData.lines) {
             if (line.name.equals(name)) {
 
-                ValueAnimator animator = opacityAnimators.get(name);
+                ValueAnimator animator = opacityAnimators.get(line.name);
                 if (animator == null) {
                     animator = ValueAnimator
                             .ofInt(0x00)
@@ -205,7 +266,7 @@ public class ChartViewDelegate {
                             callbacks.invalidate();
                         }
                     });
-                    opacityAnimators.put(name, animator);
+                    opacityAnimators.put(line.name, animator);
                 }
 
                 line.isVisibleOrWillBe = visible;
@@ -315,6 +376,7 @@ public class ChartViewDelegate {
     private float selectorDragCenterOffset = 0f;
 
     public boolean onTouchEvent(MotionEvent event) {
+        gestureDetector.onTouchEvent(event);
 
         final int pointerId = event.getPointerId(event.getActionIndex());
 
@@ -348,14 +410,6 @@ public class ChartViewDelegate {
                     currentDrag = DRAG_SELECTED_INDEX;
                     updateSelectedIndex(x);
                     callbacks.requestDisallowInterceptTouchEvent();
-                } else if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < event.getY()) {
-                    for (ChartData.Line line : chartData.lines) {
-                        if (line.rectOnScreen.contains(event.getX(), event.getY())) {
-                            setLineVisible(line.name, !line.isVisibleOrWillBe);
-                            callbacks.requestDisallowInterceptTouchEvent();
-                            break;
-                        }
-                    }
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
