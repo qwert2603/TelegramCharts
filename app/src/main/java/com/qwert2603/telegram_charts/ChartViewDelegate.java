@@ -82,9 +82,18 @@ public class ChartViewDelegate {
         dp4 = getResources().getDimension(R.dimen.dp4);
         dp6 = getResources().getDimension(R.dimen.dp6);
         dp8 = getResources().getDimension(R.dimen.dp8);
-        fillRadius = dp4;
+
+        // period selector
+        final float fillRadius = dp4;
         radiiLeft = new float[]{fillRadius, fillRadius, 0, 0, 0, 0, fillRadius, fillRadius};
         radiiRight = new float[]{0, 0, fillRadius, fillRadius, fillRadius, fillRadius, 0, 0};
+
+        //chips
+        chipsMarginTop = dp6;
+        cheapMargin = dp12;
+        cheapPadding = dp12 + dp12;
+        cheapTextSize = dp12 + dp2;
+        cheapHeight = cheapPadding + cheapTextSize;
     }
 
     private Resources getResources() {
@@ -104,9 +113,12 @@ public class ChartViewDelegate {
     private final float dp6;
     private final float dp8;
     private final float dp12;
+    private final float chipsMarginTop;
+    private final float cheapMargin;
+    private final float cheapTextSize;
+    private final float cheapPadding;
+    private final float cheapHeight;
 
-    // period selector
-    private final float fillRadius;
     private final Path path = new Path();
     private final float[] radiiLeft;
     private final float[] radiiRight;
@@ -151,6 +163,28 @@ public class ChartViewDelegate {
     private ValueAnimator selectedIndexAnimator;
 
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
+
+    public int measureHeight() {
+        final float drawingWidth = getDrawingWidth();
+        float currentLineX = chartPadding;
+        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + cheapMargin;
+        titlePaint.setTextSize(cheapTextSize);
+        for (int c = 0; c < chartData.lines.size(); c++) {
+            final ChartData.Line line = chartData.lines.get(c);
+            float textWidth = titlePaint.measureText(line.name);
+            float cheapWidth = textWidth + 2 * cheapPadding;
+
+            if (cheapWidth > drawingWidth - currentLineX) {
+                currentLineX = chartPadding;
+                currentLineY += cheapHeight + cheapMargin;
+            }
+
+            currentLineX += cheapWidth + cheapMargin;
+        }
+
+        // plus last chips line.
+        return (int) (currentLineY + cheapHeight + cheapMargin);
+    }
 
     public void setLineVisible(String name, boolean visible) {
         for (final ChartData.Line line : chartData.lines) {
@@ -312,6 +346,14 @@ public class ChartViewDelegate {
                     currentDrag = DRAG_SELECTED_INDEX;
                     updateSelectedIndex(x);
                     callbacks.requestDisallowInterceptTouchEvent();
+                } else if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < event.getY()) {
+                    for (ChartData.Line line : chartData.lines) {
+                        if (line.rectOnScreen.contains(event.getX(), event.getY())) {
+                            setLineVisible(line.name, !line.isVisibleOrWillBe);
+                            callbacks.requestDisallowInterceptTouchEvent();
+                            break;
+                        }
+                    }
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -397,7 +439,9 @@ public class ChartViewDelegate {
         setPeriodIndices(newStartIndex, newEndIndex);
     }
 
-    protected void onDraw(Canvas canvas) {
+    public void onDraw(Canvas canvas) {
+
+        canvas.save();
 
         titlePaint.setColor(Color.BLACK);
         titlePaint.setTextSize(dp12 + dp4);
@@ -409,7 +453,7 @@ public class ChartViewDelegate {
 
         canvas.translate(0, chartTitleHeight);
 
-        float drawingWidth = callbacks.getWidth() - 2 * chartPadding;
+        final float drawingWidth = getDrawingWidth();
 
         linesPaint.setStrokeWidth(lineWidth / 2f);
         linesPaint.setColor(0x99CCCCCC);
@@ -668,6 +712,42 @@ public class ChartViewDelegate {
                 dp2,
                 periodPaint
         );
+
+        canvas.restore();
+
+        titlePaint.setColor(Color.WHITE);
+        titlePaint.setTextSize(cheapTextSize);
+        final float cheapCornerRadius = dp12 * 4;
+        float currentLineX = chartPadding;
+        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + cheapMargin;
+        for (int c = 0; c < chartData.lines.size(); c++) {
+            final ChartData.Line line = chartData.lines.get(c);
+            float textWidth = titlePaint.measureText(line.name);
+            float cheapWidth = textWidth + 2 * cheapPadding;
+
+            if (cheapWidth > drawingWidth - currentLineX) {
+                currentLineX = chartPadding;
+                currentLineY += cheapHeight + cheapMargin;
+            }
+
+            line.rectOnScreen.set(currentLineX, currentLineY, currentLineX + cheapWidth, currentLineY + cheapHeight);
+
+            if (line.isVisibleOrWillBe) {
+                periodPaint.setColor(line.color);
+                canvas.drawRoundRect(line.rectOnScreen, cheapCornerRadius, cheapCornerRadius, periodPaint);
+            }
+            linesPaint.setColor(line.color);
+            canvas.drawRoundRect(line.rectOnScreen, cheapCornerRadius, cheapCornerRadius, linesPaint);
+
+            titlePaint.setColor(line.isVisibleOrWillBe ? Color.WHITE : line.color);
+            canvas.drawText(line.name, currentLineX + cheapPadding, currentLineY + cheapPadding, titlePaint);
+
+            currentLineX += cheapWidth + cheapMargin;
+        }
+    }
+
+    private float getDrawingWidth() {
+        return callbacks.getWidth() - 2 * chartPadding;
     }
 
     public static String formatY(int y) {

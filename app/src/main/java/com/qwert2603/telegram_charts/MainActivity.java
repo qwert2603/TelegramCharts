@@ -31,24 +31,8 @@ public class MainActivity extends Activity {
 
             final ChartData chartData = chartDataList.get(i);
             final ChartCustomView chartView = new ChartCustomView(this, "Chart #" + i, chartData);
-            int chartHeight = (int) getResources().getDimension(R.dimen.chart_view_height);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartHeight);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartView.measureHeight());
             view.addView(chartView, layoutParams);
-
-            for (final ChartData.Line line : chartData.lines) {
-                CheckBox checkBox = (CheckBox) getLayoutInflater().inflate(R.layout.item_checkbox, view, false);
-                view.addView(checkBox);
-                checkBox.setText(line.name);
-                checkBox.setTextColor(line.color);
-//   todo             checkBox.setButtonTintList(ColorStateList.valueOf(line.color));
-                checkBox.setChecked(true);
-                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        chartView.setLineVisible(line.name, isChecked);
-                    }
-                });
-            }
 
             LinearLayout.LayoutParams qLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.dp12) * 2);
             View child = new View(this);
@@ -93,10 +77,3 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 }
-
-
-/*
- * чекбоксы chips
- * ночной режим
- * обработка ситуации, когда все линии отключены
- */

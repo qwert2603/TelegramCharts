@@ -27,7 +27,7 @@ public class ChartCustomView extends View {
 
             @Override
             public float getWidth() {
-                return ChartCustomView.this.getWidth();
+                return getResources().getDisplayMetrics().widthPixels;
             }
         });
     }
@@ -45,5 +45,9 @@ public class ChartCustomView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         chartViewDelegate.onDraw(canvas);
+    }
+
+    public int measureHeight() {
+        return chartViewDelegate.measureHeight();
     }
 }

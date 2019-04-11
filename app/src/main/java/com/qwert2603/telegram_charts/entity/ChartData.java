@@ -1,5 +1,7 @@
 package com.qwert2603.telegram_charts.entity;
 
+import android.graphics.RectF;
+
 import java.util.List;
 
 public class ChartData {
@@ -16,6 +18,8 @@ public class ChartData {
         }
 
         public boolean isVisibleOrWillBe = true;
+
+        public final RectF rectOnScreen = new RectF();
     }
 
     public long[] xValues;
