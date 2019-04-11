@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 
@@ -90,10 +91,10 @@ public class ChartViewDelegate {
 
         //chips
         chipsMarginTop = dp6;
-        cheapMargin = dp12;
-        cheapPadding = dp12 + dp12;
-        cheapTextSize = dp12 + dp2;
-        cheapHeight = cheapPadding + cheapTextSize;
+        chipMargin = dp12;
+        chipPadding = dp12 + dp12;
+        chipTextSize = dp12 + dp2;
+        chipHeight = chipPadding + chipTextSize;
     }
 
     private Resources getResources() {
@@ -114,10 +115,10 @@ public class ChartViewDelegate {
     private final float dp8;
     private final float dp12;
     private final float chipsMarginTop;
-    private final float cheapMargin;
-    private final float cheapTextSize;
-    private final float cheapPadding;
-    private final float cheapHeight;
+    private final float chipMargin;
+    private final float chipTextSize;
+    private final float chipPadding;
+    private final float chipHeight;
 
     private final Path path = new Path();
     private final float[] radiiLeft;
@@ -167,23 +168,23 @@ public class ChartViewDelegate {
     public int measureHeight() {
         final float drawingWidth = getDrawingWidth();
         float currentLineX = chartPadding;
-        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + cheapMargin;
-        titlePaint.setTextSize(cheapTextSize);
+        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
+        titlePaint.setTextSize(chipTextSize);
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
             float textWidth = titlePaint.measureText(line.name);
-            float cheapWidth = textWidth + 2 * cheapPadding;
+            float chipWidth = textWidth + 2 * chipPadding;
 
-            if (cheapWidth > drawingWidth - currentLineX) {
+            if (chipWidth > drawingWidth - currentLineX) {
                 currentLineX = chartPadding;
-                currentLineY += cheapHeight + cheapMargin;
+                currentLineY += chipHeight + chipMargin;
             }
 
-            currentLineX += cheapWidth + cheapMargin;
+            currentLineX += chipWidth + chipMargin;
         }
 
         // plus last chips line.
-        return (int) (currentLineY + cheapHeight + cheapMargin);
+        return (int) (currentLineY + chipHeight + chipMargin);
     }
 
     public void setLineVisible(String name, boolean visible) {
@@ -716,33 +717,45 @@ public class ChartViewDelegate {
         canvas.restore();
 
         titlePaint.setColor(Color.WHITE);
-        titlePaint.setTextSize(cheapTextSize);
-        final float cheapCornerRadius = dp12 * 4;
+        titlePaint.setTextSize(chipTextSize);
+        final float chipCornerRadius = dp12 * 4;
         float currentLineX = chartPadding;
-        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + cheapMargin;
+        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
             float textWidth = titlePaint.measureText(line.name);
-            float cheapWidth = textWidth + 2 * cheapPadding;
+            float chipWidth = textWidth + 2 * chipPadding;
 
-            if (cheapWidth > drawingWidth - currentLineX) {
+            if (chipWidth > drawingWidth - currentLineX) {
                 currentLineX = chartPadding;
-                currentLineY += cheapHeight + cheapMargin;
+                currentLineY += chipHeight + chipMargin;
             }
 
-            line.rectOnScreen.set(currentLineX, currentLineY, currentLineX + cheapWidth, currentLineY + cheapHeight);
+            line.rectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
 
             if (line.isVisibleOrWillBe) {
                 periodPaint.setColor(line.color);
-                canvas.drawRoundRect(line.rectOnScreen, cheapCornerRadius, cheapCornerRadius, periodPaint);
+                canvas.drawRoundRect(line.rectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
+
+                Drawable drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+                final int checkLeft = (int) (line.rectOnScreen.left + chipPadding / 2 - dp2);
+                final int checkTop = (int) (line.rectOnScreen.top + chipPadding / 4 + dp2);
+                drawableCheck.setBounds(
+                        checkLeft,
+                        checkTop,
+                        checkLeft + drawableCheck.getIntrinsicWidth(),
+                        checkTop + drawableCheck.getIntrinsicHeight()
+                );
+                drawableCheck.draw(canvas);
             }
             linesPaint.setColor(line.color);
-            canvas.drawRoundRect(line.rectOnScreen, cheapCornerRadius, cheapCornerRadius, linesPaint);
+            canvas.drawRoundRect(line.rectOnScreen, chipCornerRadius, chipCornerRadius, linesPaint);
 
             titlePaint.setColor(line.isVisibleOrWillBe ? Color.WHITE : line.color);
-            canvas.drawText(line.name, currentLineX + cheapPadding, currentLineY + cheapPadding, titlePaint);
+            float textTransitionX = line.isVisibleOrWillBe ? chipPadding / 4 + dp2 : 0;
+            canvas.drawText(line.name, currentLineX + chipPadding + textTransitionX, currentLineY + chipPadding, titlePaint);
 
-            currentLineX += cheapWidth + cheapMargin;
+            currentLineX += chipWidth + chipMargin;
         }
     }
 
