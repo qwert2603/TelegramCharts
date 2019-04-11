@@ -1,9 +1,11 @@
 package com.qwert2603.telegram_charts;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
+import android.os.Build;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -11,6 +13,7 @@ import android.view.TextureView;
 
 import com.qwert2603.telegram_charts.entity.ChartData;
 
+@TargetApi(Build.VERSION_CODES.M)
 public class ChartTextureView extends TextureView {
 
     private final ChartViewDelegate chartViewDelegate;
