@@ -1,6 +1,7 @@
 package telegram_charts;
 
 import com.qwert2603.telegram_charts.ChartView;
+import com.qwert2603.telegram_charts.Utils;
 
 import org.junit.Test;
 
@@ -25,5 +26,14 @@ public class ChartViewTest {
         assertEquals("2.0M", ChartView.formatY(2009999));
         assertEquals("1.0M", ChartView.formatY(1053869));
         assertEquals("3.0M", ChartView.formatY(3053869));
+    }
+
+    @Test
+    public void t2() {
+        assertEquals(0, Utils.commonEnd("12 фев. 2018", "12 мар. 2019"));
+        assertEquals(4, Utils.commonEnd("12 фев. 2019", "12 мар. 2019"));
+        assertEquals(9, Utils.commonEnd("23 фев. 2019", "12 фев. 2019"));
+        assertEquals(9, Utils.commonEnd("23 фев. 2019", "24 фев. 2019"));
+        assertEquals(12, Utils.commonEnd("24 фев. 2019", "24 фев. 2019"));
     }
 }

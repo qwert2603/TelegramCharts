@@ -468,6 +468,8 @@ public class ChartView extends View {
         }
 
         if (selectedIndex >= 0) {
+            final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
+
             linesPaint.setStrokeWidth(lineWidth / 2f);
             linesPaint.setColor(0x99CCCCCC);
             final float _x = ((float) chartData.xValues[selectedIndex] - minX) / wid;
@@ -514,15 +516,22 @@ public class ChartView extends View {
 
             lineY = lineHeight;
 
-            final float fraction = selectedIndexAnimator.getAnimatedFraction();
-            titlePaint.setAlpha((int) (0xFF * fraction));
+            titlePaint.setAlpha((int) (0xFF * changeFraction));
             final boolean isBack = selectedIndex < prevSelectedIndex;
-            canvas.drawText(chartData.selectedDates[selectedIndex], panelLeft, lineY + (1 - fraction) * dp12 * (isBack ? -1 : 1), titlePaint);
+            final String selectedDate = chartData.selectedDates[selectedIndex];
+            final String prevDate = prevSelectedIndex >= 0 ? chartData.selectedDates[prevSelectedIndex] : selectedDate;
+
+            final int commonChars = Utils.commonEnd(prevDate, selectedDate);
+            final String changeOfSelected = selectedDate.substring(0, selectedDate.length() - commonChars);
+
+            canvas.drawText(changeOfSelected, panelLeft, lineY + (1 - changeFraction) * dp12 * (isBack ? -1 : 1), titlePaint);
             if (prevSelectedIndex >= 0) {
-                titlePaint.setAlpha(0XFF - (int) (0xFF * fraction));
-                canvas.drawText(chartData.selectedDates[prevSelectedIndex], panelLeft, lineY - fraction * dp12 * (isBack ? -1 : 1), titlePaint);
+                titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                canvas.drawText(prevDate.substring(0, prevDate.length() - commonChars), panelLeft, lineY - changeFraction * dp12 * (isBack ? -1 : 1), titlePaint);
             }
             titlePaint.setAlpha(0xFF);
+
+            canvas.drawText(selectedDate.substring(selectedDate.length() - commonChars), panelLeft + titlePaint.measureText(changeOfSelected), lineY, titlePaint);
 
             titlePaint.setTypeface(Typeface.DEFAULT);
             for (int c = 0; c < chartData.lines.size(); c++) {

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
-import android.view.View;
 
 public class Canvas2Activity extends Activity {
     public static String TAG = "CanvasActivity";
