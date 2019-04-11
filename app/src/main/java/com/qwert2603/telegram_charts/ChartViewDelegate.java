@@ -29,7 +29,7 @@ public class ChartViewDelegate {
         float getWidth();
     }
 
-    private static final long ANIMATION_DURATION = 200L;
+    private static final long ANIMATION_DURATION = 230L;
 
     private final Resources resources;
 
@@ -48,6 +48,7 @@ public class ChartViewDelegate {
         points = new float[(chartData.xValues.length - 1) * 4];
 
         periodPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodPaint.setStyle(Paint.Style.FILL);
 
         setPeriodIndices(0, chartData.xValues.length);
 
@@ -85,7 +86,7 @@ public class ChartViewDelegate {
         dp8 = getResources().getDimension(R.dimen.dp8);
 
         // period selector
-        final float fillRadius = dp4;
+        final float fillRadius = dp6;
         radiiLeft = new float[]{fillRadius, fillRadius, 0, 0, 0, 0, fillRadius, fillRadius};
         radiiRight = new float[]{0, 0, fillRadius, fillRadius, fillRadius, fillRadius, 0, 0};
 
@@ -444,7 +445,7 @@ public class ChartViewDelegate {
 
         canvas.save();
 
-        titlePaint.setColor(Color.BLACK);
+        titlePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
         titlePaint.setTextSize(dp12 + dp4);
         canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
         titlePaint.setTextSize(dp12 + dp2);
@@ -457,10 +458,11 @@ public class ChartViewDelegate {
         final float drawingWidth = getDrawingWidth();
 
         linesPaint.setStrokeWidth(lineWidth / 2f);
-        linesPaint.setColor(0x99CCCCCC);
+        linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
+        textPaint.setColor(MainActivity.NIGHT_MODE ? 0x80FFFFFF : 0x80182D3B);
 
-        linesPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0xFF));
-        textPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0xFF));
+        linesPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0x19));
+        textPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0x80));
 
         for (int i = 0; i < HOR_LINES; i++) {
             float y = (1 - (stepY * i / maxY)) * chartHeight;
@@ -468,8 +470,8 @@ public class ChartViewDelegate {
             canvas.drawText(formattedYSteps[i], chartPadding, y - dp6, textPaint);
         }
         if (prevStepY > 0) {
-            linesPaint.setAlpha((int) (0xFF - maxYAnimator.getAnimatedFraction() * 0xFF));
-            textPaint.setAlpha((int) (0xFF - maxYAnimator.getAnimatedFraction() * 0xFF));
+            linesPaint.setAlpha((int) (0x19 - maxYAnimator.getAnimatedFraction() * 0x19));
+            textPaint.setAlpha((int) (0x80 - maxYAnimator.getAnimatedFraction() * 0x80));
 
             for (int i = 0; i < HOR_LINES; i++) {
                 float y = (1 - (prevStepY * i / maxY)) * chartHeight;
@@ -478,14 +480,11 @@ public class ChartViewDelegate {
             }
         }
 
-        linesPaint.setAlpha(0xFF);
-        textPaint.setAlpha(0xFF);
-
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
-        int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
+        int oddDatesAlpha = 0x80 - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0x80);
         for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
             float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
-            textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0xFF : oddDatesAlpha);
+            textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0x80 : oddDatesAlpha);
             final float dateTextWidth = textPaint.measureText(chartData.dates[i * stepX]);
             canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp2, textPaint);
         }
@@ -552,7 +551,7 @@ public class ChartViewDelegate {
                 final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
                 linesPaint.setStrokeWidth(lineWidth / 2f);
-                linesPaint.setColor(0x99CCCCCC);
+                linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
                 canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
 
                 final boolean panelLefted = _x < callbacks.getWidth() / 2 - chartPadding;
@@ -563,7 +562,7 @@ public class ChartViewDelegate {
                 final float panelRight = panelAnchor + (panelLefted ? dp12 * 11 : dp12 * 1);
 
                 linesPaint.setStrokeWidth(lineWidth);
-                periodPaint.setColor(Color.WHITE);
+                periodPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 
                 final float lineHeight = dp12 * 2;
                 float lineY = lineHeight;
@@ -665,8 +664,7 @@ public class ChartViewDelegate {
         float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
         float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
 
-        periodPaint.setStyle(Paint.Style.FILL);
-        periodPaint.setColor(0x18000000);
+        periodPaint.setColor(MainActivity.NIGHT_MODE ? 0x99304259 : 0x99E2EEF9);
 
         final float borderHor = dp2 / 2;
         final float borderVer = dp12;
@@ -679,7 +677,7 @@ public class ChartViewDelegate {
         canvas.drawPath(path, periodPaint);
         path.rewind();
 
-        periodPaint.setColor(0x88000000);
+        periodPaint.setColor(MainActivity.NIGHT_MODE ? 0x996F899E : 0x8086A9C4);
 
         // horizontal borders
         canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodPaint);
