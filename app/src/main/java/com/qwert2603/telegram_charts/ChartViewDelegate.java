@@ -590,11 +590,11 @@ public class ChartViewDelegate {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
                         titlePaint.setColor(line.color);
-                        titlePaint.setAlpha((int) (0xFF * changeFraction));
+                        titlePaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
                         lineY += lineHeight;
                         String formatY = formatY(line.values[selectedIndex]);
                         float valueWidth = titlePaint.measureText(formatY);
-                        canvas.drawText(formatY, panelRight - valueWidth, lineY + translationAppear, titlePaint);
+                        canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), titlePaint);
                     }
                 }
                 if (prevSelectedIndex >= 0) {
