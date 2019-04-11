@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Surface;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 
@@ -39,18 +40,19 @@ public class Canvas2Activity extends Activity {
             Paint paint = new Paint();
             paint.setColor(0xff00ff00);
 
+            Surface surface = new Surface(mTextureView.getSurfaceTexture());
+
             while (mRunning && !Thread.interrupted()) {
-                final Canvas canvas = mTextureView.lockCanvas(null);
+                final Canvas canvas = surface.lockHardwareCanvas();
                 try {
                     canvas.drawColor(0x00000000, PorterDuff.Mode.CLEAR);
                     canvas.drawRect(x, y, x + 20.0f, y + 20.0f, paint);
-
-                    LogUtils.d("qqqq 1 " + canvas.isHardwareAccelerated());
+                    long nanoTime = System.nanoTime();
 
                     int q = 0;
                     for (int i = 0; i < floats.length / 4; i++) {
                         final float _x = i % 2 == 0 ? i / 10f : 600;
-                        final float _y = i / 20f;
+                        final float _y = i / 10f;
 
                         floats[q++] = _x;
                         floats[q++] = _y;
@@ -59,12 +61,16 @@ public class Canvas2Activity extends Activity {
                             floats[q++] = _y;
                         }
                     }
-                    LogUtils.d("qqqq 2");
                     canvas.drawLines(floats, paint);
-                    LogUtils.d("qqqq 3");
+
+                    for (int i = 0; i < 100; i++) {
+                        canvas.drawText("qazwsx", i, i +300, paint);
+                    }
+
+                    LogUtils.d("onDraw " + (System.nanoTime() - nanoTime) / 1000000f + " " + canvas.isHardwareAccelerated());
 
                 } finally {
-                    mTextureView.unlockCanvasAndPost(canvas);
+                    surface.unlockCanvasAndPost(canvas);
                 }
 
                 if (x + 20.0f + speedX >= mTextureView.getWidth()
@@ -80,11 +86,13 @@ public class Canvas2Activity extends Activity {
                 y += speedY;
 
                 try {
-                    Thread.sleep(1);
+                    Thread.sleep(15);
                 } catch (InterruptedException e) {
 //                     Interrupted
                 }
             }
+
+            surface.release();
         }
 
         public void stopRendering() {
