@@ -73,7 +73,6 @@ public class ChartViewDelegate {
         titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setColor(Color.BLACK);
         titlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
 
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
@@ -499,6 +498,7 @@ public class ChartViewDelegate {
 
         canvas.save();
 
+        titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
         titlePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
         titlePaint.setTextSize(dp12 + dp4);
         canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
