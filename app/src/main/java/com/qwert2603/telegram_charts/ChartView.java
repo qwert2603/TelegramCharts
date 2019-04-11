@@ -468,111 +468,119 @@ public class ChartView extends View {
         }
 
         if (selectedIndex >= 0) {
-            final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
-            linesPaint.setStrokeWidth(lineWidth / 2f);
-            linesPaint.setColor(0x99CCCCCC);
             final float _x = ((float) chartData.xValues[selectedIndex] - minX) / wid;
-            final boolean panelLefted = _x < getWidth() / 2 - chartPadding;
-            final float panelLeft = _x + (panelLefted ? dp12 * -1 : dp12 * -11);
-            final float panelRight = _x + (panelLefted ? dp12 * 11 : dp12 * 1);
-            canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
 
-            linesPaint.setStrokeWidth(lineWidth);
-            periodPaint.setColor(Color.WHITE);
+            if (-chartPadding < _x && _x < getWidth() - chartPadding) {
+                final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
-            final float lineHeight = dp12 * 2;
-            float lineY = lineHeight;
+                linesPaint.setStrokeWidth(lineWidth / 2f);
+                linesPaint.setColor(0x99CCCCCC);
+                canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
 
-            for (int c = 0; c < chartData.lines.size(); c++) {
-                final ChartData.Line line = chartData.lines.get(c);
-                if (line.isVisibleOrWillBe) {
-                    linesPaint.setColor(line.color);
-                    linesPaint.setAlpha(line.alpha);
+                final boolean panelLefted = _x < getWidth() / 2 - chartPadding;
+                final float prevX = prevSelectedIndex >= 0 ? ((float) chartData.xValues[prevSelectedIndex] - minX) / wid : _x;
+                final float panelAnchor = _x + (prevX - _x) * (1 - changeFraction);
 
-                    final float _y = chartHeight - ((float) line.values[selectedIndex] - 0/*minY*/) / hei;
-                    canvas.drawCircle(_x, _y, dp4, periodPaint);
-                    canvas.drawCircle(_x, _y, dp4, linesPaint);
+                final float panelLeft = panelAnchor + (panelLefted ? dp12 * -1 : dp12 * -11);
+                final float panelRight = panelAnchor + (panelLefted ? dp12 * 11 : dp12 * 1);
 
-                    lineY += lineHeight;
+                linesPaint.setStrokeWidth(lineWidth);
+                periodPaint.setColor(Color.WHITE);
+
+                final float lineHeight = dp12 * 2;
+                float lineY = lineHeight;
+
+                for (int c = 0; c < chartData.lines.size(); c++) {
+                    final ChartData.Line line = chartData.lines.get(c);
+                    if (line.isVisibleOrWillBe) {
+                        linesPaint.setColor(line.color);
+                        linesPaint.setAlpha(line.alpha);
+
+                        final float _y = chartHeight - ((float) line.values[selectedIndex] - 0/*minY*/) / hei;
+                        canvas.drawCircle(_x, _y, dp4, periodPaint);
+                        canvas.drawCircle(_x, _y, dp4, linesPaint);
+
+                        lineY += lineHeight;
+                    }
                 }
-            }
 
-            final float panelPadding = dp12;
-            canvas.drawRoundRect(
-                    panelLeft - panelPadding,
-                    0,
-                    panelRight + panelPadding,
-                    lineY + panelPadding,
-                    dp4, dp4, periodPaint);
-            linesPaint.setStrokeWidth(lineWidth / 2f);
-            linesPaint.setColor(0x99CCCCCC);
-            canvas.drawRoundRect(
-                    panelLeft - panelPadding,
-                    0,
-                    panelRight + panelPadding,
-                    lineY + panelPadding,
-                    dp4, dp4, linesPaint);
+                final float panelPadding = dp12;
+                canvas.drawRoundRect(
+                        panelLeft - panelPadding,
+                        0,
+                        panelRight + panelPadding,
+                        lineY + panelPadding,
+                        dp4, dp4, periodPaint);
+                linesPaint.setStrokeWidth(lineWidth / 2f);
+                linesPaint.setColor(0x99CCCCCC);
+                canvas.drawRoundRect(
+                        panelLeft - panelPadding,
+                        0,
+                        panelRight + panelPadding,
+                        lineY + panelPadding,
+                        dp4, dp4, linesPaint);
 
-            lineY = lineHeight;
-
-            titlePaint.setAlpha((int) (0xFF * changeFraction));
-            final boolean isBack = selectedIndex < prevSelectedIndex;
-            final String selectedDate = chartData.selectedDates[selectedIndex];
-            final String prevDate = prevSelectedIndex >= 0 ? chartData.selectedDates[prevSelectedIndex] : selectedDate;
-
-            final int commonChars = Utils.commonEnd(prevDate, selectedDate);
-            final String changeOfSelected = selectedDate.substring(0, selectedDate.length() - commonChars);
-
-            final float translationAppear = (1 - changeFraction) * dp12 * (isBack ? -1 : 1);
-            final float translationDisappear = -changeFraction * dp12 * (isBack ? -1 : 1);
-            canvas.drawText(changeOfSelected, panelLeft, lineY + translationAppear, titlePaint);
-            if (prevSelectedIndex >= 0) {
-                titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
-                canvas.drawText(prevDate.substring(0, prevDate.length() - commonChars), panelLeft, lineY + translationDisappear, titlePaint);
-            }
-            titlePaint.setAlpha(0xFF);
-
-            canvas.drawText(selectedDate.substring(selectedDate.length() - commonChars), panelLeft + titlePaint.measureText(changeOfSelected), lineY, titlePaint);
-
-            titlePaint.setTypeface(Typeface.DEFAULT);
-            for (int c = 0; c < chartData.lines.size(); c++) {
-                final ChartData.Line line = chartData.lines.get(c);
-                if (line.isVisibleOrWillBe) {
-                    lineY += lineHeight;
-                    canvas.drawText(line.name, panelLeft, lineY, titlePaint);
-                }
-            }
-            titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
-
-            lineY = lineHeight;
-
-            for (int c = 0; c < chartData.lines.size(); c++) {
-                final ChartData.Line line = chartData.lines.get(c);
-                if (line.isVisibleOrWillBe) {
-                    titlePaint.setColor(line.color);
-                    titlePaint.setAlpha((int) (0xFF * changeFraction));
-                    lineY += lineHeight;
-                    String formatY = formatY(line.values[selectedIndex]);
-                    float valueWidth = titlePaint.measureText(formatY);
-                    canvas.drawText(formatY, panelRight - valueWidth, lineY + translationAppear, titlePaint);
-                }
-            }
-            if (prevSelectedIndex >= 0) {
                 lineY = lineHeight;
+
+                titlePaint.setAlpha((int) (0xFF * changeFraction));
+                final boolean isBack = selectedIndex < prevSelectedIndex;
+                final String selectedDate = chartData.selectedDates[selectedIndex];
+                final String prevDate = prevSelectedIndex >= 0 ? chartData.selectedDates[prevSelectedIndex] : selectedDate;
+
+                final int commonChars = Utils.commonEnd(prevDate, selectedDate);
+                final String changeOfSelected = selectedDate.substring(0, selectedDate.length() - commonChars);
+
+                final float translationAppear = (1 - changeFraction) * dp12 * (isBack ? -1 : 1);
+                final float translationDisappear = -changeFraction * dp12 * (isBack ? -1 : 1);
+                canvas.drawText(changeOfSelected, panelLeft, lineY + translationAppear, titlePaint);
+                if (prevSelectedIndex >= 0) {
+                    titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                    canvas.drawText(prevDate.substring(0, prevDate.length() - commonChars), panelLeft, lineY + translationDisappear, titlePaint);
+                }
+                titlePaint.setAlpha(0xFF);
+
+                canvas.drawText(selectedDate.substring(selectedDate.length() - commonChars), panelLeft + titlePaint.measureText(changeOfSelected), lineY, titlePaint);
+
+                titlePaint.setTypeface(Typeface.DEFAULT);
+                for (int c = 0; c < chartData.lines.size(); c++) {
+                    final ChartData.Line line = chartData.lines.get(c);
+                    if (line.isVisibleOrWillBe) {
+                        lineY += lineHeight;
+                        canvas.drawText(line.name, panelLeft, lineY, titlePaint);
+                    }
+                }
+                titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
+
+                lineY = lineHeight;
+
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
                         titlePaint.setColor(line.color);
-                        titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                        titlePaint.setAlpha((int) (0xFF * changeFraction));
                         lineY += lineHeight;
-                        String formatY = formatY(line.values[prevSelectedIndex]);
+                        String formatY = formatY(line.values[selectedIndex]);
                         float valueWidth = titlePaint.measureText(formatY);
-                        canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, titlePaint);
+                        canvas.drawText(formatY, panelRight - valueWidth, lineY + translationAppear, titlePaint);
                     }
                 }
+                if (prevSelectedIndex >= 0) {
+                    lineY = lineHeight;
+                    for (int c = 0; c < chartData.lines.size(); c++) {
+                        final ChartData.Line line = chartData.lines.get(c);
+                        if (line.isVisibleOrWillBe) {
+                            titlePaint.setColor(line.color);
+                            titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                            lineY += lineHeight;
+                            String formatY = formatY(line.values[prevSelectedIndex]);
+                            float valueWidth = titlePaint.measureText(formatY);
+                            canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, titlePaint);
+                        }
+                    }
+                }
+                titlePaint.setAlpha(0xFF);
             }
-            titlePaint.setAlpha(0xFF);
         }
 
         canvas.translate(0, chartHeight + datesHeight);
