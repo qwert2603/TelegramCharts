@@ -589,7 +589,7 @@ public class ChartViewDelegate {
                         lineY + panelPadding,
                         dp4, dp4, periodPaint);
                 linesPaint.setStrokeWidth(lineWidth / 2f);
-                linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x99000000 : 0x99CCCCCC);
+                linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x77000000 : 0x99CCCCCC);
                 canvas.drawRoundRect(
                         panelLeft - panelPadding,
                         0,
