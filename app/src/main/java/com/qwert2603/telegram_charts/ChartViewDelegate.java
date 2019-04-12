@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.view.GestureDetector;
@@ -25,7 +26,7 @@ public class ChartViewDelegate {
     public interface Callbacks {
         void invalidate();
 
-        void requestDisallowInterceptTouchEvent();
+        void requestDisallowInterceptTouchEvent(boolean disallowIntercept);
 
         float getWidth();
     }
@@ -130,7 +131,7 @@ public class ChartViewDelegate {
             public boolean onSingleTapUp(MotionEvent e) {
                 if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
                     for (ChartData.Line line : chartData.lines) {
-                        if (line.rectOnScreen.contains(e.getX(), e.getY())) {
+                        if (line.chipRectOnScreen.contains(e.getX(), e.getY())) {
                             setLineVisible(line.name, !line.isVisibleOrWillBe);
                             return true;
                         }
@@ -143,7 +144,7 @@ public class ChartViewDelegate {
             public void onLongPress(MotionEvent e) {
                 if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
                     for (ChartData.Line line : chartData.lines) {
-                        if (line.rectOnScreen.contains(e.getX(), e.getY())) {
+                        if (line.chipRectOnScreen.contains(e.getX(), e.getY())) {
                             setOnlyOneLineVisible(line.name);
                             break;
                         }
@@ -160,6 +161,7 @@ public class ChartViewDelegate {
     }
 
     private final GestureDetector gestureDetector;
+    private final RectF panelRectOnScreen = new RectF();
 
     private final float chartHeight;
     private final float datesHeight;
@@ -403,6 +405,10 @@ public class ChartViewDelegate {
     private int currentDrag = 0;
     private float selectorDragCenterOffset = 0f;
 
+    private float startSelectedIndexX = -1;
+    private float startSelectedIndexY = -1;
+    private boolean draggingSelectedIndex = false;
+
     public boolean onTouchEvent(MotionEvent event) {
         gestureDetector.onTouchEvent(event);
 
@@ -421,23 +427,36 @@ public class ChartViewDelegate {
                     if (Math.abs(periodStartX - x) * selectorWidthPixels < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_START;
-                        callbacks.requestDisallowInterceptTouchEvent();
+                        callbacks.requestDisallowInterceptTouchEvent(true);
                     } else if (Math.abs(periodEndX - x) * selectorWidthPixels < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_END;
-                        callbacks.requestDisallowInterceptTouchEvent();
+                        callbacks.requestDisallowInterceptTouchEvent(true);
                     } else if (periodStartX < x && x < periodEndX) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_SELECTOR;
                         selectorDragCenterOffset = selectorCenter - x;
                         movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
-                        callbacks.requestDisallowInterceptTouchEvent();
+                        callbacks.requestDisallowInterceptTouchEvent(true);
                     }
                 } else if (chartTitleHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight) {
+                    if (selectedIndex < 0) {
+                        updateSelectedIndex(x);
+                    } else {
+                        if (!panelRectOnScreen.contains(event.getX(), event.getY())) {
+                            selectedIndex = -1;
+                            currentDrag = 0;
+                            dragPointerId = -1;
+                            startSelectedIndexX = -1;
+                            startSelectedIndexY = -1;
+                            callbacks.invalidate();
+                        }
+                    }
                     dragPointerId = pointerId;
                     currentDrag = DRAG_SELECTED_INDEX;
-                    updateSelectedIndex(x);
-                    callbacks.requestDisallowInterceptTouchEvent();
+                    startSelectedIndexX = event.getX();
+                    startSelectedIndexY = event.getY();
+                    callbacks.requestDisallowInterceptTouchEvent(true);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -463,7 +482,20 @@ public class ChartViewDelegate {
                             movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
                             break;
                         case DRAG_SELECTED_INDEX:
-                            updateSelectedIndex(x);
+                            if (!draggingSelectedIndex && Math.abs(event.getX() - startSelectedIndexX) < dp6 && Math.abs(event.getY() - startSelectedIndexY) > dp12) {
+                                selectedIndex = -1;
+                                currentDrag = 0;
+                                dragPointerId = -1;
+                                startSelectedIndexX = -1;
+                                startSelectedIndexY = -1;
+                                callbacks.requestDisallowInterceptTouchEvent(false);
+                                callbacks.invalidate();
+                            } else if (!draggingSelectedIndex && !panelRectOnScreen.contains(event.getX(), event.getY()) && Math.abs(event.getX() - startSelectedIndexX) > dp12 && Math.abs(event.getY() - startSelectedIndexY) < dp6) {
+                                draggingSelectedIndex = true;
+                            }
+                            if (draggingSelectedIndex) {
+                                updateSelectedIndex(x);
+                            }
                             break;
                     }
                 }
@@ -472,6 +504,9 @@ public class ChartViewDelegate {
                 if (pointerId == dragPointerId) {
                     currentDrag = 0;
                     dragPointerId = -1;
+                    startSelectedIndexX = -1;
+                    startSelectedIndexY = -1;
+                    draggingSelectedIndex = false;
                 }
                 break;
         }
@@ -658,6 +693,14 @@ public class ChartViewDelegate {
                 }
 
                 final float panelPadding = dp12;
+
+                panelRectOnScreen.set(
+                        panelLeft - panelPadding,
+                        chartTitleHeight,
+                        panelRight + panelPadding,
+                        chartTitleHeight + lineY + panelPadding
+                );
+
                 canvas.drawRoundRect(
                         panelLeft - panelPadding,
                         0,
@@ -729,7 +772,11 @@ public class ChartViewDelegate {
                     }
                 }
                 titlePaint.setAlpha(0xFF);
+            } else {
+                panelRectOnScreen.set(0, 0, 0, 0);
             }
+        } else {
+            panelRectOnScreen.set(0, 0, 0, 0);
         }
 
         canvas.translate(0, chartHeight + datesHeight);
@@ -799,14 +846,14 @@ public class ChartViewDelegate {
                 currentLineY += chipHeight + chipMargin;
             }
 
-            line.rectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
+            line.chipRectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
 
             if (line.isVisibleOrWillBe) {
                 periodPaint.setColor(line.color);
-                canvas.drawRoundRect(line.rectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
+                canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
 
-                final int checkLeft = (int) (line.rectOnScreen.left + chipPadding / 2 - dp2);
-                final int checkTop = (int) (line.rectOnScreen.top + chipPadding / 4 + dp2);
+                final int checkLeft = (int) (line.chipRectOnScreen.left + chipPadding / 2 - dp2);
+                final int checkTop = (int) (line.chipRectOnScreen.top + chipPadding / 4 + dp2);
                 drawableCheck.setBounds(
                         checkLeft,
                         checkTop,
@@ -815,7 +862,7 @@ public class ChartViewDelegate {
                 );
                 drawableCheck.draw(canvas);
             }
-            canvas.drawRoundRect(line.rectOnScreen, chipCornerRadius, chipCornerRadius, line.chipBorderPaint);
+            canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, line.chipBorderPaint);
 
             float textTransitionX = line.isVisibleOrWillBe ? chipPadding / 4 + dp2 : 0;
             canvas.drawText(

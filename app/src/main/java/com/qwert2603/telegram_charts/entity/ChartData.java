@@ -20,7 +20,7 @@ public class ChartData {
 
         public boolean isVisibleOrWillBe = true;
 
-        public final RectF rectOnScreen = new RectF();
+        public final RectF chipRectOnScreen = new RectF();
 
         public float chipTextWidth;
 

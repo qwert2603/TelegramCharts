@@ -21,8 +21,8 @@ public class ChartCustomView extends View {
             }
 
             @Override
-            public void requestDisallowInterceptTouchEvent() {
-                ChartCustomView.this.getParent().requestDisallowInterceptTouchEvent(true);
+            public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+                ChartCustomView.this.getParent().requestDisallowInterceptTouchEvent(disallowIntercept);
             }
 
             @Override

@@ -35,8 +35,8 @@ public class ChartTextureView extends TextureView {
             }
 
             @Override
-            public void requestDisallowInterceptTouchEvent() {
-                ChartTextureView.this.getParent().requestDisallowInterceptTouchEvent(true);
+            public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+                ChartTextureView.this.getParent().requestDisallowInterceptTouchEvent(disallowIntercept);
             }
 
             @Override
