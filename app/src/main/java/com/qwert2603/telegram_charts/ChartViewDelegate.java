@@ -373,7 +373,7 @@ public class ChartViewDelegate {
         pendingTotalMaxY = endTotalMaxY;
 
         final float dY = endMaxY - endMinY;
-        stepY = dY / (HOR_LINES - 0.25f);
+        stepY = dY / (HOR_LINES - (chartData.type == ChartData.Type.AREA ? 0f : 0.25f));
         for (int i = 0; i < formattedYSteps.length; i++) {
             formattedYSteps[i] = formatY((int) (endMinY + stepY * i));
         }

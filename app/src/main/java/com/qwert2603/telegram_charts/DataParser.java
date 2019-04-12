@@ -52,10 +52,12 @@ public class DataParser {
     }
 
     public static List<ChartData> parseDataStage2(Context appContext) {
-        List<ChartData> result = new ArrayList<>(6);
+        int chartsCount = WITH_TEST_CHART ? 6 : 5;
+
+        final List<ChartData> result = new ArrayList<>(chartsCount);
 
         try {
-            for (int i = WITH_TEST_CHART ? 0 : 1; i <= 5; i++) {
+            for (int i = 1; i <= chartsCount; i++) {
                 InputStream inputStream = appContext.getAssets().open("overview_" + i + ".json");
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 

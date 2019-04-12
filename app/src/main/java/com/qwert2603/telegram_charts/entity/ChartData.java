@@ -46,6 +46,32 @@ public class ChartData {
     public List<Line> lines;
 
     public int[] calcYLimits(int startIndex, int endIndex) {
+        if (type == Type.AREA) return new int[]{0, 100, 0, 100};
+        if (type == Type.BARS) return calcYLimitsBars(startIndex, endIndex);
+        return calcYLimitsLines(startIndex, endIndex);
+    }
+
+    private int[] calcYLimitsBars(int startIndex, int endIndex) {
+        int maxY = 0;
+        int totalMaxY = 0;
+
+        for (int i = 0; i < xValues.length; i++) {
+            int y = 0;
+            for (ChartData.Line line : lines) {
+                if (line.isVisibleOrWillBe) {
+                    y += line.values[i];
+                }
+            }
+            if (y > totalMaxY) totalMaxY = y;
+            if (startIndex <= i && i < endIndex && y > maxY) maxY = y;
+        }
+
+        if (maxY == 0) return new int[]{0, 116, 0, 116};
+
+        return new int[]{0, maxY, 0, totalMaxY};
+    }
+
+    private int[] calcYLimitsLines(int startIndex, int endIndex) {
         int minY = Integer.MAX_VALUE;
         int maxY = Integer.MIN_VALUE;
         int totalMinY = Integer.MAX_VALUE;
