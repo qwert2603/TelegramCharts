@@ -1,5 +1,6 @@
 package com.qwert2603.telegram_charts.entity;
 
+import android.graphics.Paint;
 import android.graphics.RectF;
 
 import java.util.List;
@@ -20,6 +21,14 @@ public class ChartData {
         public boolean isVisibleOrWillBe = true;
 
         public final RectF rectOnScreen = new RectF();
+
+        public float chipTextWidth;
+
+        public final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        public final Paint linePeriodPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        public final Paint chipTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        public final Paint chipBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        public final Paint panelTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     }
 
     public long[] xValues;
