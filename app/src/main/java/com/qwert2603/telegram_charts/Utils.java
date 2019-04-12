@@ -21,4 +21,8 @@ public class Utils {
         return common;
     }
 
+    public static int legendColor() {
+        return MainActivity.NIGHT_MODE ? 0xFF8E8E93 : 0x99A3B1C2;
+    }
+
 }

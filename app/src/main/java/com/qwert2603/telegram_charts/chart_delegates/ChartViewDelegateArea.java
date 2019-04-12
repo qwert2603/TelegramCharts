@@ -63,11 +63,11 @@ public class ChartViewDelegateArea implements Delegate {
         totalMinY = yLimits[2];
         totalMaxY = yLimits[3];
 
-        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(0xBB888888);
-        textPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        legendPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        legendPaint.setColor(0xBB888888);
+        legendPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         dp12 = getResources().getDimension(R.dimen.dp12);
-        textPaint.setTextSize(dp12 - dp12 / 12f);
+        legendPaint.setTextSize(dp12 - dp12 / 12f);
 
         titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setColor(Color.BLACK);
@@ -205,7 +205,7 @@ public class ChartViewDelegateArea implements Delegate {
     private final float[] allLinesSums;
 
     private final Paint periodPaint;
-    private final Paint textPaint;
+    private final Paint legendPaint;
     private final Paint titlePaint;
     private final Paint chipWhiteTextPaint;
 
@@ -615,21 +615,19 @@ public class ChartViewDelegateArea implements Delegate {
 
         linesPaint.setStrokeWidth(lineWidth / 2f);
         linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
-        textPaint.setColor(MainActivity.NIGHT_MODE ? 0x80FFFFFF : 0x80182D3B);
+        legendPaint.setColor(Utils.legendColor());
 
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
-        int oddDatesAlpha = 0x80 - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0x80);
+        int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
         for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
             float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
-            textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0x80 : oddDatesAlpha);
-            final float dateTextWidth = textPaint.measureText(chartData.dates[i * stepX]);
-            canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp4, textPaint);
+            legendPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0xFF : oddDatesAlpha);
+            final float dateTextWidth = legendPaint.measureText(chartData.dates[i * stepX]);
+            canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp4, legendPaint);
         }
 
         final float wid = (maxX - minX) / drawingWidth;
-        final float hei = (maxY - minY) / chartHeight;
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
-        final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
         final int div = 1;
 
@@ -725,22 +723,22 @@ public class ChartViewDelegateArea implements Delegate {
 
         // Y lines and axis-values
         linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
-        textPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x80));
+        legendPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0xFF));
         for (int i = 0; i < HOR_LINES; i++) {
             final float valueY = minY + stepY * i;
             final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
             canvas.drawLine(0, y, drawingWidth, y, linesPaint);
-            canvas.drawText(formattedYSteps[i], 0, y - dp6, textPaint);
+            canvas.drawText(formattedYSteps[i], 0, y - dp6, legendPaint);
         }
         if (prevStepY > 0) {
             linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
-            textPaint.setAlpha((int) (0x80 - yLimitsAnimator.getAnimatedFraction() * 0x80));
+            legendPaint.setAlpha((int) (0xFF - yLimitsAnimator.getAnimatedFraction() * 0xFF));
 
             for (int i = 0; i < HOR_LINES; i++) {
                 final float valueY = minY + prevStepY * i;
                 final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
                 canvas.drawLine(0, y, drawingWidth, y, linesPaint);
-                canvas.drawText(formattedPrevYSteps[i], 0, y - dp6, textPaint);
+                canvas.drawText(formattedPrevYSteps[i], 0, y - dp6, legendPaint);
             }
         }
 
