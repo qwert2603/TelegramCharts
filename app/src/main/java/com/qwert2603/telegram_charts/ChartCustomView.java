@@ -5,16 +5,20 @@ import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.qwert2603.telegram_charts.chart_delegates.Callbacks;
+import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateBars;
+import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateLines;
+import com.qwert2603.telegram_charts.chart_delegates.Delegate;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
 public class ChartCustomView extends View {
 
-    private final ChartViewDelegate chartViewDelegate;
+    private final Delegate delegate;
 
     public ChartCustomView(Context context, String title, ChartData chartData) {
         super(context);
 
-        chartViewDelegate = new ChartViewDelegate(context, title, chartData, new ChartViewDelegate.Callbacks() {
+        Callbacks callbacks = new Callbacks() {
             @Override
             public void invalidate() {
                 ChartCustomView.this.invalidate();
@@ -29,25 +33,39 @@ public class ChartCustomView extends View {
             public float getWidth() {
                 return getResources().getDisplayMetrics().widthPixels;
             }
-        });
-    }
+        };
+        switch (chartData.type) {
+            case BARS:
+                delegate = new ChartViewDelegateBars(context, title, chartData, callbacks);
+                break;
+            case LINES:
+                delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
+                break;
+            case LINES_2_Y:
+                delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
+                break;
+            case AREA:
+                delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
+                break;
+            default:
+                delegate = null;
+                break;
 
-    public void setLineVisible(String name, boolean visible) {
-        chartViewDelegate.setLineVisible(name, visible);
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        chartViewDelegate.onTouchEvent(event);
+        delegate.onTouchEvent(event);
         return true;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        chartViewDelegate.onDraw(canvas);
+        delegate.onDraw(canvas);
     }
 
     public int measureHeight() {
-        return chartViewDelegate.measureHeight();
+        return delegate.measureHeight();
     }
 }

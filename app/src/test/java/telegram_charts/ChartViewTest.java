@@ -1,6 +1,6 @@
 package telegram_charts;
 
-import com.qwert2603.telegram_charts.ChartViewDelegate;
+import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateBars;
 import com.qwert2603.telegram_charts.Utils;
 
 import org.junit.Test;
@@ -11,21 +11,21 @@ public class ChartViewTest {
 
     @Test
     public void te1() {
-        assertEquals("0", ChartViewDelegate.formatY(0));
-        assertEquals("1", ChartViewDelegate.formatY(1));
-        assertEquals("14", ChartViewDelegate.formatY(14));
-        assertEquals("102", ChartViewDelegate.formatY(102));
-        assertEquals("142", ChartViewDelegate.formatY(142));
-        assertEquals("1.0K", ChartViewDelegate.formatY(1000));
-        assertEquals("1.0K", ChartViewDelegate.formatY(1040));
-        assertEquals("1.3K", ChartViewDelegate.formatY(1300));
-        assertEquals("1.3K", ChartViewDelegate.formatY(1380));
-        assertEquals("1.3K", ChartViewDelegate.formatY(1389));
-        assertEquals("135.3K", ChartViewDelegate.formatY(135389));
-        assertEquals("1.3M", ChartViewDelegate.formatY(1353869));
-        assertEquals("2.0M", ChartViewDelegate.formatY(2009999));
-        assertEquals("1.0M", ChartViewDelegate.formatY(1053869));
-        assertEquals("3.0M", ChartViewDelegate.formatY(3053869));
+        assertEquals("0", ChartViewDelegateBars.formatY(0));
+        assertEquals("1", ChartViewDelegateBars.formatY(1));
+        assertEquals("14", ChartViewDelegateBars.formatY(14));
+        assertEquals("102", ChartViewDelegateBars.formatY(102));
+        assertEquals("142", ChartViewDelegateBars.formatY(142));
+        assertEquals("1.0K", ChartViewDelegateBars.formatY(1000));
+        assertEquals("1.0K", ChartViewDelegateBars.formatY(1040));
+        assertEquals("1.3K", ChartViewDelegateBars.formatY(1300));
+        assertEquals("1.3K", ChartViewDelegateBars.formatY(1380));
+        assertEquals("1.3K", ChartViewDelegateBars.formatY(1389));
+        assertEquals("135.3K", ChartViewDelegateBars.formatY(135389));
+        assertEquals("1.3M", ChartViewDelegateBars.formatY(1353869));
+        assertEquals("2.0M", ChartViewDelegateBars.formatY(2009999));
+        assertEquals("1.0M", ChartViewDelegateBars.formatY(1053869));
+        assertEquals("3.0M", ChartViewDelegateBars.formatY(3053869));
     }
 
     @Test
