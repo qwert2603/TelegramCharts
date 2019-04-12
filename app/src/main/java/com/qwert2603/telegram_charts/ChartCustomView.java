@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.qwert2603.telegram_charts.chart_delegates.Callbacks;
+import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateArea;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateBars;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateLines;
 import com.qwert2603.telegram_charts.chart_delegates.Delegate;
@@ -45,7 +46,7 @@ public class ChartCustomView extends View {
                 delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
                 break;
             case AREA:
-                delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
+                delegate = new ChartViewDelegateArea(context, title, chartData, callbacks);
                 break;
             default:
                 throw new RuntimeException();

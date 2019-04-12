@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="chart_height">300dp</dimen>
+    <dimen name="chart_height">280dp</dimen>
     <dimen name="period_selector_height">42dp</dimen>
     <dimen name="dates_height">36dp</dimen>
-    <dimen name="chart_title_height">44dp</dimen>
+    <dimen name="chart_title_height">52dp</dimen>
     <dimen name="min_period_selector_width">24dp</dimen>
     <dimen name="period_selector_draggable_width">16dp</dimen>
     <dimen name="line_width">2dp</dimen>

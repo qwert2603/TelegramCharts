@@ -24,7 +24,7 @@ import com.qwert2603.telegram_charts.entity.ChartData;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChartViewDelegateLines implements Delegate {
+public class ChartViewDelegateArea implements Delegate {
 
     private static final long ANIMATION_DURATION = 200L;
 
@@ -33,7 +33,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final Callbacks callbacks;
 
-    public ChartViewDelegateLines(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
+    public ChartViewDelegateArea(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
         this.callbacks = callbacks;
         this.context = context;
         this.resources = context.getResources();
@@ -44,7 +44,9 @@ public class ChartViewDelegateLines implements Delegate {
         linesPaint.setStyle(Paint.Style.STROKE);
 
         this.chartData = chartData;
-        points = new float[(chartData.xValues.length - 1) * 4];
+        points = new float[chartData.xValues.length * 4];
+        sums = new float[chartData.xValues.length];
+        totalSums = new float[chartData.xValues.length];
 
         periodPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         periodPaint.setStyle(Paint.Style.FILL);
@@ -72,7 +74,7 @@ public class ChartViewDelegateLines implements Delegate {
 
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
-        chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height);
+        chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height) + dp12 * 2;
         periodSelectorHeight = getResources().getDimension(R.dimen.period_selector_height);
         minPeriodSelectorWidth = getResources().getDimension(R.dimen.min_period_selector_width);
         periodSelectorDraggableWidth = getResources().getDimension(R.dimen.period_selector_draggable_width);
@@ -101,12 +103,10 @@ public class ChartViewDelegateLines implements Delegate {
 
         for (ChartData.Line line : chartData.lines) {
             line.linePaint.setColor(line.color);
-            line.linePaint.setStrokeWidth(lineWidth * 0.9f);
-            line.linePaint.setStrokeCap(Paint.Cap.SQUARE);
+            line.linePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
             line.linePeriodPaint.setColor(line.color);
-            line.linePeriodPaint.setStrokeWidth(lineWidth / 2f * 0.9f);
-            line.linePeriodPaint.setStrokeCap(Paint.Cap.BUTT);
+            line.linePeriodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
             line.chipTextPaint.setColor(line.color);
             line.chipTextPaint.setTextSize(chipTextSize);
@@ -114,7 +114,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             line.chipBorderPaint.setColor(line.color);
             line.chipBorderPaint.setStyle(Paint.Style.STROKE);
-            line.chipBorderPaint.setStrokeWidth(lineWidth / 2f);
+            line.chipBorderPaint.setStrokeWidth(lineWidth / 1.5f);
 
             line.panelTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             line.panelTextPaint.setColor(line.color);
@@ -152,6 +152,16 @@ public class ChartViewDelegateLines implements Delegate {
         });
 
         drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+
+        periodSelectorClipPath = new Path();
+        periodSelectorClipPath.addRoundRect(
+                0,
+                chartHeight + datesHeight,
+                getDrawingWidth(),
+                chartHeight + datesHeight + periodSelectorHeight,
+                new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
+                Path.Direction.CW
+        );
     }
 
     private Resources getResources() {
@@ -181,6 +191,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final float chipHeight;
 
     private final Path path = new Path();
+    private final Path barsPath = new Path();
     private final float[] radiiLeft;
     private final float[] radiiRight;
 
@@ -188,6 +199,8 @@ public class ChartViewDelegateLines implements Delegate {
     private final ChartData chartData;
     private final Paint linesPaint;
     private final float[] points;
+    private final float[] sums;
+    private final float[] totalSums;
 
     private final Paint periodPaint;
     private final Paint textPaint;
@@ -227,6 +240,8 @@ public class ChartViewDelegateLines implements Delegate {
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
 
     private final Drawable drawableCheck;
+
+    private final Path periodSelectorClipPath;
 
     @Override
     public int measureHeight() {
@@ -369,7 +384,7 @@ public class ChartViewDelegateLines implements Delegate {
         pendingTotalMaxY = endTotalMaxY;
 
         final float dY = endMaxY - endMinY;
-        stepY = dY / (HOR_LINES - 0.25f);
+        stepY = dY / (HOR_LINES - 1f);
         for (int i = 0; i < formattedYSteps.length; i++) {
             formattedYSteps[i] = formatY((int) (endMinY + stepY * i));
         }
@@ -592,15 +607,6 @@ public class ChartViewDelegateLines implements Delegate {
 
         canvas.save();
 
-        titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
-        titlePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
-        titlePaint.setTextSize(dp12 + dp4);
-        canvas.drawText(title, chartPadding, dp12 + dp12 + dp8, titlePaint);
-        titlePaint.setTextSize(dp12 + dp2);
-        final String text = chartData.fullDates[startIndex] + " - " + chartData.fullDates[endIndex - 1];
-        final float measureText = titlePaint.measureText(text);
-        canvas.drawText(text, callbacks.getWidth() - chartPadding - measureText, dp12 + dp12 + dp8, titlePaint);
-
         canvas.translate(0, chartTitleHeight);
 
         final float drawingWidth = getDrawingWidth();
@@ -608,27 +614,6 @@ public class ChartViewDelegateLines implements Delegate {
         linesPaint.setStrokeWidth(lineWidth / 2f);
         linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
         textPaint.setColor(MainActivity.NIGHT_MODE ? 0x80FFFFFF : 0x80182D3B);
-
-        linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
-        textPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x80));
-
-        for (int i = 0; i < HOR_LINES; i++) {
-            final float valueY = minY + stepY * i;
-            final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
-            canvas.drawLine(chartPadding, y, callbacks.getWidth() - chartPadding, y, linesPaint);
-            canvas.drawText(formattedYSteps[i], chartPadding, y - dp6, textPaint);
-        }
-        if (prevStepY > 0) {
-            linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
-            textPaint.setAlpha((int) (0x80 - yLimitsAnimator.getAnimatedFraction() * 0x80));
-
-            for (int i = 0; i < HOR_LINES; i++) {
-                final float valueY = minY + prevStepY * i;
-                final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
-                canvas.drawLine(chartPadding, y, callbacks.getWidth() - chartPadding, y, linesPaint);
-                canvas.drawText(formattedPrevYSteps[i], chartPadding, y - dp6, textPaint);
-            }
-        }
 
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         int oddDatesAlpha = 0x80 - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0x80);
@@ -644,45 +629,131 @@ public class ChartViewDelegateLines implements Delegate {
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
         final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-        final int div = 2;
+        final int div = 1;
 
         canvas.translate(chartPadding, 0);
+
+        for (int i = 0; i < chartData.xValues.length; i++) {
+            sums[i] = 0;
+            totalSums[i] = 0;
+        }
 
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - minX) / wid;
-                    final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
+                    final float _xLeft = ((float) chartData.xValues[i] - minX - chartData.xStep / 2) / wid;
+                    final float _xRight = ((float) chartData.xValues[i] - minX + chartData.xStep / 2) / wid;
+                    final float _yBottom = chartHeight - (sums[i] - minY) / hei;
+                    sums[i] += line.values[i] * (line.alpha / 255f);
+                    final float _yTop = chartHeight - (sums[i] - minY) / hei;
 
-                    points[q++] = _x;
-                    points[q++] = _y;
-                    if (i != 0 && i != chartData.xValues.length - 1) {
-                        points[q++] = _x;
-                        points[q++] = _y;
+                    if (_xLeft < -chartPadding - dp12 || _xRight > drawingWidth + chartPadding + dp12) {
+                        continue;
                     }
+
+                    points[q++] = _xLeft;
+                    points[q++] = _yTop;
+                    points[q++] = _xRight;
+                    points[q++] = _yBottom;
                 }
 
-                line.linePaint.setAlpha(line.alpha);
-                canvas.drawLines(points, line.linePaint);
+                barsPath.moveTo(points[0], chartHeight);
+                for (int i = 0; i < q / 4; i++) {
+                    barsPath.lineTo(points[i * 4], points[i * 4 + 1]);
+                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 1]);
+                }
+                for (int i = q / 4 - 1; i >= 0; i--) {
+                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 3]);
+                    barsPath.lineTo(points[i * 4], points[i * 4 + 3]);
+                }
+                barsPath.close();
+                canvas.drawPath(barsPath, line.linePaint);
+                barsPath.reset();
 
                 q = 0;
-                for (int i = 0; i < chartData.xValues.length / div; i++) {
-                    final int ii = i * div;
-                    final float _x = ((float) chartData.xValues[ii] - totalMinX) / widP;
-                    final float _y = dYP - ((float) line.values[ii] - totalMinY) / heiP;
-
-                    points[q++] = _x;
-                    points[q++] = _y;
-                    if (i != 0 && i != chartData.xValues.length / div - 1) {
-                        points[q++] = _x;
-                        points[q++] = _y;
+                for (int i = 0; i < chartData.xValues.length; i++) {
+                    if (i % div != 0) {
+                        totalSums[i] += line.values[i] * (line.alpha / 255f);
+                        continue;
                     }
+                    final float _xLeft = ((float) chartData.xValues[i] - totalMinX - chartData.xStep / 2) / widP;
+                    final float _xRight = ((float) chartData.xValues[i] - totalMinX + chartData.xStep / 2) / widP;
+                    final float _yBottom = dYP - (totalSums[i] - totalMinY) / heiP;
+                    totalSums[i] += line.values[i] * (line.alpha / 255f);
+                    final float _yTop = dYP - (totalSums[i] - totalMinY) / heiP;
+
+                    points[q++] = _xLeft;
+                    points[q++] = _yTop;
+                    points[q++] = _xRight;
+                    points[q++] = _yBottom;
                 }
 
-                line.linePeriodPaint.setAlpha(line.alpha);
-                canvas.drawLines(points, 0, q, line.linePeriodPaint);
+                barsPath.moveTo(points[0], chartHeight);
+                for (int i = 0; i < q / 4; i++) {
+                    barsPath.lineTo(points[i * 4], points[i * 4 + 1]);
+                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 1]);
+                }
+                for (int i = q / 4 - 1; i >= 0; i--) {
+                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 3]);
+                    barsPath.lineTo(points[i * 4], points[i * 4 + 3]);
+                }
+                barsPath.close();
+                canvas.save();
+                canvas.clipPath(periodSelectorClipPath);
+                canvas.drawPath(barsPath, line.linePeriodPaint);
+                canvas.restore();
+                barsPath.reset();
+            }
+        }
+
+        if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
+            periodPaint.setColor(MainActivity.NIGHT_MODE ? 0x80242F3E : 0x80FFFFFF);
+            canvas.drawRect(
+                    ((float) chartData.xValues[0] - minX - chartData.xStep / 2) / wid,
+                    -chartTitleHeight,
+                    ((float) chartData.xValues[selectedIndex] - minX - chartData.xStep / 2) / wid,
+                    chartHeight,
+                    periodPaint
+            );
+            canvas.drawRect(
+                    ((float) chartData.xValues[selectedIndex] - minX + chartData.xStep / 2) / wid,
+                    -chartTitleHeight,
+                    ((float) chartData.xValues[chartData.xValues.length - 1] - minX + chartData.xStep / 2) / wid,
+                    chartHeight,
+                    periodPaint
+            );
+        }
+
+        // title
+        titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
+        titlePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
+        titlePaint.setTextSize(dp12 + dp4);
+        canvas.drawText(title, 0, -chartTitleHeight + dp12 + dp12 + dp8, titlePaint);
+        titlePaint.setTextSize(dp12 + dp2);
+        final String text = chartData.fullDates[startIndex] + " - " + chartData.fullDates[endIndex - 1];
+        final float measureText = titlePaint.measureText(text);
+        canvas.drawText(text, callbacks.getWidth() - chartPadding * 2 - measureText, -chartTitleHeight + dp12 + dp12 + dp8, titlePaint);
+
+        // Y lines and axis-values
+        linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
+        textPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x80));
+        for (int i = 0; i < HOR_LINES; i++) {
+            final float valueY = minY + stepY * i;
+            final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
+            canvas.drawLine(0, y, drawingWidth, y, linesPaint);
+            canvas.drawText(formattedYSteps[i], 0, y - dp6, textPaint);
+        }
+        if (prevStepY > 0) {
+            linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
+            textPaint.setAlpha((int) (0x80 - yLimitsAnimator.getAnimatedFraction() * 0x80));
+
+            for (int i = 0; i < HOR_LINES; i++) {
+                final float valueY = minY + prevStepY * i;
+                final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
+                canvas.drawLine(0, y, drawingWidth, y, linesPaint);
+                canvas.drawText(formattedPrevYSteps[i], 0, y - dp6, textPaint);
             }
         }
 
@@ -693,10 +764,6 @@ public class ChartViewDelegateLines implements Delegate {
             if (-chartPadding < _x && _x < callbacks.getWidth() - chartPadding) {
                 final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
-                linesPaint.setStrokeWidth(lineWidth / 2f);
-                linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
-                canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
-
                 final boolean panelLefted = _x < callbacks.getWidth() / 2 - chartPadding;
                 final float prevX = prevSelectedIndex >= 0 ? ((float) chartData.xValues[prevSelectedIndex] - minX) / wid : _x;
                 final float panelAnchor = _x + (prevX - _x) * (1 - changeFraction);
@@ -704,7 +771,6 @@ public class ChartViewDelegateLines implements Delegate {
                 final float panelLeft = panelAnchor + (panelLefted ? dp12 * -1 : dp12 * -11);
                 final float panelRight = panelAnchor + (panelLefted ? dp12 * 11 : dp12 * 1);
 
-                linesPaint.setStrokeWidth(lineWidth);
                 periodPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 
                 final float lineHeight = dp12 * 2;
@@ -713,16 +779,10 @@ public class ChartViewDelegateLines implements Delegate {
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
-                        linesPaint.setColor(line.color);
-                        linesPaint.setAlpha(line.alpha);
-
-                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
-                        canvas.drawCircle(_x, _y, dp4, periodPaint);
-                        canvas.drawCircle(_x, _y, dp4, linesPaint);
-
                         lineY += lineHeight;
                     }
                 }
+                lineY += lineHeight;// "All" text
 
                 final float panelPadding = dp12;
 
@@ -777,12 +837,17 @@ public class ChartViewDelegateLines implements Delegate {
                         canvas.drawText(line.name, panelLeft, lineY, titlePaint);
                     }
                 }
+                lineY += lineHeight;
+                canvas.drawText("All", panelLeft, lineY, titlePaint);
 
                 lineY = lineHeight;
 
+                titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
+                int sum = 0;
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
+                        sum += line.values[selectedIndex];
                         line.panelTextPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
                         lineY += lineHeight;
                         String formatY = toStringWithSpaces(line.values[selectedIndex]);
@@ -790,11 +855,19 @@ public class ChartViewDelegateLines implements Delegate {
                         canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), line.panelTextPaint);
                     }
                 }
+                titlePaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
+                lineY += lineHeight;
+                String formatSum = toStringWithSpaces(sum);
+                float sumWidth = titlePaint.measureText(formatSum);
+                canvas.drawText(formatSum, panelRight - sumWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), titlePaint);
+
                 if (prevSelectedIndex >= 0) {
+                    int prevSum = 0;
                     lineY = lineHeight;
                     for (int c = 0; c < chartData.lines.size(); c++) {
                         final ChartData.Line line = chartData.lines.get(c);
                         if (line.isVisibleOrWillBe) {
+                            prevSum += line.values[prevSelectedIndex];
                             line.panelTextPaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
                             lineY += lineHeight;
                             String formatY = toStringWithSpaces(line.values[prevSelectedIndex]);
@@ -802,7 +875,14 @@ public class ChartViewDelegateLines implements Delegate {
                             canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, line.panelTextPaint);
                         }
                     }
+                    titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                    lineY += lineHeight;
+                    String formatPrevSum = toStringWithSpaces(prevSum);
+                    float prevSumWidth = titlePaint.measureText(formatPrevSum);
+                    canvas.drawText(formatPrevSum, panelRight - prevSumWidth, lineY + translationDisappear, titlePaint);
                 }
+                titlePaint.setTypeface(Typeface.DEFAULT);
+
                 titlePaint.setAlpha(0xFF);
             } else {
                 panelRectOnScreen.set(0, 0, 0, 0);
