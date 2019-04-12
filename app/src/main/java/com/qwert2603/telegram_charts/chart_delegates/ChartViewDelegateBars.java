@@ -768,8 +768,8 @@ public class ChartViewDelegateBars implements Delegate {
                 final float prevX = prevSelectedIndex >= 0 ? ((float) chartData.xValues[prevSelectedIndex] - minX) / wid : _x;
                 final float panelAnchor = _x + (prevX - _x) * (1 - changeFraction);
 
-                final float panelLeft = panelAnchor + (panelLefted ? dp12 * -1 : dp12 * -11);
-                final float panelRight = panelAnchor + (panelLefted ? dp12 * 11 : dp12 * 1);
+                final float panelLeft = panelAnchor + (panelLefted ? dp12 * 2 : dp12 * -14);
+                final float panelRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
 
                 periodPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 

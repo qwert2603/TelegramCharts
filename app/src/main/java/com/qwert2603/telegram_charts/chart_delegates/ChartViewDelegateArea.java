@@ -762,8 +762,8 @@ public class ChartViewDelegateArea implements Delegate {
                 final float prevX = prevSelectedIndex >= 0 ? ((float) chartData.xValues[prevSelectedIndex] - minX) / wid : _x;
                 final float panelAnchor = _x + (prevX - _x) * (1 - changeFraction);
 
-                final float panelLeft = panelAnchor + (panelLefted ? dp12 * -1 : dp12 * -11);
-                final float panelRight = panelAnchor + (panelLefted ? dp12 * 11 : dp12 * 1);
+                final float panelLeft = panelAnchor + (panelLefted ? dp12 * 2 : dp12 * -14);
+                final float panelRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
 
                 periodPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 
@@ -776,7 +776,6 @@ public class ChartViewDelegateArea implements Delegate {
                         lineY += lineHeight;
                     }
                 }
-                lineY += lineHeight;// "All" text
 
                 final float panelPadding = dp12;
 
@@ -831,17 +830,13 @@ public class ChartViewDelegateArea implements Delegate {
                         canvas.drawText(line.name, panelLeft, lineY, titlePaint);
                     }
                 }
-                lineY += lineHeight;
-                canvas.drawText("All", panelLeft, lineY, titlePaint);
 
                 lineY = lineHeight;
 
                 titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
-                int sum = 0;
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
-                        sum += line.values[selectedIndex];
                         line.panelTextPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
                         lineY += lineHeight;
                         String formatY = toStringWithSpaces(line.values[selectedIndex]);
@@ -849,19 +844,11 @@ public class ChartViewDelegateArea implements Delegate {
                         canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), line.panelTextPaint);
                     }
                 }
-                titlePaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
-                lineY += lineHeight;
-                String formatSum = toStringWithSpaces(sum);
-                float sumWidth = titlePaint.measureText(formatSum);
-                canvas.drawText(formatSum, panelRight - sumWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), titlePaint);
-
                 if (prevSelectedIndex >= 0) {
-                    int prevSum = 0;
                     lineY = lineHeight;
                     for (int c = 0; c < chartData.lines.size(); c++) {
                         final ChartData.Line line = chartData.lines.get(c);
                         if (line.isVisibleOrWillBe) {
-                            prevSum += line.values[prevSelectedIndex];
                             line.panelTextPaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
                             lineY += lineHeight;
                             String formatY = toStringWithSpaces(line.values[prevSelectedIndex]);
@@ -869,11 +856,6 @@ public class ChartViewDelegateArea implements Delegate {
                             canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, line.panelTextPaint);
                         }
                     }
-                    titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
-                    lineY += lineHeight;
-                    String formatPrevSum = toStringWithSpaces(prevSum);
-                    float prevSumWidth = titlePaint.measureText(formatPrevSum);
-                    canvas.drawText(formatPrevSum, panelRight - prevSumWidth, lineY + translationDisappear, titlePaint);
                 }
                 titlePaint.setTypeface(Typeface.DEFAULT);
 
