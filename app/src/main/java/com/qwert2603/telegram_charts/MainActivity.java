@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
 
         List<ChartData> chartDataList = DataParser.parseData(getApplicationContext());
 
+        final int dividerHeight = (int) getResources().getDimension(R.dimen.dates_height);
         linearLayout = findViewById(R.id.linearLayout);
         for (int i = 0; i < chartDataList.size(); i++) {
             ViewGroup view = (ViewGroup) getLayoutInflater().inflate(R.layout.item_chart, linearLayout, false);
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartView.measureHeight());
             view.addView(chartView, layoutParams);
 
-            LinearLayout.LayoutParams qLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.dp12) * 2);
+            LinearLayout.LayoutParams qLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dividerHeight);
             View child = new DividerView(this);
             views.add(child);
             view.addView(child, qLayoutParams);
