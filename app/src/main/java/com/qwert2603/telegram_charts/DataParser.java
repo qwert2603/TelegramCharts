@@ -20,12 +20,21 @@ public class DataParser {
         try {
             InputStream inputStream = appContext.getAssets().open("chart_data.json");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            StringBuilder stringBuilder = new StringBuilder();
+
             String s = bufferedReader.readLine();
+            stringBuilder.append(s);
+            while (true) {
+                s = bufferedReader.readLine();
+                if (s == null) break;
+                stringBuilder.append(s);
+            }
 
             Type rawDataType = new TypeToken<List<RawData>>() {
             }.getType();
 
-            List<RawData> parsedCharts = new Gson().fromJson(s, rawDataType);
+            List<RawData> parsedCharts = new Gson().fromJson(stringBuilder.toString(), rawDataType);
 
             List<ChartData> result = new ArrayList<>(parsedCharts.size());
             for (RawData parsedChart : parsedCharts) {

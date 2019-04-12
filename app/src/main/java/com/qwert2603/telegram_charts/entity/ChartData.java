@@ -59,7 +59,7 @@ public class ChartData {
             }
         }
 
-        if (minY == Integer.MAX_VALUE) return new int[]{0, 118, 0, 118};
+        if (minY == Integer.MAX_VALUE) return new int[]{0, 116, 0, 116};
 
         return new int[]{minY, maxY, totalMinY, totalMaxY};
     }

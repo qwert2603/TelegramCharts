@@ -355,9 +355,8 @@ public class ChartViewDelegate {
         pendingTotalMaxY = endTotalMaxY;
 
         stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
-        final int stepYInt = (int) stepY;
         for (int i = 0; i < formattedYSteps.length; i++) {
-            formattedYSteps[i] = formatY(stepYInt * i);
+            formattedYSteps[i] = formatY((int) (stepY * i));
         }
 
         if (maxYAnimator == null) {
