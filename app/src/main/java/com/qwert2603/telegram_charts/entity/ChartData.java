@@ -59,6 +59,15 @@ public class ChartData {
             }
         }
 
+        if (minY == Integer.MAX_VALUE) return new int[]{0, 118, 0, 118};
+
         return new int[]{minY, maxY, totalMinY, totalMaxY};
+    }
+
+    public boolean isAnyLineVisible() {
+        for (Line line : lines) {
+            if (line.isVisibleOrWillBe) return true;
+        }
+        return false;
     }
 }

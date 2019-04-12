@@ -35,6 +35,8 @@ public class MainActivity extends Activity {
         toolbar = findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
+        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
         List<ChartData> chartDataList = DataParser.parseData(getApplicationContext());
 
         linearLayout = findViewById(R.id.linearLayout);

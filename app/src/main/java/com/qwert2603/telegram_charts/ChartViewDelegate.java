@@ -620,7 +620,7 @@ public class ChartViewDelegate {
             }
         }
 
-        if (selectedIndex >= 0) {
+        if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
 
             final float _x = ((float) chartData.xValues[selectedIndex] - minX) / wid;
 
