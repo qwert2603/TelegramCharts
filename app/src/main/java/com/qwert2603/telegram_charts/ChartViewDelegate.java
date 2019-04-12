@@ -787,7 +787,7 @@ public class ChartViewDelegate {
                     if (line.isVisibleOrWillBe) {
                         line.panelTextPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
                         lineY += lineHeight;
-                        String formatY = formatY(line.values[selectedIndex]);
+                        String formatY = toStringWithSpaces(line.values[selectedIndex]);
                         float valueWidth = titlePaint.measureText(formatY);
                         canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), line.panelTextPaint);
                     }
@@ -799,7 +799,7 @@ public class ChartViewDelegate {
                         if (line.isVisibleOrWillBe) {
                             line.panelTextPaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
                             lineY += lineHeight;
-                            String formatY = formatY(line.values[prevSelectedIndex]);
+                            String formatY = toStringWithSpaces(line.values[prevSelectedIndex]);
                             float valueWidth = titlePaint.measureText(formatY);
                             canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, line.panelTextPaint);
                         }
@@ -954,4 +954,20 @@ public class ChartViewDelegate {
     private static final String[] FORMATTED_CACHE_K = new String[10000];
     private static final String[] FORMATTED_CACHE_M = new String[10000];
 
+    private static String toStringWithSpaces(int y) {
+        if (y == 0) return "0";
+
+        StringBuilder stringBuilder = new StringBuilder();
+        int q = 0;
+        while (y > 0) {
+            stringBuilder.append(y % 10);
+            y /= 10;
+            ++q;
+            if (q == 3) {
+                q = 0;
+                stringBuilder.append(' ');
+            }
+        }
+        return stringBuilder.reverse().toString();
+    }
 }
