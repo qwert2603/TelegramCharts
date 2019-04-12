@@ -61,7 +61,6 @@ public class ChartViewDelegateLines implements Delegate {
         totalMaxY = yLimits[3];
 
         legendPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        legendPaint.setColor(0xBB888888);
         legendPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         dp12 = getResources().getDimension(R.dimen.dp12);
         legendPaint.setTextSize(dp12 - dp12 / 12f);
@@ -607,13 +606,14 @@ public class ChartViewDelegateLines implements Delegate {
 
         linesPaint.setStrokeWidth(lineWidth / 2f);
         linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
-        legendPaint.setColor(Utils.legendColor());
+        final int maxLegendAlpha = MainActivity.NIGHT_MODE ? 0x99 : 0xFF;
+        legendPaint.setColor(MainActivity.NIGHT_MODE ? 0x99A3B1C2 : 0xFF8E8E93);
 
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
-        int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
+        int oddDatesAlpha = maxLegendAlpha - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
         for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
             float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
-            legendPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0xFF : oddDatesAlpha);
+            legendPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? maxLegendAlpha : oddDatesAlpha);
             final float dateTextWidth = legendPaint.measureText(chartData.dates[i * stepX]);
             canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp4, legendPaint);
         }
@@ -667,7 +667,7 @@ public class ChartViewDelegateLines implements Delegate {
 
         // Y lines and axis-values
         linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
-        legendPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0xFF));
+        legendPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * maxLegendAlpha));
         for (int i = 0; i < HOR_LINES; i++) {
             final float valueY = minY + stepY * i;
             final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
@@ -676,7 +676,7 @@ public class ChartViewDelegateLines implements Delegate {
         }
         if (prevStepY > 0) {
             linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
-            legendPaint.setAlpha((int) (0xFF - yLimitsAnimator.getAnimatedFraction() * 0xFF));
+            legendPaint.setAlpha((int) (maxLegendAlpha - yLimitsAnimator.getAnimatedFraction() * maxLegendAlpha));
 
             for (int i = 0; i < HOR_LINES; i++) {
                 final float valueY = minY + prevStepY * i;
