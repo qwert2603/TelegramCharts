@@ -7,6 +7,13 @@ import java.util.List;
 
 public class ChartData {
 
+    public enum Type {
+        LINES,
+        LINES_2_Y,
+        BARS,
+        AREA,
+    }
+
     public static class Line {
         public int color;
         public String name;
@@ -31,6 +38,7 @@ public class ChartData {
         public final Paint panelTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     }
 
+    public Type type;
     public long[] xValues;
     public String[] dates;
     public String[] fullDates;

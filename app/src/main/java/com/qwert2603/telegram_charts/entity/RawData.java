@@ -18,9 +18,22 @@ public class RawData {
     public Map<String, String> types;
     public Map<String, String> names;
     public Map<String, String> colors;
+    public boolean y_scaled;
+//    public boolean stacked;
+//    public boolean percentage;
 
     public ChartData toChartData() {
         ChartData chartData = new ChartData();
+
+        final String typeString = types.get(columns.get(1).get(0));
+        if (typeString.equals("line")) {
+            chartData.type = y_scaled ? ChartData.Type.LINES_2_Y : ChartData.Type.LINES;
+        } else if (typeString.equals("bar")) {
+            chartData.type = ChartData.Type.BARS;
+        } else if (typeString.equals("area")) {
+            chartData.type = ChartData.Type.AREA;
+        }
+
         int valuesCount = columns.get(0).size() - 1;
         chartData.xValues = new long[valuesCount];
         chartData.dates = new String[valuesCount];
