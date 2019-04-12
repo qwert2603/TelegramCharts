@@ -48,8 +48,7 @@ public class ChartCustomView extends View {
                 delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
                 break;
             default:
-                delegate = null;
-                break;
+                throw new RuntimeException();
 
         }
     }
