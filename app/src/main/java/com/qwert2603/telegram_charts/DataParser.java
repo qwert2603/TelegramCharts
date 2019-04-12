@@ -16,7 +16,9 @@ import java.util.List;
 
 public class DataParser {
 
-    public static List<ChartData> parseData(Context appContext) {
+    private static final Gson GSON = new Gson();
+
+    public static List<ChartData> parseDataStage1(Context appContext) {
         try {
             InputStream inputStream = appContext.getAssets().open("chart_data.json");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -34,7 +36,7 @@ public class DataParser {
             Type rawDataType = new TypeToken<List<RawData>>() {
             }.getType();
 
-            List<RawData> parsedCharts = new Gson().fromJson(stringBuilder.toString(), rawDataType);
+            List<RawData> parsedCharts = GSON.fromJson(stringBuilder.toString(), rawDataType);
 
             List<ChartData> result = new ArrayList<>(parsedCharts.size());
             for (RawData parsedChart : parsedCharts) {
@@ -47,4 +49,33 @@ public class DataParser {
         }
     }
 
+    public static List<ChartData> parseDataStage2(Context appContext) {
+        int chartsCount = 5;
+
+        List<ChartData> result = new ArrayList<>(chartsCount);
+
+        try {
+            for (int i = 0; i < chartsCount; i++) {
+                InputStream inputStream = appContext.getAssets().open("overview_" + (i + 1) + ".json");
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                StringBuilder stringBuilder = new StringBuilder();
+
+                String s = bufferedReader.readLine();
+                stringBuilder.append(s);
+                while (true) {
+                    s = bufferedReader.readLine();
+                    if (s == null) break;
+                    stringBuilder.append(s);
+                }
+
+                RawData parsedChart = GSON.fromJson(stringBuilder.toString(), RawData.class);
+                result.add(parsedChart.toChartData());
+            }
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

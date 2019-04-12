@@ -19,6 +19,14 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
+    private static final String[] CHART_NAMES = {
+            "Followers",
+            "Interactions",
+            "Fruits",
+            "Views",
+            "Fruits",
+    };
+
     public static boolean NIGHT_MODE = false;
 
     private LinearLayout linearLayout;
@@ -34,7 +42,7 @@ public class MainActivity extends Activity {
         toolbar = findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
-        List<ChartData> chartDataList = DataParser.parseData(getApplicationContext());
+        List<ChartData> chartDataList = DataParser.parseDataStage2(getApplicationContext());
 
         final int dividerHeight = (int) getResources().getDimension(R.dimen.dates_height);
         linearLayout = findViewById(R.id.linearLayout);
@@ -43,7 +51,7 @@ public class MainActivity extends Activity {
             linearLayout.addView(view);
 
             final ChartData chartData = chartDataList.get(i);
-            final ChartCustomView chartView = new ChartCustomView(this, "Chart #" + i, chartData);
+            final ChartCustomView chartView = new ChartCustomView(this, CHART_NAMES[i], chartData);
             views.add(chartView);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartView.measureHeight());
             view.addView(chartView, layoutParams);
