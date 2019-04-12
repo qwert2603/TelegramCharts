@@ -45,6 +45,8 @@ public class ChartData {
     public String[] selectedDates;
     public List<Line> lines;
 
+    public float xStep;
+
     public int[] calcYLimits(int startIndex, int endIndex) {
         if (type == Type.AREA) return new int[]{0, 100, 0, 100};
         if (type == Type.BARS) return calcYLimitsBars(startIndex, endIndex);

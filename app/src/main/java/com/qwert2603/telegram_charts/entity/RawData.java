@@ -46,6 +46,7 @@ public class RawData {
             chartData.fullDates[i] = FULL_DATE_FORMAT.format(new Date(chartData.xValues[i]));
             chartData.selectedDates[i] = SELECTED_DATE_FORMAT.format(new Date(chartData.xValues[i]));
         }
+        chartData.xStep = chartData.xValues[1] - chartData.xValues[0];
 
         chartData.lines = new ArrayList<>();
 

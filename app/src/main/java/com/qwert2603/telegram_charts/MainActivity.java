@@ -84,6 +84,8 @@ public class MainActivity extends Activity {
 //                }
 //            }
 //        });
+
+        setNightMode(NIGHT_MODE, null);
     }
 
     @Override
@@ -95,22 +97,26 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.night_mode) {
-            NIGHT_MODE = !NIGHT_MODE;
-
-            Drawable drawable = getDrawable(R.drawable.ic_moon);
-            drawable.setTint(NIGHT_MODE ? Color.WHITE : 0xFF8e8e93);
-            item.setIcon(drawable);
-
-            toolbar.setTitleTextColor(NIGHT_MODE ? Color.WHITE : Color.BLACK);
-            toolbar.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
-            linearLayout.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
-
-            for (View view : views) {
-                view.invalidate();
-            }
-
+            setNightMode(!NIGHT_MODE, item);
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setNightMode(boolean night, MenuItem menuItem) {
+        NIGHT_MODE = night;
+
+        Drawable drawable = getDrawable(R.drawable.ic_moon);
+        drawable.setTint(NIGHT_MODE ? Color.WHITE : 0xFF8e8e93);
+        if (menuItem != null) menuItem.setIcon(drawable);
+
+        toolbar.setTitleTextColor(NIGHT_MODE ? Color.WHITE : Color.BLACK);
+        toolbar.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
+        linearLayout.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
+
+        for (View view : views) {
+            view.invalidate();
+        }
+
     }
 }
