@@ -226,7 +226,7 @@ public class ChartViewDelegate {
     private int totalMinY;
     private int totalMaxY;
 
-    private ValueAnimator maxYAnimator;
+    private ValueAnimator yLimitsAnimator;
     private ValueAnimator selectedIndexAnimator;
 
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
@@ -284,7 +284,7 @@ public class ChartViewDelegate {
             animator.start();
         }
 
-        animateMaxY();
+        animateYLimits();
     }
 
     void setLineVisible(String name, boolean visible) {
@@ -316,7 +316,7 @@ public class ChartViewDelegate {
             }
         }
 
-        animateMaxY();
+        animateYLimits();
     }
 
     private void setPeriodIndices(int start, int end) {
@@ -338,41 +338,51 @@ public class ChartViewDelegate {
             stepX <<= 1;
         }
 
-        animateMaxY();
+        animateYLimits();
     }
 
     private static final int HOR_LINES = 6;
     private static final int VER_DATES = 4;
 
+    private float pendingMinY;
+    private float pendingTotalMinY;
     private float pendingMaxY;
     private float pendingTotalMaxY;
 
-    private void animateMaxY() {
+    private void animateYLimits() {
         final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
+
+        final float startMinY = minY;
+        final float endMinY = yLimits[0];
+        final float startTotalMinY = totalMinY;
+        final float endTotalMinY = yLimits[2];
 
         final float startMaxY = maxY;
         final float endMaxY = yLimits[1];
         final float startTotalMaxY = totalMaxY;
         final float endTotalMaxY = yLimits[3];
 
-        if (pendingMaxY == endMaxY && pendingTotalMaxY == endTotalMaxY) {
+        if (pendingMinY == endMinY && pendingTotalMinY == endTotalMinY && pendingMaxY == endMaxY && pendingTotalMaxY == endTotalMaxY) {
             callbacks.invalidate();
             return;
         }
 
+        pendingMinY = endMinY;
+        pendingTotalMinY = endTotalMinY;
         pendingMaxY = endMaxY;
         pendingTotalMaxY = endTotalMaxY;
 
-        stepY = (float) (yLimits[1] * (1 / (HOR_LINES - 0.25)));
+        final float dY = endMaxY - endMinY;
+        stepY = dY / (HOR_LINES - 0.25f);
         for (int i = 0; i < formattedYSteps.length; i++) {
-            formattedYSteps[i] = formatY((int) (stepY * i));
+            formattedYSteps[i] = formatY((int) (endMinY + stepY * i));
         }
 
-        if (maxYAnimator == null) {
-            maxYAnimator = ValueAnimator.ofFloat(0f, 1f);
-            maxYAnimator.setInterpolator(new DecelerateInterpolator());
-            maxYAnimator.setDuration(ANIMATION_DURATION);
-            maxYAnimator.addListener(new AnimatorListenerAdapter() {
+        if (yLimitsAnimator == null) {
+            yLimitsAnimator = ValueAnimator.ofFloat(0f, 1f);
+            yLimitsAnimator.setInterpolator(new DecelerateInterpolator());
+            yLimitsAnimator.setDuration(ANIMATION_DURATION);
+            yLimitsAnimator.addListener(new AnimatorListenerAdapter() {
                 private boolean isCanceled = false;
 
                 @Override
@@ -390,18 +400,22 @@ public class ChartViewDelegate {
                 }
             });
         } else {
-            maxYAnimator.removeAllUpdateListeners();
+            yLimitsAnimator.removeAllUpdateListeners();
         }
 
-        maxYAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        yLimitsAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+                minY = (int) (startMinY + (endMinY - startMinY) * animation.getAnimatedFraction());
+                totalMinY = (int) (startTotalMinY + (endTotalMinY - startTotalMinY) * animation.getAnimatedFraction());
+
                 maxY = (int) (startMaxY + (endMaxY - startMaxY) * animation.getAnimatedFraction());
                 totalMaxY = (int) (startTotalMaxY + (endTotalMaxY - startTotalMaxY) * animation.getAnimatedFraction());
+
                 callbacks.invalidate();
             }
         });
-        maxYAnimator.start();
+        yLimitsAnimator.start();
     }
 
     private static final int DRAG_SELECTOR = 1;
@@ -597,20 +611,22 @@ public class ChartViewDelegate {
         linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
         textPaint.setColor(MainActivity.NIGHT_MODE ? 0x80FFFFFF : 0x80182D3B);
 
-        linesPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0x19));
-        textPaint.setAlpha((int) (maxYAnimator.getAnimatedFraction() * 0x80));
+        linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
+        textPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x80));
 
         for (int i = 0; i < HOR_LINES; i++) {
-            float y = (1 - (stepY * i / maxY)) * chartHeight;
+            final float valueY = minY + stepY * i;
+            final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
             canvas.drawLine(chartPadding, y, callbacks.getWidth() - chartPadding, y, linesPaint);
             canvas.drawText(formattedYSteps[i], chartPadding, y - dp6, textPaint);
         }
         if (prevStepY > 0) {
-            linesPaint.setAlpha((int) (0x19 - maxYAnimator.getAnimatedFraction() * 0x19));
-            textPaint.setAlpha((int) (0x80 - maxYAnimator.getAnimatedFraction() * 0x80));
+            linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
+            textPaint.setAlpha((int) (0x80 - yLimitsAnimator.getAnimatedFraction() * 0x80));
 
             for (int i = 0; i < HOR_LINES; i++) {
-                float y = (1 - (prevStepY * i / maxY)) * chartHeight;
+                final float valueY = minY + prevStepY * i;
+                final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
                 canvas.drawLine(chartPadding, y, callbacks.getWidth() - chartPadding, y, linesPaint);
                 canvas.drawText(formattedPrevYSteps[i], chartPadding, y - dp6, textPaint);
             }
@@ -626,9 +642,9 @@ public class ChartViewDelegate {
         }
 
         final float wid = (maxX - minX) / drawingWidth;
-        final float hei = (maxY - 0/*minY*/) / chartHeight;
+        final float hei = (maxY - minY) / chartHeight;
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
-        final float heiP = (totalMaxY - 0/*totalMinY*/) / periodSelectorHeight;
+        final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
         final int div = 2;
 
@@ -640,7 +656,7 @@ public class ChartViewDelegate {
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = ((float) chartData.xValues[i] - minX) / wid;
-                    final float _y = chartHeight - ((float) line.values[i] - 0/*minY*/) / hei;
+                    final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -657,7 +673,7 @@ public class ChartViewDelegate {
                 for (int i = 0; i < chartData.xValues.length / div; i++) {
                     final int ii = i * div;
                     final float _x = ((float) chartData.xValues[ii] - totalMinX) / widP;
-                    final float _y = dYP - ((float) line.values[ii] - 0/*totalMinY*/) / heiP;
+                    final float _y = dYP - ((float) line.values[ii] - totalMinY) / heiP;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -702,7 +718,7 @@ public class ChartViewDelegate {
                         linesPaint.setColor(line.color);
                         linesPaint.setAlpha(line.alpha);
 
-                        final float _y = chartHeight - ((float) line.values[selectedIndex] - 0/*minY*/) / hei;
+                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
                         canvas.drawCircle(_x, _y, dp4, periodPaint);
                         canvas.drawCircle(_x, _y, dp4, linesPaint);
 

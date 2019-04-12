@@ -20,6 +20,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
     private static final String[] CHART_NAMES = {
+            "Test",
             "Followers",
             "Interactions",
             "Fruits",

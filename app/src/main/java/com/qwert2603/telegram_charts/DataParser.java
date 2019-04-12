@@ -18,6 +18,8 @@ public class DataParser {
 
     private static final Gson GSON = new Gson();
 
+    private static final boolean WITH_TEST_CHART = false;
+
     public static List<ChartData> parseDataStage1(Context appContext) {
         try {
             InputStream inputStream = appContext.getAssets().open("chart_data.json");
@@ -50,13 +52,11 @@ public class DataParser {
     }
 
     public static List<ChartData> parseDataStage2(Context appContext) {
-        int chartsCount = 5;
-
-        List<ChartData> result = new ArrayList<>(chartsCount);
+        List<ChartData> result = new ArrayList<>(6);
 
         try {
-            for (int i = 0; i < chartsCount; i++) {
-                InputStream inputStream = appContext.getAssets().open("overview_" + (i + 1) + ".json");
+            for (int i = WITH_TEST_CHART ? 0 : 1; i <= 5; i++) {
+                InputStream inputStream = appContext.getAssets().open("overview_" + i + ".json");
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
                 StringBuilder stringBuilder = new StringBuilder();
