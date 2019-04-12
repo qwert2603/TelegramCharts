@@ -237,21 +237,25 @@ public class ChartViewDelegate {
         final float drawingWidth = getDrawingWidth();
         float currentLineX = chartPadding;
         float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
-        titlePaint.setTextSize(chipTextSize);
-        for (int c = 0; c < chartData.lines.size(); c++) {
-            final ChartData.Line line = chartData.lines.get(c);
-            final float chipWidth = line.chipTextWidth + 2 * chipPadding;
+        if (chartData.lines.size() > 1) {
+            titlePaint.setTextSize(chipTextSize);
+            for (int c = 0; c < chartData.lines.size(); c++) {
+                final ChartData.Line line = chartData.lines.get(c);
+                final float chipWidth = line.chipTextWidth + 2 * chipPadding;
 
-            if (chipWidth > drawingWidth - currentLineX) {
-                currentLineX = chartPadding;
-                currentLineY += chipHeight + chipMargin;
+                if (chipWidth > drawingWidth - currentLineX) {
+                    currentLineX = chartPadding;
+                    currentLineY += chipHeight + chipMargin;
+                }
+
+                currentLineX += chipWidth + chipMargin;
             }
 
-            currentLineX += chipWidth + chipMargin;
+            // plus last chips line.
+            currentLineY += chipHeight + chipMargin;
         }
 
-        // plus last chips line.
-        return (int) (currentLineY + chipHeight + chipMargin);
+        return (int) (currentLineY + dp6);
     }
 
     private void setOnlyOneLineVisible(String name) {
@@ -848,52 +852,54 @@ public class ChartViewDelegate {
 
         canvas.restore();
 
-        final float chipCornerRadius = dp12 * 4;
-        float currentLineX = chartPadding;
-        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
-        for (int c = 0; c < chartData.lines.size(); c++) {
-            final ChartData.Line line = chartData.lines.get(c);
-            float chipWidth = line.chipTextWidth + 2 * chipPadding;
+        if (chartData.lines.size() > 1) {
+            final float chipCornerRadius = dp12 * 4;
+            float currentLineX = chartPadding;
+            float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
+            for (int c = 0; c < chartData.lines.size(); c++) {
+                final ChartData.Line line = chartData.lines.get(c);
+                float chipWidth = line.chipTextWidth + 2 * chipPadding;
 
-            if (chipWidth > drawingWidth - currentLineX) {
-                currentLineX = chartPadding;
-                currentLineY += chipHeight + chipMargin;
-            }
+                if (chipWidth > drawingWidth - currentLineX) {
+                    currentLineX = chartPadding;
+                    currentLineY += chipHeight + chipMargin;
+                }
 
-            line.chipRectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
+                line.chipRectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
 
-            if (line.isVisibleOrWillBe) {
-                periodPaint.setColor(line.color);
-                canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
+                if (line.isVisibleOrWillBe) {
+                    periodPaint.setColor(line.color);
+                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
 
-                final int checkLeft = (int) (line.chipRectOnScreen.left + chipPadding / 2 - dp2);
-                final int checkTop = (int) (line.chipRectOnScreen.top + chipPadding / 4 + dp2);
-                drawableCheck.setBounds(
-                        checkLeft,
-                        checkTop,
-                        checkLeft + drawableCheck.getIntrinsicWidth(),
-                        checkTop + drawableCheck.getIntrinsicHeight()
+                    final int checkLeft = (int) (line.chipRectOnScreen.left + chipPadding / 2 - dp2);
+                    final int checkTop = (int) (line.chipRectOnScreen.top + chipPadding / 4 + dp2);
+                    drawableCheck.setBounds(
+                            checkLeft,
+                            checkTop,
+                            checkLeft + drawableCheck.getIntrinsicWidth(),
+                            checkTop + drawableCheck.getIntrinsicHeight()
+                    );
+                    drawableCheck.draw(canvas);
+                }
+                canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, line.chipBorderPaint);
+
+                float textTransitionX = line.isVisibleOrWillBe ? chipPadding / 4 + dp2 : 0;
+                canvas.drawText(
+                        line.name,
+                        currentLineX + chipPadding + textTransitionX,
+                        currentLineY + chipPadding,
+                        line.isVisibleOrWillBe ? chipWhiteTextPaint : line.chipTextPaint
                 );
-                drawableCheck.draw(canvas);
+
+                if (lastDownX >= 0 && line.chipRectOnScreen.contains(lastDownX, lastDownY)) {
+                    periodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                    periodPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
+                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
+                    periodPaint.setStyle(Paint.Style.FILL);
+                }
+
+                currentLineX += chipWidth + chipMargin;
             }
-            canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, line.chipBorderPaint);
-
-            float textTransitionX = line.isVisibleOrWillBe ? chipPadding / 4 + dp2 : 0;
-            canvas.drawText(
-                    line.name,
-                    currentLineX + chipPadding + textTransitionX,
-                    currentLineY + chipPadding,
-                    line.isVisibleOrWillBe ? chipWhiteTextPaint : line.chipTextPaint
-            );
-
-            if (lastDownX >= 0 && line.chipRectOnScreen.contains(lastDownX, lastDownY)) {
-                periodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-                periodPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
-                canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
-                periodPaint.setStyle(Paint.Style.FILL);
-            }
-
-            currentLineX += chipWidth + chipMargin;
         }
     }
 
