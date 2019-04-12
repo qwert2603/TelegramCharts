@@ -768,19 +768,19 @@ public class ChartViewDelegate {
         // white drag rects
         periodPaint.setColor(0xD7FFFFFF);
         canvas.drawRoundRect(
-                startX + borderVer / 2 - dp2,
-                periodSelectorHeight / 2 - dp8,
-                startX + borderVer / 2 + dp2,
-                periodSelectorHeight / 2 + dp8,
+                startX + borderVer / 2 - dp2 / 2,
+                periodSelectorHeight / 2 - dp6,
+                startX + borderVer / 2 + dp2 / 2,
+                periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
                 periodPaint
         );
         canvas.drawRoundRect(
-                endX - borderVer / 2 - dp2,
-                periodSelectorHeight / 2 - dp8,
-                endX - borderVer / 2 + dp2,
-                periodSelectorHeight / 2 + dp8,
+                endX - borderVer / 2 - dp2 / 2,
+                periodSelectorHeight / 2 - dp6,
+                endX - borderVer / 2 + dp2 / 2,
+                periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
                 periodPaint
