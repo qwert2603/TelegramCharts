@@ -597,11 +597,11 @@ public class ChartViewDelegate {
         titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
         titlePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
         titlePaint.setTextSize(dp12 + dp4);
-        canvas.drawText(title, chartPadding, dp12 + dp12 + dp4, titlePaint);
+        canvas.drawText(title, chartPadding, dp12 + dp12 + dp8, titlePaint);
         titlePaint.setTextSize(dp12 + dp2);
         final String text = chartData.fullDates[startIndex] + " - " + chartData.fullDates[endIndex - 1];
         final float measureText = titlePaint.measureText(text);
-        canvas.drawText(text, callbacks.getWidth() - chartPadding - measureText, dp12 + dp12 + dp4, titlePaint);
+        canvas.drawText(text, callbacks.getWidth() - chartPadding - measureText, dp12 + dp12 + dp8, titlePaint);
 
         canvas.translate(0, chartTitleHeight);
 
