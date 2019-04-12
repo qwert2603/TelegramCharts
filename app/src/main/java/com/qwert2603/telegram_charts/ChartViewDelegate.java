@@ -111,8 +111,7 @@ public class ChartViewDelegate {
             line.linePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
             line.linePeriodPaint.setColor(line.color);
-            line.linePeriodPaint.setStrokeWidth(lineWidth / 2f);
-            line.linePeriodPaint.setStrokeCap(Paint.Cap.BUTT);
+            line.linePeriodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
             line.chipTextPaint.setColor(line.color);
             line.chipTextPaint.setTextSize(chipTextSize);
@@ -705,7 +704,7 @@ public class ChartViewDelegate {
                 barsPath.close();
                 canvas.save();
                 canvas.clipPath(periodSelectorClipPath);
-                canvas.drawPath(barsPath, line.linePaint);
+                canvas.drawPath(barsPath, line.linePeriodPaint);
                 canvas.restore();
                 barsPath.reset();
             }
