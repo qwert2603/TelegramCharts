@@ -38,7 +38,7 @@ public class ChartViewDelegate {
 
     private final Callbacks callbacks;
 
-    public ChartViewDelegate(Context context, String title, final ChartData chartData, Callbacks callbacks) {
+    public ChartViewDelegate(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
         this.callbacks = callbacks;
         this.context = context;
         this.resources = context.getResources();
@@ -149,6 +149,9 @@ public class ChartViewDelegate {
                             break;
                         }
                     }
+                    lastDownX = -1;
+                    lastDownY = -1;
+                    callbacks.invalidate();
                 }
             }
         });
@@ -409,6 +412,9 @@ public class ChartViewDelegate {
     private float startSelectedIndexY = -1;
     private boolean draggingSelectedIndex = false;
 
+    private float lastDownX = -1;
+    private float lastDownY = -1;
+
     public boolean onTouchEvent(MotionEvent event) {
         gestureDetector.onTouchEvent(event);
 
@@ -457,6 +463,11 @@ public class ChartViewDelegate {
                     startSelectedIndexX = event.getX();
                     startSelectedIndexY = event.getY();
                     callbacks.requestDisallowInterceptTouchEvent(true);
+                } else if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < event.getY()) {
+                    dragPointerId = pointerId;
+                    lastDownX = event.getX();
+                    lastDownY = event.getY();
+                    callbacks.invalidate();
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -507,6 +518,9 @@ public class ChartViewDelegate {
                     startSelectedIndexX = -1;
                     startSelectedIndexY = -1;
                     draggingSelectedIndex = false;
+                    lastDownX = -1;
+                    lastDownY = -1;
+                    callbacks.invalidate();
                 }
                 break;
         }
@@ -871,6 +885,13 @@ public class ChartViewDelegate {
                     currentLineY + chipPadding,
                     line.isVisibleOrWillBe ? chipWhiteTextPaint : line.chipTextPaint
             );
+
+            if (lastDownX >= 0 && line.chipRectOnScreen.contains(lastDownX, lastDownY)) {
+                periodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                periodPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
+                canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
+                periodPaint.setStyle(Paint.Style.FILL);
+            }
 
             currentLineX += chipWidth + chipMargin;
         }
