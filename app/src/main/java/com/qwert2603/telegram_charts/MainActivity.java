@@ -2,7 +2,6 @@ package com.qwert2603.telegram_charts;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
@@ -35,8 +34,6 @@ public class MainActivity extends Activity {
         toolbar = findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
-        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-
         List<ChartData> chartDataList = DataParser.parseData(getApplicationContext());
 
         linearLayout = findViewById(R.id.linearLayout);
@@ -57,6 +54,7 @@ public class MainActivity extends Activity {
         }
 
         scrollView = findViewById(R.id.scrollView);
+        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 //        scrollView.getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
 //            @Override
 //            public void onDraw() {
