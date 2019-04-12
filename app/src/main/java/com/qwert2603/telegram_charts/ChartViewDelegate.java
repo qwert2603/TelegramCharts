@@ -68,7 +68,7 @@ public class ChartViewDelegate {
         textPaint.setColor(0xBB888888);
         textPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         dp12 = getResources().getDimension(R.dimen.dp12);
-        textPaint.setTextSize(dp12);
+        textPaint.setTextSize(dp12 - dp12 / 12f);
 
         titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setColor(Color.BLACK);
@@ -570,7 +570,7 @@ public class ChartViewDelegate {
             float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
             textPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? 0x80 : oddDatesAlpha);
             final float dateTextWidth = textPaint.measureText(chartData.dates[i * stepX]);
-            canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp2, textPaint);
+            canvas.drawText(chartData.dates[i * stepX], x - dateTextWidth / 2, chartHeight + dp12 + dp4, textPaint);
         }
 
         final float wid = (maxX - minX) / drawingWidth;
