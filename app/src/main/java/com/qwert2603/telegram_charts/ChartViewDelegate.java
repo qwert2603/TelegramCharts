@@ -120,7 +120,7 @@ public class ChartViewDelegate {
 
             line.chipBorderPaint.setColor(line.color);
             line.chipBorderPaint.setStyle(Paint.Style.STROKE);
-            line.chipBorderPaint.setStrokeWidth(lineWidth / 2f);
+            line.chipBorderPaint.setStrokeWidth(lineWidth / 1.5f);
 
             line.panelTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             line.panelTextPaint.setColor(line.color);
