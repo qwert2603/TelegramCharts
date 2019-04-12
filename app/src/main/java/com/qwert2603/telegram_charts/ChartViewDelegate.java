@@ -158,6 +158,16 @@ public class ChartViewDelegate {
         });
 
         drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+
+        periodSelectorClipPath = new Path();
+        periodSelectorClipPath.addRoundRect(
+                0,
+                chartHeight + datesHeight,
+                getDrawingWidth(),
+                chartHeight + datesHeight + periodSelectorHeight,
+                new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
+                Path.Direction.CW
+        );
     }
 
     private Resources getResources() {
@@ -236,6 +246,8 @@ public class ChartViewDelegate {
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
 
     private final Drawable drawableCheck;
+
+    private final Path periodSelectorClipPath;
 
     public int measureHeight() {
         final float drawingWidth = getDrawingWidth();
@@ -691,7 +703,10 @@ public class ChartViewDelegate {
                     barsPath.lineTo(points[i * 4], points[i * 4 + 3]);
                 }
                 barsPath.close();
+                canvas.save();
+                canvas.clipPath(periodSelectorClipPath);
                 canvas.drawPath(barsPath, line.linePaint);
+                canvas.restore();
                 barsPath.reset();
             }
         }
