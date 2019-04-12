@@ -609,27 +609,6 @@ public class ChartViewDelegateLines implements Delegate {
         linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
         legendPaint.setColor(Utils.legendColor());
 
-        linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
-        legendPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0xFF));
-
-        for (int i = 0; i < HOR_LINES; i++) {
-            final float valueY = minY + stepY * i;
-            final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
-            canvas.drawLine(chartPadding, y, callbacks.getWidth() - chartPadding, y, linesPaint);
-            canvas.drawText(formattedYSteps[i], chartPadding, y - dp6, legendPaint);
-        }
-        if (prevStepY > 0) {
-            linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
-            legendPaint.setAlpha((int) (0xFF - yLimitsAnimator.getAnimatedFraction() * 0xFF));
-
-            for (int i = 0; i < HOR_LINES; i++) {
-                final float valueY = minY + prevStepY * i;
-                final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
-                canvas.drawLine(chartPadding, y, callbacks.getWidth() - chartPadding, y, linesPaint);
-                canvas.drawText(formattedPrevYSteps[i], chartPadding, y - dp6, legendPaint);
-            }
-        }
-
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         int oddDatesAlpha = 0xFF - (int) ((showingDatesCount - VER_DATES) / VER_DATES * 0xFF);
         for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
@@ -683,6 +662,27 @@ public class ChartViewDelegateLines implements Delegate {
 
                 line.linePeriodPaint.setAlpha(line.alpha);
                 canvas.drawLines(points, 0, q, line.linePeriodPaint);
+            }
+        }
+
+        // Y lines and axis-values
+        linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
+        legendPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0xFF));
+        for (int i = 0; i < HOR_LINES; i++) {
+            final float valueY = minY + stepY * i;
+            final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
+            canvas.drawLine(0, y, drawingWidth, y, linesPaint);
+            canvas.drawText(formattedYSteps[i], 0, y - dp6, legendPaint);
+        }
+        if (prevStepY > 0) {
+            linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
+            legendPaint.setAlpha((int) (0xFF - yLimitsAnimator.getAnimatedFraction() * 0xFF));
+
+            for (int i = 0; i < HOR_LINES; i++) {
+                final float valueY = minY + prevStepY * i;
+                final float y = (1 - (valueY - minY) / (maxY - minY)) * chartHeight;
+                canvas.drawLine(0, y, drawingWidth, y, linesPaint);
+                canvas.drawText(formattedPrevYSteps[i], 0, y - dp6, legendPaint);
             }
         }
 
