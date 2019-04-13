@@ -825,33 +825,59 @@ public class ChartViewDelegateArea implements Delegate {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
                         lineY += lineHeight;
-                        canvas.drawText(line.name, panelLeft, lineY, titlePaint);
+                        canvas.drawText(line.name, panelLeft + dp12 + dp12 + dp8, lineY, titlePaint);
                     }
                 }
 
                 lineY = lineHeight;
 
+                int sum = 0;
+                for (int c = 0; c < chartData.lines.size(); c++) {
+                    final ChartData.Line line = chartData.lines.get(c);
+                    if (line.isVisibleOrWillBe) {
+                        sum += line.values[selectedIndex];
+                        line.panelTextPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
+                        lineY += lineHeight;
+                        String formatY = toStringWithSpaces(line.values[selectedIndex]);
+                        float valueWidth = line.panelTextPaint.measureText(formatY);
+                        canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), line.panelTextPaint);
+                    }
+                }
+                lineY = lineHeight;
                 titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
-                        line.panelTextPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
+                        titlePaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
                         lineY += lineHeight;
-                        String formatY = toStringWithSpaces(line.values[selectedIndex]);
+                        String formatY = toStringWithSpaces(line.values[selectedIndex] * 100 / sum) + '%';
                         float valueWidth = titlePaint.measureText(formatY);
-                        canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), line.panelTextPaint);
+                        canvas.drawText(formatY, panelLeft + dp12 + dp12 + dp4 - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), titlePaint);
                     }
                 }
                 if (prevSelectedIndex >= 0) {
+                    int prevSum = 0;
                     lineY = lineHeight;
                     for (int c = 0; c < chartData.lines.size(); c++) {
                         final ChartData.Line line = chartData.lines.get(c);
                         if (line.isVisibleOrWillBe) {
+                            prevSum += line.values[prevSelectedIndex];
                             line.panelTextPaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
                             lineY += lineHeight;
                             String formatY = toStringWithSpaces(line.values[prevSelectedIndex]);
-                            float valueWidth = titlePaint.measureText(formatY);
+                            float valueWidth = line.panelTextPaint.measureText(formatY);
                             canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, line.panelTextPaint);
+                        }
+                    }
+                    lineY = lineHeight;
+                    for (int c = 0; c < chartData.lines.size(); c++) {
+                        final ChartData.Line line = chartData.lines.get(c);
+                        if (line.isVisibleOrWillBe) {
+                            titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                            lineY += lineHeight;
+                            String formatY = toStringWithSpaces(line.values[prevSelectedIndex] * 100 / prevSum) + '%';
+                            float valueWidth = titlePaint.measureText(formatY);
+                            canvas.drawText(formatY, panelLeft + dp12 + dp12 + dp4 - valueWidth, lineY + translationDisappear, titlePaint);
                         }
                     }
                 }
