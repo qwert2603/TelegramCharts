@@ -151,6 +151,16 @@ public class ChartViewDelegateLines implements Delegate {
         });
 
         drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+
+        periodSelectorClipPath = new Path();
+        periodSelectorClipPath.addRoundRect(
+                0,
+                chartHeight + datesHeight,
+                getDrawingWidth(),
+                chartHeight + datesHeight + periodSelectorHeight,
+                new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
+                Path.Direction.CW
+        );
     }
 
     private Resources getResources() {
@@ -226,6 +236,8 @@ public class ChartViewDelegateLines implements Delegate {
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
 
     private final Drawable drawableCheck;
+
+    private final Path periodSelectorClipPath;
 
     @Override
     public int measureHeight() {
@@ -661,7 +673,10 @@ public class ChartViewDelegateLines implements Delegate {
                 }
 
                 line.linePeriodPaint.setAlpha(line.alpha);
+                canvas.save();
+                canvas.clipPath(periodSelectorClipPath);
                 canvas.drawLines(points, 0, q, line.linePeriodPaint);
+                canvas.restore();
             }
         }
 
