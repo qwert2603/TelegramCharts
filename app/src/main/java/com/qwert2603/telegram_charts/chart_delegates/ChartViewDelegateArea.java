@@ -614,8 +614,8 @@ public class ChartViewDelegateArea implements Delegate {
 
         linesPaint.setStrokeWidth(lineWidth / 2f);
         linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
-        final int maxLegendAlpha = MainActivity.NIGHT_MODE ? 0x99 : 0x80;
-        legendPaint.setColor(MainActivity.NIGHT_MODE ? 0x99A3B1C2 : 0x80252529);
+        final int maxLegendAlpha = MainActivity.NIGHT_MODE ? 0xFF : 0x80;
+        legendPaint.setColor(MainActivity.NIGHT_MODE ? 0xFFD8D8D8 : 0x80252529);
 
         float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         int oddDatesAlpha = maxLegendAlpha - (int) ((showingDatesCount - VER_DATES) / VER_DATES * maxLegendAlpha);
