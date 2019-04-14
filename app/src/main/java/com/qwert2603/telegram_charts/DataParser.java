@@ -18,7 +18,7 @@ public class DataParser {
 
     private static final Gson GSON = new Gson();
 
-    private static final boolean WITH_TEST_CHART = false;
+    private static final boolean WITH_TEST_CHART = true;
 
     public static List<ChartData> parseDataStage1(Context appContext) {
         try {
@@ -52,7 +52,7 @@ public class DataParser {
     }
 
     public static List<ChartData> parseDataStage2(Context appContext) {
-        int chartsCount = WITH_TEST_CHART ? 6 : 5;
+        int chartsCount = WITH_TEST_CHART ? 8 : 5;
 
         final List<ChartData> result = new ArrayList<>(chartsCount);
 

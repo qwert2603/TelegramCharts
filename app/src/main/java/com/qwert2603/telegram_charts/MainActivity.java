@@ -26,6 +26,8 @@ public class MainActivity extends Activity {
             "Views",
             "Fruits",
             "Test",
+            "Test2",
+            "Test3",
     };
 
     public static boolean NIGHT_MODE = false;
