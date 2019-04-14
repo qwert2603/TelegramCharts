@@ -635,7 +635,7 @@ public class ChartViewDelegateLines implements Delegate {
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
         final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-        final int div = 2;
+        final int div = 1;
 
         canvas.translate(chartPadding, 0);
 
