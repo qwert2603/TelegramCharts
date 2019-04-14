@@ -850,7 +850,7 @@ public class ChartViewDelegateArea implements Delegate {
                     if (line.isVisibleOrWillBe) {
                         titlePaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
                         lineY += lineHeight;
-                        String formatY = toStringWithSpaces(line.values[selectedIndex] * 100 / sum) + '%';
+                        String formatY = toStringWithSpaces(Math.round(line.values[selectedIndex] * 100f / sum)) + '%';
                         float valueWidth = titlePaint.measureText(formatY);
                         canvas.drawText(formatY, panelLeft + dp12 + dp12 + dp4 - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), titlePaint);
                     }
@@ -875,7 +875,7 @@ public class ChartViewDelegateArea implements Delegate {
                         if (line.isVisibleOrWillBe) {
                             titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
                             lineY += lineHeight;
-                            String formatY = toStringWithSpaces(line.values[prevSelectedIndex] * 100 / prevSum) + '%';
+                            String formatY = toStringWithSpaces(Math.round(line.values[prevSelectedIndex] * 100f / prevSum)) + '%';
                             float valueWidth = titlePaint.measureText(formatY);
                             canvas.drawText(formatY, panelLeft + dp12 + dp12 + dp4 - valueWidth, lineY + translationDisappear, titlePaint);
                         }
