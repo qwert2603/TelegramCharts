@@ -676,8 +676,6 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                     final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
                     final float _y = dYP - ((float) line.values[i] - totalMinY[c]) / heiP;
 
-                    LogUtils.d("qqqqq " + _x + " " + _y);
-
                     points[q++] = _x;
                     points[q++] = _y;
                     if (i != 0 && i != chartData.xValues.length - 1) {
