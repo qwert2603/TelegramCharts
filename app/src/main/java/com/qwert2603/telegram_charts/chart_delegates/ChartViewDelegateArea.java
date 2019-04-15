@@ -102,9 +102,11 @@ public class ChartViewDelegateArea implements Delegate {
         chipWhiteTextPaint.setTextSize(chipTextSize);
 
         for (ChartData.Line line : chartData.lines) {
+            line.linePaint.setAntiAlias(false);
             line.linePaint.setColor(line.color);
             line.linePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
+            line.linePeriodPaint.setAntiAlias(false);
             line.linePeriodPaint.setColor(line.color);
             line.linePeriodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
