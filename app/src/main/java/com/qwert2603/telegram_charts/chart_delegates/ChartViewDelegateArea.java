@@ -629,7 +629,6 @@ public class ChartViewDelegateArea implements Delegate {
         final float wid = (maxX - minX) / drawingWidth;
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-        final int div = 1;
 
         canvas.translate(chartPadding, 0);
 
@@ -680,10 +679,6 @@ public class ChartViewDelegateArea implements Delegate {
 
                 q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    if (i % div != 0) {
-                        totalSums[i] += line.values[i] * (line.alpha / 255f);
-                        continue;
-                    }
                     final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
                     final float _yBottom = dYP - (totalSums[i] / allLinesSums[i]) * periodSelectorHeight;
                     totalSums[i] += line.values[i] * (line.alpha / 255f);

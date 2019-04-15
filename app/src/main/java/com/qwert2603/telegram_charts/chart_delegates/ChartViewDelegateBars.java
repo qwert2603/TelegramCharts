@@ -190,7 +190,6 @@ public class ChartViewDelegateBars implements Delegate {
     private final float chipHeight;
 
     private final Path path = new Path();
-    private final Path barsPath = new Path();
     private final float[] radiiLeft;
     private final float[] radiiRight;
 
