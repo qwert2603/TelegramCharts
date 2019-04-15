@@ -1,15 +1,19 @@
 package com.qwert2603.telegram_charts;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toolbar;
 
 import com.qwert2603.telegram_charts.entity.ChartData;
@@ -35,6 +39,7 @@ public class MainActivity extends Activity {
     private LinearLayout linearLayout;
     private Toolbar toolbar;
     private ScrollView scrollView;
+    private TextView footer;
 
     private List<View> views = new ArrayList<>();
 
@@ -64,6 +69,17 @@ public class MainActivity extends Activity {
             views.add(child);
             view.addView(child, qLayoutParams);
         }
+
+        footer = (TextView) getLayoutInflater().inflate(R.layout.footer, linearLayout, false);
+        footer.setText(Html.fromHtml(getString(R.string.footer)));
+        linearLayout.addView(footer);
+        footer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/qwert2603"));
+                startActivity(intent);
+            }
+        });
 
         scrollView = findViewById(R.id.scrollView);
         scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -115,6 +131,8 @@ public class MainActivity extends Activity {
         toolbar.setTitleTextColor(NIGHT_MODE ? Color.WHITE : Color.BLACK);
         toolbar.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
         linearLayout.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
+
+        footer.setTextColor(NIGHT_MODE ? Color.WHITE : Color.BLACK);
 
         for (View view : views) {
             view.invalidate();

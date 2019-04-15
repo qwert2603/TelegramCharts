@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Telegram Charts</string>
+
+    <string name="footer">
+        <![CDATA[Deved by <font color="#ff0000">@qwert2603</font> in one week]]>
+    </string>
 </resources>
