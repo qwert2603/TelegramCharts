@@ -101,11 +101,11 @@ public class ChartViewDelegateBars implements Delegate {
         chipWhiteTextPaint.setTextSize(chipTextSize);
 
         for (ChartData.Line line : chartData.lines) {
+            line.linePaint.setAntiAlias(false);
             line.linePaint.setColor(line.color);
-            line.linePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
+            line.linePeriodPaint.setAntiAlias(false);
             line.linePeriodPaint.setColor(line.color);
-            line.linePeriodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
             line.chipTextPaint.setColor(line.color);
             line.chipTextPaint.setTextSize(chipTextSize);
@@ -629,7 +629,6 @@ public class ChartViewDelegateBars implements Delegate {
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
         final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-        final int div = 1;
 
         canvas.translate(chartPadding, 0);
 
@@ -638,89 +637,64 @@ public class ChartViewDelegateBars implements Delegate {
             totalSums[i] = 0;
         }
 
+        final float expander = 1.05f;
+
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
+                line.linePaint.setStrokeWidth(chartData.xStep / wid * expander);
+                line.linePeriodPaint.setStrokeWidth(chartData.xStep / widP);
+
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _xLeft = ((float) chartData.xValues[i] - minX - chartData.xStep / 2) / wid;
-                    final float _xRight = ((float) chartData.xValues[i] - minX + chartData.xStep / 2) / wid;
+                    final float _x = ((float) chartData.xValues[i] - minX) / wid;
                     final float _yBottom = chartHeight - (sums[i] - minY) / hei;
                     sums[i] += line.values[i] * (line.alpha / 255f);
                     final float _yTop = chartHeight - (sums[i] - minY) / hei;
 
-                    if (_xLeft < -chartPadding - dp12 || _xRight > drawingWidth + chartPadding + dp12) {
+                    if (_x < -chartPadding - dp12 || _x > drawingWidth + chartPadding + dp12) {
                         continue;
                     }
 
-                    points[q++] = _xLeft;
+                    points[q++] = _x;
                     points[q++] = _yTop;
-                    points[q++] = _xRight;
+                    points[q++] = _x;
                     points[q++] = _yBottom;
                 }
-
-                barsPath.moveTo(points[0], chartHeight);
-                for (int i = 0; i < q / 4; i++) {
-                    barsPath.lineTo(points[i * 4], points[i * 4 + 1]);
-                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 1]);
-                }
-                for (int i = q / 4 - 1; i >= 0; i--) {
-                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 3]);
-                    barsPath.lineTo(points[i * 4], points[i * 4 + 3]);
-                }
-                barsPath.close();
-                canvas.drawPath(barsPath, line.linePaint);
-                barsPath.reset();
+                canvas.drawLines(points, 0, q, line.linePaint);
 
                 q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    if (i % div != 0) {
-                        totalSums[i] += line.values[i] * (line.alpha / 255f);
-                        continue;
-                    }
-                    final float _xLeft = ((float) chartData.xValues[i] - totalMinX - chartData.xStep / 2) / widP;
-                    final float _xRight = ((float) chartData.xValues[i] - totalMinX + chartData.xStep / 2) / widP;
+                    final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
                     final float _yBottom = dYP - (totalSums[i] - totalMinY) / heiP;
                     totalSums[i] += line.values[i] * (line.alpha / 255f);
                     final float _yTop = dYP - (totalSums[i] - totalMinY) / heiP;
 
-                    points[q++] = _xLeft;
+                    points[q++] = _x;
                     points[q++] = _yTop;
-                    points[q++] = _xRight;
+                    points[q++] = _x;
                     points[q++] = _yBottom;
                 }
-
-                barsPath.moveTo(points[0], chartHeight);
-                for (int i = 0; i < q / 4; i++) {
-                    barsPath.lineTo(points[i * 4], points[i * 4 + 1]);
-                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 1]);
-                }
-                for (int i = q / 4 - 1; i >= 0; i--) {
-                    barsPath.lineTo(points[i * 4 + 2], points[i * 4 + 3]);
-                    barsPath.lineTo(points[i * 4], points[i * 4 + 3]);
-                }
-                barsPath.close();
                 canvas.save();
                 canvas.clipPath(periodSelectorClipPath);
-                canvas.drawPath(barsPath, line.linePeriodPaint);
+                canvas.drawLines(points, 0, q, line.linePeriodPaint);
                 canvas.restore();
-                barsPath.reset();
             }
         }
 
         if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
             periodPaint.setColor(MainActivity.NIGHT_MODE ? 0x80242F3E : 0x80FFFFFF);
             canvas.drawRect(
-                    ((float) chartData.xValues[0] - minX - chartData.xStep / 2) / wid,
+                    ((float) chartData.xValues[0] - minX - chartData.xStep * expander / 2) / wid,
                     -chartTitleHeight,
-                    ((float) chartData.xValues[selectedIndex] - minX - chartData.xStep / 2) / wid,
+                    ((float) chartData.xValues[selectedIndex] - minX - chartData.xStep * expander / 2) / wid,
                     chartHeight,
                     periodPaint
             );
             canvas.drawRect(
-                    ((float) chartData.xValues[selectedIndex] - minX + chartData.xStep / 2) / wid,
+                    ((float) chartData.xValues[selectedIndex] - minX + chartData.xStep * expander / 2) / wid,
                     -chartTitleHeight,
-                    ((float) chartData.xValues[chartData.xValues.length - 1] - minX + chartData.xStep / 2) / wid,
+                    ((float) chartData.xValues[chartData.xValues.length - 1] - minX + chartData.xStep * expander / 2) / wid,
                     chartHeight,
                     periodPaint
             );
