@@ -18,7 +18,7 @@ public class DataParser {
 
     private static final Gson GSON = new Gson();
 
-    private static final boolean WITH_TEST_CHART = true;
+    private static final boolean WITH_TEST_CHART = false;
 
     public static List<ChartData> parseDataStage1(Context appContext) {
         try {
@@ -58,7 +58,7 @@ public class DataParser {
 
         try {
             for (int i = 1; i <= chartsCount; i++) {
-                InputStream inputStream = appContext.getAssets().open("overview_" + i + ".json");
+                InputStream inputStream = appContext.getAssets().open(i + "/overview.json");
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
                 StringBuilder stringBuilder = new StringBuilder();
