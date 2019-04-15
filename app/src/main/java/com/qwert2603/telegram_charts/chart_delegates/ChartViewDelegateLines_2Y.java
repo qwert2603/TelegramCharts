@@ -16,15 +16,18 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 
+import com.qwert2603.telegram_charts.LogUtils;
 import com.qwert2603.telegram_charts.MainActivity;
 import com.qwert2603.telegram_charts.R;
 import com.qwert2603.telegram_charts.Utils;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ChartViewDelegateLines implements Delegate {
+public class ChartViewDelegateLines_2Y implements Delegate {
 
     private static final long ANIMATION_DURATION = 200L;
 
@@ -33,7 +36,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final Callbacks callbacks;
 
-    public ChartViewDelegateLines(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
+    public ChartViewDelegateLines_2Y(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
         this.callbacks = callbacks;
         this.context = context;
         this.resources = context.getResources();
@@ -50,10 +53,10 @@ public class ChartViewDelegateLines implements Delegate {
         periodPaint.setStyle(Paint.Style.FILL);
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
-        minY = yLimits[0];
-        maxY = yLimits[1];
-        totalMinY = yLimits[2];
-        totalMaxY = yLimits[3];
+        minY = new float[]{yLimits[0], yLimits[4]};
+        maxY = new float[]{yLimits[1], yLimits[5]};
+        totalMinY = new float[]{yLimits[2], yLimits[6]};
+        totalMaxY = new float[]{yLimits[3], yLimits[7]};
 
         setPeriodIndices(0, chartData.xValues.length);
 
@@ -218,19 +221,19 @@ public class ChartViewDelegateLines implements Delegate {
     private final long totalMaxX;
 
     private int stepX;
-    private float stepY;
-    private float prevStepY;
+    private float[] stepY = new float[2];
+    private float[] prevStepY = new float[2];
 
-    private final float[] stepsY = new float[HOR_LINES];
-    private final float[] prevStepsY = new float[HOR_LINES];
+    private final float[][] stepsY = new float[2][HOR_LINES];
+    private final float[][] prevStepsY = new float[2][HOR_LINES];
 
-    private int minY;
-    private int maxY;
+    private float[] minY;
+    private float[] maxY;
 
-    private int totalMinY;
-    private int totalMaxY;
+    private float[] totalMinY;
+    private float[] totalMaxY;
 
-    private ValueAnimator yLimitsAnimator;
+    private ValueAnimator[] yLimitsAnimator = new ValueAnimator[2];
     private ValueAnimator selectedIndexAnimator;
 
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
@@ -294,8 +297,10 @@ public class ChartViewDelegateLines implements Delegate {
         animateYLimits();
     }
 
-    void setLineVisible(String name, boolean visible) {
-        for (final ChartData.Line line : chartData.lines) {
+    private void setLineVisible(String name, boolean visible) {
+        List<ChartData.Line> lines = chartData.lines;
+        for (int c = 0; c < lines.size(); c++) {
+            final ChartData.Line line = lines.get(c);
             if (line.name.equals(name)) {
 
                 ValueAnimator animator = opacityAnimators.get(line.name);
@@ -351,25 +356,25 @@ public class ChartViewDelegateLines implements Delegate {
     private static final int HOR_LINES = 6;
     private static final int VER_DATES = 4;
 
-    private float pendingMinY;
-    private float pendingTotalMinY;
-    private float pendingMaxY;
-    private float pendingTotalMaxY;
+    private float[] pendingMinY;
+    private float[] pendingTotalMinY;
+    private float[] pendingMaxY;
+    private float[] pendingTotalMaxY;
 
     private void animateYLimits() {
         final int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
 
-        final float startMinY = minY;
-        final float endMinY = yLimits[0];
-        final float startTotalMinY = totalMinY;
-        final float endTotalMinY = yLimits[2];
+        final float[] startMinY = minY;
+        final float[] endMinY = new float[]{yLimits[0], yLimits[4]};
+        final float[] startTotalMinY = totalMinY;
+        final float[] endTotalMinY = new float[]{yLimits[2], yLimits[6]};
 
-        final float startMaxY = maxY;
-        final float endMaxY = yLimits[1];
-        final float startTotalMaxY = totalMaxY;
-        final float endTotalMaxY = yLimits[3];
+        final float[] startMaxY = maxY;
+        final float[] endMaxY = new float[]{yLimits[1], yLimits[5]};
+        final float[] startTotalMaxY = totalMaxY;
+        final float[] endTotalMaxY = new float[]{yLimits[3], yLimits[7]};
 
-        if (pendingMinY == endMinY && pendingTotalMinY == endTotalMinY && pendingMaxY == endMaxY && pendingTotalMaxY == endTotalMaxY) {
+        if (Arrays.equals(pendingMinY, endMinY) && Arrays.equals(pendingTotalMinY, endTotalMinY) && Arrays.equals(pendingMaxY, endMaxY) && Arrays.equals(pendingTotalMaxY, endTotalMaxY)) {
             callbacks.invalidate();
             return;
         }
@@ -379,50 +384,59 @@ public class ChartViewDelegateLines implements Delegate {
         pendingMaxY = endMaxY;
         pendingTotalMaxY = endTotalMaxY;
 
-        final float dY = endMaxY - endMinY;
-        stepY = dY / (HOR_LINES - 0.25f);
-        for (int i = 0; i < stepsY.length; i++) {
-            stepsY[i] = (endMinY + stepY * i);
-        }
+        for (int lineIndex = 0; lineIndex < 2; lineIndex++) {
+            final int finalLineIndex = lineIndex;
+            final float dY = endMaxY[finalLineIndex] - endMinY[finalLineIndex];
+            stepY[finalLineIndex] = dY / (HOR_LINES - 0.25f);
+            for (int i = 0; i < stepsY[finalLineIndex].length; i++) {
+                stepsY[finalLineIndex][i] = (endMinY[finalLineIndex] + stepY[finalLineIndex] * i);
+            }
 
-        if (yLimitsAnimator == null) {
-            yLimitsAnimator = ValueAnimator.ofFloat(0f, 1f);
-            yLimitsAnimator.setInterpolator(new DecelerateInterpolator());
-            yLimitsAnimator.setDuration(ANIMATION_DURATION);
-            yLimitsAnimator.addListener(new AnimatorListenerAdapter() {
-                private boolean isCanceled = false;
+            if (yLimitsAnimator[finalLineIndex] == null) {
+                yLimitsAnimator[finalLineIndex] = ValueAnimator.ofFloat(0f, 1f);
+                yLimitsAnimator[finalLineIndex].setInterpolator(new DecelerateInterpolator());
+                yLimitsAnimator[finalLineIndex].setDuration(ANIMATION_DURATION);
+                yLimitsAnimator[finalLineIndex].addListener(new AnimatorListenerAdapter() {
+                    private boolean isCanceled = false;
 
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    isCanceled = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (!isCanceled) {
-                        prevStepY = stepY;
-                        System.arraycopy(stepsY, 0, prevStepsY, 0, HOR_LINES);
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        isCanceled = false;
                     }
 
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                        isCanceled = true;
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        if (!isCanceled) {
+                            prevStepY[finalLineIndex] = stepY[finalLineIndex];
+                            System.arraycopy(stepsY[finalLineIndex], 0, prevStepsY[finalLineIndex], 0, HOR_LINES);
+                        }
+
+                    }
+                });
+            } else {
+                yLimitsAnimator[finalLineIndex].removeAllUpdateListeners();
+            }
+
+            yLimitsAnimator[finalLineIndex].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    minY[finalLineIndex] = (startMinY[finalLineIndex] + (endMinY[finalLineIndex] - startMinY[finalLineIndex]) * animation.getAnimatedFraction());
+                    totalMinY[finalLineIndex] = (startTotalMinY[finalLineIndex] + (endTotalMinY[finalLineIndex] - startTotalMinY[finalLineIndex]) * animation.getAnimatedFraction());
+
+                    maxY[finalLineIndex] = (startMaxY[finalLineIndex] + (endMaxY[finalLineIndex] - startMaxY[finalLineIndex]) * animation.getAnimatedFraction());
+                    totalMaxY[finalLineIndex] = (startTotalMaxY[finalLineIndex] + (endTotalMaxY[finalLineIndex] - startTotalMaxY[finalLineIndex]) * animation.getAnimatedFraction());
+
+                    callbacks.invalidate();
                 }
             });
-        } else {
-            yLimitsAnimator.removeAllUpdateListeners();
+            yLimitsAnimator[finalLineIndex].cancel();
+            yLimitsAnimator[finalLineIndex].start();
         }
-
-        yLimitsAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                minY = (int) (startMinY + (endMinY - startMinY) * animation.getAnimatedFraction());
-                totalMinY = (int) (startTotalMinY + (endTotalMinY - startTotalMinY) * animation.getAnimatedFraction());
-
-                maxY = (int) (startMaxY + (endMaxY - startMaxY) * animation.getAnimatedFraction());
-                totalMaxY = (int) (startTotalMaxY + (endTotalMaxY - startTotalMaxY) * animation.getAnimatedFraction());
-
-                callbacks.invalidate();
-            }
-        });
-        yLimitsAnimator.start();
     }
 
     private static final int DRAG_SELECTOR = 1;
@@ -631,21 +645,20 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         final float wid = (maxX - minX) / drawingWidth;
-        final float hei = (maxY - minY) / chartHeight;
         final float widP = (totalMaxX - totalMinX) / drawingWidth;
-        final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
         final float dYP = chartHeight + datesHeight + periodSelectorHeight;
-        final int div = 1;
 
         canvas.translate(chartPadding, 0);
 
         for (int c = 0; c < chartData.lines.size(); c++) {
+            final float hei = (maxY[c] - minY[c]) / chartHeight;
+            final float heiP = (totalMaxY[c] - totalMinY[c]) / periodSelectorHeight;
             final ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = ((float) chartData.xValues[i] - minX) / wid;
-                    final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
+                    final float _y = chartHeight - ((float) line.values[i] - minY[c]) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -659,14 +672,15 @@ public class ChartViewDelegateLines implements Delegate {
                 canvas.drawLines(points, line.linePaint);
 
                 q = 0;
-                for (int i = 0; i < chartData.xValues.length / div; i++) {
-                    final int ii = i * div;
-                    final float _x = ((float) chartData.xValues[ii] - totalMinX) / widP;
-                    final float _y = dYP - ((float) line.values[ii] - totalMinY) / heiP;
+                for (int i = 0; i < chartData.xValues.length; i++) {
+                    final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
+                    final float _y = dYP - ((float) line.values[i] - totalMinY[c]) / heiP;
+
+                    LogUtils.d("qqqqq " + _x + " " + _y);
 
                     points[q++] = _x;
                     points[q++] = _y;
-                    if (i != 0 && i != chartData.xValues.length / div - 1) {
+                    if (i != 0 && i != chartData.xValues.length - 1) {
                         points[q++] = _x;
                         points[q++] = _y;
                     }
@@ -681,25 +695,35 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         // Y lines and axis-values
-        linesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
-        legendPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * maxLegendAlpha));
-        for (int i = 0; i < HOR_LINES; i++) {
-            final float valueY = stepsY[i];
-            final float centerY = (minY + maxY) / 2f;
-            final float y = (0.5f - (valueY - centerY) / (maxY - minY)) * chartHeight;
-            canvas.drawLine(0, y, drawingWidth, y, linesPaint);
-            canvas.drawText(formatY((int) valueY), 0, y - dp6, legendPaint);
-        }
-        if (prevStepY > 0) {
-            linesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
-            legendPaint.setAlpha((int) (maxLegendAlpha - yLimitsAnimator.getAnimatedFraction() * maxLegendAlpha));
+        for (int c = 0; c < 2; c++) {
+            final ValueAnimator opacityAnimator = opacityAnimators.get(chartData.lines.get(c).name);
+            final float opacityFraction = opacityAnimator != null ? (int) opacityAnimator.getAnimatedValue() / 255f : 1;
+            legendPaint.setColor(chartData.lines.get(c).color);
 
-            for (int i = 0; i < HOR_LINES; i++) {
-                final float valueY = prevStepsY[i];
-                final float centerY = (minY + maxY) / 2f;
-                final float y = (0.5f - (valueY - centerY) / (maxY - minY)) * chartHeight;
-                canvas.drawLine(0, y, drawingWidth, y, linesPaint);
-                canvas.drawText(formatY((int) valueY), 0, y - dp6, legendPaint);
+            if (stepY[c] > 0) {
+                linesPaint.setAlpha((int) (yLimitsAnimator[c].getAnimatedFraction() * 0x10 / 2));
+                legendPaint.setAlpha((int) (yLimitsAnimator[c].getAnimatedFraction() * maxLegendAlpha * opacityFraction));
+                for (int i = 0; i < HOR_LINES; i++) {
+                    final float valueY = stepsY[c][i];
+                    final float centerY = (minY[c] + maxY[c]) / 2f;
+                    final float y = (0.5f - (valueY - centerY) / (maxY[c] - minY[c])) * chartHeight;
+                    canvas.drawLine(0, y, drawingWidth, y, linesPaint);
+                    final String formatY = formatY((int) valueY);
+                    canvas.drawText(formatY, c == 0 ? 0 : (drawingWidth - legendPaint.measureText(formatY)), y - dp6, legendPaint);
+                }
+            }
+            if (prevStepY[c] > 0) {
+                linesPaint.setAlpha((int) (0x10 - yLimitsAnimator[c].getAnimatedFraction() * 0x10 / 2));
+                legendPaint.setAlpha((int) (maxLegendAlpha - yLimitsAnimator[c].getAnimatedFraction() * maxLegendAlpha * (1 - opacityFraction)));
+
+                for (int i = 0; i < HOR_LINES; i++) {
+                    final float valueY = prevStepsY[c][i];
+                    final float centerY = (minY[c] + maxY[c]) / 2f;
+                    final float y = (0.5f - (valueY - centerY) / (maxY[c] - minY[c])) * chartHeight;
+                    canvas.drawLine(0, y, drawingWidth, y, linesPaint);
+                    final String formatY = formatY((int) valueY);
+                    canvas.drawText(formatY, c == 0 ? 0 : (drawingWidth - legendPaint.measureText(formatY)), y - dp6, legendPaint);
+                }
             }
         }
 
@@ -733,7 +757,8 @@ public class ChartViewDelegateLines implements Delegate {
                         linesPaint.setColor(line.color);
                         linesPaint.setAlpha(line.alpha);
 
-                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
+                        final float hei = (maxY[c] - minY[c]) / chartHeight;
+                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY[c]) / hei;
                         canvas.drawCircle(_x, _y, dp4, periodPaint);
                         canvas.drawCircle(_x, _y, dp4, linesPaint);
 

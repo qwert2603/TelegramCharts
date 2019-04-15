@@ -9,6 +9,7 @@ import com.qwert2603.telegram_charts.chart_delegates.Callbacks;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateArea;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateBars;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateLines;
+import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateLines_2Y;
 import com.qwert2603.telegram_charts.chart_delegates.Delegate;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
@@ -43,7 +44,7 @@ public class ChartCustomView extends View {
                 delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
                 break;
             case LINES_2_Y:
-                delegate = new ChartViewDelegateLines(context, title, chartData, callbacks);
+                delegate = new ChartViewDelegateLines_2Y(context, title, chartData, callbacks);
                 break;
             case AREA:
                 delegate = new ChartViewDelegateArea(context, title, chartData, callbacks);

@@ -50,6 +50,7 @@ public class ChartData {
     public int[] calcYLimits(int startIndex, int endIndex) {
         if (type == Type.AREA) return new int[]{0, 100, 0, 100};
         if (type == Type.BARS) return calcYLimitsBars(startIndex, endIndex);
+        if (type == Type.LINES_2_Y) return calcYLimitsLines_2Y(startIndex, endIndex);
         return calcYLimitsLines(startIndex, endIndex);
     }
 
@@ -68,9 +69,47 @@ public class ChartData {
             if (startIndex <= i && i < endIndex && y > maxY) maxY = y;
         }
 
-        if (maxY == 0) return new int[]{0, 116, 0, 116};
+        if (maxY == 0) return new int[]{0, 115, 0, 115};
 
         return new int[]{0, maxY, 0, totalMaxY};
+    }
+
+    private int[] calcYLimitsLines_2Y(int startIndex, int endIndex) {
+        final int[] result = new int[8];
+
+        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+            Line line = lines.get(lineIndex);
+            int minY = Integer.MAX_VALUE;
+            int maxY = Integer.MIN_VALUE;
+            int totalMinY = Integer.MAX_VALUE;
+            int totalMaxY = Integer.MIN_VALUE;
+
+            if (line.isVisibleOrWillBe) {
+                int[] values = line.values;
+                for (int i = startIndex; i < endIndex; i++) {
+                    int y = values[i];
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+                for (int i = 0; i < xValues.length; i++) {
+                    int y = values[i];
+                    if (y < totalMinY) totalMinY = y;
+                    if (y > totalMaxY) totalMaxY = y;
+                }
+
+                result[lineIndex * 4] = minY;
+                result[lineIndex * 4 + 1] = maxY;
+                result[lineIndex * 4 + 2] = totalMinY;
+                result[lineIndex * 4 + 3] = totalMaxY;
+            } else {
+                result[lineIndex * 4] = 0;
+                result[lineIndex * 4 + 1] = 0;
+                result[lineIndex * 4 + 2] = 0;
+                result[lineIndex * 4 + 3] = 0;
+            }
+        }
+
+        return result;
     }
 
     private int[] calcYLimitsLines(int startIndex, int endIndex) {
@@ -95,7 +134,7 @@ public class ChartData {
             }
         }
 
-        if (minY == Integer.MAX_VALUE) return new int[]{0, 116, 0, 116};
+        if (minY == Integer.MAX_VALUE) return new int[]{0, 115, 0, 115};
 
         return new int[]{minY, maxY, totalMinY, totalMaxY};
     }
