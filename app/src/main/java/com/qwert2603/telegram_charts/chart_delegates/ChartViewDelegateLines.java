@@ -240,8 +240,8 @@ public class ChartViewDelegateLines implements Delegate {
     private final Path periodSelectorClipPath;
 
     @Override
-    public int measureHeight() {
-        final float drawingWidth = getDrawingWidth();
+    public int measureHeight(int width) {
+        final float drawingWidth = width - 2 * chartPadding;
         float currentLineX = chartPadding;
         float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
         if (chartData.lines.size() > 1) {

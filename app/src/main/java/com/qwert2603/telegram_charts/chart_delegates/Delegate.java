@@ -6,5 +6,5 @@ import android.view.MotionEvent;
 public interface Delegate {
     boolean onTouchEvent(MotionEvent event);
     void onDraw(Canvas canvas);
-    int measureHeight();
+    int measureHeight(int width);
 }

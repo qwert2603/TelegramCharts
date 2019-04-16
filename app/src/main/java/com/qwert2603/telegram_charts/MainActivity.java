@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
             final ChartData chartData = chartDataList.get(i);
             final ChartCustomView chartView = new ChartCustomView(this, CHART_NAMES[i], chartData);
             views.add(chartView);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, chartView.measureHeight());
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             view.addView(chartView, layoutParams);
 
             LinearLayout.LayoutParams qLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dividerHeight);
@@ -137,6 +137,5 @@ public class MainActivity extends Activity {
         for (View view : views) {
             view.invalidate();
         }
-
     }
 }

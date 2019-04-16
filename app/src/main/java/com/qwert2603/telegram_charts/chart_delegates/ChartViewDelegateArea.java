@@ -247,7 +247,7 @@ public class ChartViewDelegateArea implements Delegate {
     private final Path periodSelectorClipPath;
 
     @Override
-    public int measureHeight() {
+    public int measureHeight(int width) {
         final float drawingWidth = getDrawingWidth();
         float currentLineX = chartPadding;
         float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;

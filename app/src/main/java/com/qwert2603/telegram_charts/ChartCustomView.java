@@ -33,6 +33,7 @@ public class ChartCustomView extends View {
 
             @Override
             public float getWidth() {
+//               todo ChartCustomView.this.getWidth();
                 return getResources().getDisplayMetrics().widthPixels;
             }
         };
@@ -56,6 +57,14 @@ public class ChartCustomView extends View {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        int height = getDefaultSize(delegate.measureHeight(width), heightMeasureSpec);
+
+        setMeasuredDimension(width, height);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         delegate.onTouchEvent(event);
         return true;
@@ -64,9 +73,5 @@ public class ChartCustomView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         delegate.onDraw(canvas);
-    }
-
-    public int measureHeight() {
-        return delegate.measureHeight();
     }
 }
