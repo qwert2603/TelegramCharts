@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class ChartViewDelegateLines implements Delegate {
 
-    private static final long ANIMATION_DURATION = 200L;
+    private static final long ANIMATION_DURATION = 1200L;
 
     private final Resources resources;
     private final Context context;
@@ -40,9 +40,6 @@ public class ChartViewDelegateLines implements Delegate {
         this.resources = context.getResources();
 
         this.title = title;
-
-        linesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        linesPaint.setStyle(Paint.Style.STROKE);
 
         this.chartData = chartData;
         points = new float[(chartData.xValues.length - 1) * 4];
@@ -63,7 +60,7 @@ public class ChartViewDelegateLines implements Delegate {
         dp4 = getResources().getDimension(R.dimen.dp4);
         dp6 = getResources().getDimension(R.dimen.dp6);
         dp8 = getResources().getDimension(R.dimen.dp8);
-        lineWidth = getResources().getDimension(R.dimen.line_width);
+        float lineWidth = getResources().getDimension(R.dimen.line_width);
 
         titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -115,7 +112,7 @@ public class ChartViewDelegateLines implements Delegate {
         chipsMarginTop = dp6;
         chipMargin = dp12;
         chipPadding = dp12 + dp12;
-        chipTextSize = dp12 + dp2;
+        float chipTextSize = dp12 + dp2;
         chipHeight = chipPadding + chipTextSize;
 
         chipWhiteTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -152,6 +149,48 @@ public class ChartViewDelegateLines implements Delegate {
             chipsFillPaint[i].setStyle(Paint.Style.FILL);
         }
 
+        selectedXLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        selectedXLinePaint.setStyle(Paint.Style.STROKE);
+        selectedXLinePaint.setStrokeWidth(lineWidth / 2f);
+
+        selectedCircleFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        selectedCircleFillPaint.setStyle(Paint.Style.FILL);
+
+        panelDatePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelDatePaint.setTextSize(dp12 + dp2);
+        panelDatePaint.setTypeface(Typeface.DEFAULT_BOLD);
+
+        panelLinesNamesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelLinesNamesPaint.setTextSize(dp12 + dp2);
+
+        selectedCirclesStrokePaint = new Paint[chartData.lines.size()];
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            final ChartData.Line line = chartData.lines.get(i);
+            final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(line.color);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(lineWidth);
+            selectedCirclesStrokePaint[i] = paint;
+        }
+
+        panelShadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelShadowPaint.setStyle(Paint.Style.STROKE);
+        panelShadowPaint.setStrokeWidth(lineWidth / 2f);
+
+        panelBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelBackgroundPaint.setStyle(Paint.Style.FILL);
+
+        panelYValuesPaint = new Paint[chartData.lines.size()];
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            final ChartData.Line line = chartData.lines.get(i);
+            final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(line.color);
+            paint.setTextSize(dp12 + dp2);
+            paint.setTypeface(Typeface.DEFAULT_BOLD);
+            paint.setTextAlign(Paint.Align.RIGHT);
+            panelYValuesPaint[i] = paint;
+        }
+
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
         chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height);
@@ -174,13 +213,6 @@ public class ChartViewDelegateLines implements Delegate {
                 new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
                 Path.Direction.CW
         );
-
-
-        for (ChartData.Line line : chartData.lines) {
-            line.panelTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-            line.panelTextPaint.setColor(line.color);
-            line.panelTextPaint.setTextSize(dp12 + dp2);
-        }
 
         gestureDetector = new GestureDetector(this.context, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -231,7 +263,6 @@ public class ChartViewDelegateLines implements Delegate {
     private final float periodSelectorHeight;
     private final float minPeriodSelectorWidth;
     private final float periodSelectorDraggableWidth;
-    private final float lineWidth;
     private final float chartPadding;
     private final float dp2;
     private final float dp4;
@@ -240,7 +271,6 @@ public class ChartViewDelegateLines implements Delegate {
     private final float dp12;
     private final float chipsMarginTop;
     private final float chipMargin;
-    private final float chipTextSize;
     private final float chipPadding;
     private final float chipHeight;
 
@@ -250,7 +280,8 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final String title;
     private final ChartData chartData;
-    private final Paint linesPaint;
+    private final Paint panelBackgroundPaint;
+    private final Paint panelShadowPaint;
     private final float[] points;
 
     private final Paint periodSelectorPaint;
@@ -270,6 +301,13 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint[] chipsBorderPaint;
     private final Paint[] chipsFillPaint;
     private final Paint[] chipsTextPaint;
+
+    private final Paint selectedXLinePaint;
+    private final Paint selectedCircleFillPaint;
+    private final Paint[] selectedCirclesStrokePaint;
+    private final Paint panelDatePaint;
+    private final Paint panelLinesNamesPaint;
+    private final Paint[] panelYValuesPaint;
 
     private float periodStartX = 0;
     private float periodEndX = 1;
@@ -313,7 +351,6 @@ public class ChartViewDelegateLines implements Delegate {
         float currentLineX = chartPadding;
         float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
         if (chartData.lines.size() > 1) {
-            titlePaint.setTextSize(chipTextSize);
             for (int c = 0; c < chartData.lines.size(); c++) {
                 final float chipWidth = chipsTextWidth[c] + 2 * chipPadding;
 
@@ -754,7 +791,6 @@ public class ChartViewDelegateLines implements Delegate {
     }
 
     // canvas translation must be (0, chartTitleHeight).
-    //todo: refactor
     private void drawChartSelection(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -763,69 +799,68 @@ public class ChartViewDelegateLines implements Delegate {
 
         if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
 
-            final float _x = ((float) chartData.xValues[selectedIndex] - minX) / wid;
+            final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
-            if (-chartPadding < _x && _x < callbacks.getWidth() - chartPadding) {
+            if (0 < _x && _x < callbacks.getWidth()) {
                 final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
-                linesPaint.setStrokeWidth(lineWidth / 2f);
-                linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
-                canvas.drawLine(_x, 0, _x, chartHeight, linesPaint);
+                selectedXLinePaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
+                canvas.drawLine(_x, 0, _x, chartHeight, selectedXLinePaint);
 
-                final boolean panelLefted = _x < callbacks.getWidth() / 2 - chartPadding;
-                final float prevX = prevSelectedIndex >= 0 ? ((float) chartData.xValues[prevSelectedIndex] - minX) / wid : _x;
+                final boolean panelLefted = _x < callbacks.getWidth() / 2;
+                final float prevX = prevSelectedIndex < 0 ? _x : chartPadding + (chartData.xValues[prevSelectedIndex] - minX) / wid;
                 final float panelAnchor = _x + (prevX - _x) * (1 - changeFraction);
 
-                final float panelLeft = panelAnchor + (panelLefted ? dp12 * 2 : dp12 * -14);
-                final float panelRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
+                final float panelContentLeft = panelAnchor + (panelLefted ? dp12 * 2 : dp12 * -14);
+                final float panelContentRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
 
-                linesPaint.setStrokeWidth(lineWidth);
-                periodSelectorPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
+                selectedCircleFillPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 
                 final float lineHeight = dp12 * 2;
+
                 float lineY = lineHeight;
 
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
-                    if (line.isVisibleOrWillBe) {
-                        linesPaint.setColor(line.color);
-                        linesPaint.setAlpha(line.alpha);
+                    if (line.isVisible()) {
+                        selectedCircleFillPaint.setAlpha(line.alpha);
+                        selectedCirclesStrokePaint[c].setAlpha(line.alpha);
 
                         final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
-                        canvas.drawCircle(_x, _y, dp4, periodSelectorPaint);
-                        canvas.drawCircle(_x, _y, dp4, linesPaint);
+                        canvas.drawCircle(_x, _y, dp4, selectedCircleFillPaint);
+                        canvas.drawCircle(_x, _y, dp4, selectedCirclesStrokePaint[c]);
 
-                        lineY += lineHeight;
+                        lineY += lineHeight * line.alpha / 255f;
                     }
                 }
 
                 final float panelPadding = dp12;
 
                 panelRectOnScreen.set(
-                        panelLeft - panelPadding,
+                        panelContentLeft - panelPadding,
                         chartTitleHeight,
-                        panelRight + panelPadding,
+                        panelContentRight + panelPadding,
                         chartTitleHeight + lineY + panelPadding
                 );
 
+                panelBackgroundPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
                 canvas.drawRoundRect(
-                        panelLeft - panelPadding,
+                        panelContentLeft - panelPadding,
                         0,
-                        panelRight + panelPadding,
+                        panelContentRight + panelPadding,
                         lineY + panelPadding,
-                        dp4, dp4, periodSelectorPaint);
-                linesPaint.setStrokeWidth(lineWidth / 2f);
-                linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x77000000 : 0x99CCCCCC);
+                        dp4, dp4, panelBackgroundPaint);
+                panelShadowPaint.setColor(MainActivity.NIGHT_MODE ? 0x77000000 : 0x99CCCCCC);
                 canvas.drawRoundRect(
-                        panelLeft - panelPadding,
+                        panelContentLeft - panelPadding,
                         0,
-                        panelRight + panelPadding,
+                        panelContentRight + panelPadding,
                         lineY + panelPadding,
-                        dp4, dp4, linesPaint);
+                        dp4, dp4, panelShadowPaint);
 
                 lineY = lineHeight;
 
-                titlePaint.setAlpha((int) (0xFF * changeFraction));
+                panelDatePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
                 final boolean isBack = selectedIndex < prevSelectedIndex;
                 final String selectedDate = chartData.selectedDates[selectedIndex];
                 final String prevDate = prevSelectedIndex >= 0 ? chartData.selectedDates[prevSelectedIndex] : selectedDate;
@@ -835,21 +870,25 @@ public class ChartViewDelegateLines implements Delegate {
 
                 final float translationAppear = (1 - changeFraction) * dp12 * (isBack ? -1 : 1);
                 final float translationDisappear = -changeFraction * dp12 * (isBack ? -1 : 1);
-                canvas.drawText(changeOfSelected, panelLeft, lineY + translationAppear, titlePaint);
+
+                panelDatePaint.setAlpha((int) (0xFF * changeFraction));
+                canvas.drawText(changeOfSelected, panelContentLeft, lineY + translationAppear, panelDatePaint);
                 if (prevSelectedIndex >= 0) {
-                    titlePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
-                    canvas.drawText(prevDate.substring(0, prevDate.length() - commonChars), panelLeft, lineY + translationDisappear, titlePaint);
+                    panelDatePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
+                    String changeOfPrev = prevDate.substring(0, prevDate.length() - commonChars);
+                    canvas.drawText(changeOfPrev, panelContentLeft, lineY + translationDisappear, panelDatePaint);
                 }
-                titlePaint.setAlpha(0xFF);
+                panelDatePaint.setAlpha(0xFF);
+                String datesCommonEnd = selectedDate.substring(selectedDate.length() - commonChars);
+                canvas.drawText(datesCommonEnd, panelContentLeft + panelDatePaint.measureText(changeOfSelected), lineY, panelDatePaint);
 
-                canvas.drawText(selectedDate.substring(selectedDate.length() - commonChars), panelLeft + titlePaint.measureText(changeOfSelected), lineY, titlePaint);
-
-                titlePaint.setTypeface(Typeface.DEFAULT);
+                panelLinesNamesPaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
-                    if (line.isVisibleOrWillBe) {
-                        lineY += lineHeight;
-                        canvas.drawText(line.name, panelLeft, lineY, titlePaint);
+                    if (line.isVisible()) {
+                        lineY += lineHeight * line.alpha / 255f;
+                        panelLinesNamesPaint.setAlpha(line.alpha);
+                        canvas.drawText(line.name, panelContentLeft, lineY, panelLinesNamesPaint);
                     }
                 }
 
@@ -857,28 +896,27 @@ public class ChartViewDelegateLines implements Delegate {
 
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
-                    if (line.isVisibleOrWillBe) {
-                        line.panelTextPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0XFF);
-                        lineY += lineHeight;
+                    if (line.isVisible()) {
+                        final int maxAlpha = line.alpha;
+                        panelYValuesPaint[c].setAlpha(prevSelectedIndex >= 0 ? (int) (maxAlpha * changeFraction) : maxAlpha);
+                        lineY += lineHeight * maxAlpha / 255f;
                         String formatY = toStringWithSpaces(line.values[selectedIndex]);
-                        float valueWidth = titlePaint.measureText(formatY);
-                        canvas.drawText(formatY, panelRight - valueWidth, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), line.panelTextPaint);
+                        canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValuesPaint[c]);
                     }
                 }
                 if (prevSelectedIndex >= 0) {
                     lineY = lineHeight;
                     for (int c = 0; c < chartData.lines.size(); c++) {
                         final ChartData.Line line = chartData.lines.get(c);
-                        if (line.isVisibleOrWillBe) {
-                            line.panelTextPaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
-                            lineY += lineHeight;
+                        if (line.isVisible()) {
+                            final int maxAlpha = line.alpha;
+                            panelYValuesPaint[c].setAlpha(maxAlpha - (int) (maxAlpha * changeFraction));
+                            lineY += lineHeight * maxAlpha / 255f;
                             String formatY = toStringWithSpaces(line.values[prevSelectedIndex]);
-                            float valueWidth = titlePaint.measureText(formatY);
-                            canvas.drawText(formatY, panelRight - valueWidth, lineY + translationDisappear, line.panelTextPaint);
+                            canvas.drawText(formatY, panelContentRight, lineY + translationDisappear, panelYValuesPaint[c]);
                         }
                     }
                 }
-                titlePaint.setAlpha(0xFF);
             } else {
                 panelRectOnScreen.set(0, 0, 0, 0);
             }
@@ -1033,11 +1071,11 @@ public class ChartViewDelegateLines implements Delegate {
         drawChart(canvas);
         drawChips(canvas);
 
-        canvas.translate(chartPadding, chartTitleHeight);
+        canvas.translate(0, chartTitleHeight);
 
         drawChartSelection(canvas);
 
-        canvas.translate(0, chartHeight + datesHeight);
+        canvas.translate(chartPadding, chartHeight + datesHeight);
 
         drawPeriodSelector(canvas);
     }
