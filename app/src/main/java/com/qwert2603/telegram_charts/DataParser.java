@@ -18,7 +18,7 @@ public class DataParser {
 
     private static final Gson GSON = new Gson();
 
-    private static final boolean WITH_TEST_CHART = false;
+    private static final boolean WITH_TEST_CHART = true;
 
     public static List<ChartData> parseDataStage1(Context appContext) {
         try {

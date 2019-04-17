@@ -82,6 +82,7 @@ public class ChartViewDelegateLines implements Delegate {
         legendDatesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         legendDatesPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         legendDatesPaint.setTextSize(dp12 - dp12 / 12f);
+        legendDatesPaint.setTextAlign(Paint.Align.CENTER);
 
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
@@ -230,6 +231,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final long totalMinX;
     private final long totalMaxX;
 
+    // step on X-axis (in indices).
     private int stepX;
     private float stepY;
     private float prevStepY;
@@ -349,6 +351,7 @@ public class ChartViewDelegateLines implements Delegate {
         maxX = chartData.xValues[endIndex - 1];
 
         stepX = Utils.floorToPowerOf2((endIndex - startIndex) / VER_DATES);
+        if (stepX < 1) stepX = 1;
 
         animateYLimits();
     }
@@ -625,12 +628,11 @@ public class ChartViewDelegateLines implements Delegate {
 
         final float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         final int oddDatesAlpha = maxLegendAlpha - (int) ((showingDatesCount - VER_DATES) / VER_DATES * maxLegendAlpha);
-        for (int i = startIndex / stepX; i < (endIndex - 1) / stepX + 1; i++) {
-            float x = (i * stepX - startIndex * 1f) / (endIndex - startIndex) * drawingWidth + chartPadding;
-            legendDatesPaint.setAlpha(i * stepX % (stepX * 2) == 0 ? maxLegendAlpha : oddDatesAlpha);
-            final String dateText = chartData.dates[i * stepX];
-            final float dateTextWidth = legendDatesPaint.measureText(dateText);
-            canvas.drawText(dateText, x - dateTextWidth / 2, chartTitleHeight + chartHeight + dp12 + dp4, legendDatesPaint);
+        for (int index = startIndex / stepX * stepX; index < Math.min(endIndex + stepX, chartData.xValues.length); index += stepX) {
+            float x = (index - startIndex * 1f) / (endIndex - startIndex - 1) * drawingWidth + chartPadding;
+            legendDatesPaint.setAlpha(index % (stepX * 2) == 0 ? maxLegendAlpha : oddDatesAlpha);
+            final String dateText = chartData.dates[index];
+            canvas.drawText(dateText, x, chartTitleHeight + chartHeight + dp12 + dp4, legendDatesPaint);
         }
     }
 
