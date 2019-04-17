@@ -20,4 +20,16 @@ public class Utils {
 
         return common;
     }
+
+    public static int floorToPowerOf2(int i) {
+        int m = 0;
+        while (i > 1) {
+            i >>= 1;
+            ++m;
+        }
+        for (int q = 0; q < m; q++) {
+            i <<= 1;
+        }
+        return i;
+    }
 }

@@ -36,4 +36,19 @@ public class ChartViewTest {
         assertEquals(9, Utils.commonEnd("23 фев. 2019", "24 фев. 2019"));
         assertEquals(12, Utils.commonEnd("24 фев. 2019", "24 фев. 2019"));
     }
+
+
+    @Test
+    public void t3() {
+        assertEquals(16, Utils.floorToPowerOf2(16));
+        assertEquals(16, Utils.floorToPowerOf2(17));
+        assertEquals(16, Utils.floorToPowerOf2(22));
+        assertEquals(16, Utils.floorToPowerOf2(31));
+        assertEquals(32, Utils.floorToPowerOf2(32));
+        assertEquals(32, Utils.floorToPowerOf2(42));
+        assertEquals(1, Utils.floorToPowerOf2(1));
+        assertEquals(2, Utils.floorToPowerOf2(2));
+        assertEquals(2, Utils.floorToPowerOf2(3));
+        assertEquals(0, Utils.floorToPowerOf2(0));
+    }
 }
