@@ -31,6 +31,7 @@ public class ChartData {
 
         public float chipTextWidth;
 
+        //todo: remove all paints
         public final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         public final Paint linePeriodPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         public final Paint chipTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);

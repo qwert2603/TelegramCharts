@@ -90,6 +90,17 @@ public class ChartViewDelegateLines implements Delegate {
         yLinesPaint.setStyle(Paint.Style.STROKE);
         yLinesPaint.setStrokeWidth(lineWidth / 2f);
 
+
+        linesPaints = new Paint[chartData.lines.size()];
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            final ChartData.Line line = chartData.lines.get(i);
+            final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(line.color);
+            paint.setStrokeWidth(lineWidth * 0.9f);
+            paint.setStrokeCap(Paint.Cap.SQUARE);
+            linesPaints[i] = paint;
+        }
+
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
         chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height);
@@ -117,10 +128,6 @@ public class ChartViewDelegateLines implements Delegate {
         chipWhiteTextPaint.setTextSize(chipTextSize);
 
         for (ChartData.Line line : chartData.lines) {
-            line.linePaint.setColor(line.color);
-            line.linePaint.setStrokeWidth(lineWidth * 0.9f);
-            line.linePaint.setStrokeCap(Paint.Cap.SQUARE);
-
             line.linePeriodPaint.setColor(line.color);
             line.linePeriodPaint.setStrokeWidth(lineWidth / 2f * 0.9f);
             line.linePeriodPaint.setStrokeCap(Paint.Cap.BUTT);
@@ -223,6 +230,8 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint titlePaint;
     private final Paint datesRangePaint;
     private final Paint chipWhiteTextPaint;
+
+    private final Paint[] linesPaints;
 
     private float periodStartX = 0;
     private float periodEndX = 1;
@@ -676,7 +685,7 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (chartPadding, chartTitleHeight).
+    // canvas translation must be (0, 0).
     private void drawChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -688,8 +697,8 @@ public class ChartViewDelegateLines implements Delegate {
             if (line.isVisible()) {
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - minX) / wid;
-                    final float _y = chartHeight - ((float) line.values[i] - minY) / hei;
+                    final float _x = chartPadding + ((float) chartData.xValues[i] - minX) / wid;
+                    final float _y = chartTitleHeight + chartHeight - ((float) line.values[i] - minY) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -699,8 +708,9 @@ public class ChartViewDelegateLines implements Delegate {
                     }
                 }
 
-                line.linePaint.setAlpha(line.alpha);
-                canvas.drawLines(points, line.linePaint);
+                final Paint paint = linesPaints[c];
+                paint.setAlpha(line.alpha);
+                canvas.drawLines(points, paint);
             }
         }
     }
@@ -992,11 +1002,12 @@ public class ChartViewDelegateLines implements Delegate {
         drawTitle(canvas);
         drawDates(canvas);
         drawYSteps(canvas);
+        drawChart(canvas);
+
         drawChips(canvas);
 
         canvas.translate(chartPadding, chartTitleHeight);
 
-        drawChart(canvas);
         drawPeriodSelector(canvas);
 
         drawChartSelection(canvas);
