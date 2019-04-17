@@ -22,6 +22,7 @@ import com.qwert2603.telegram_charts.Utils;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ChartViewDelegateLines implements Delegate {
@@ -45,9 +46,6 @@ public class ChartViewDelegateLines implements Delegate {
 
         this.chartData = chartData;
         points = new float[(chartData.xValues.length - 1) * 4];
-
-        periodSelectorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        periodSelectorPaint.setStyle(Paint.Style.FILL);
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
         minY = yLimits[0];
@@ -86,10 +84,12 @@ public class ChartViewDelegateLines implements Delegate {
         legendYStepsPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         legendYStepsPaint.setTextSize(dp12 - dp12 / 12f);
 
+        periodSelectorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorPaint.setStyle(Paint.Style.FILL);
+
         yLinesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         yLinesPaint.setStyle(Paint.Style.STROKE);
         yLinesPaint.setStrokeWidth(lineWidth / 2f);
-
 
         linesPaints = new Paint[chartData.lines.size()];
         for (int i = 0; i < chartData.lines.size(); i++) {
@@ -109,6 +109,47 @@ public class ChartViewDelegateLines implements Delegate {
             paint.setStrokeWidth(lineWidth / 2f * 0.9f);
             paint.setStrokeCap(Paint.Cap.BUTT);
             periodSelectorLinesPaints[i] = paint;
+        }
+
+        //chips
+        chipsMarginTop = dp6;
+        chipMargin = dp12;
+        chipPadding = dp12 + dp12;
+        chipTextSize = dp12 + dp2;
+        chipHeight = chipPadding + chipTextSize;
+
+        chipWhiteTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        chipWhiteTextPaint.setColor(Color.WHITE);
+        chipWhiteTextPaint.setTextSize(chipTextSize);
+
+        highlightChipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        highlightChipPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        chipsRectOnScreen = new RectF[chartData.lines.size()];
+        chipsTextWidth = new float[chartData.lines.size()];
+        chipsFillPaint = new Paint[chartData.lines.size()];
+        chipsTextPaint = new Paint[chartData.lines.size()];
+        chipsBorderPaint = new Paint[chartData.lines.size()];
+
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            final ChartData.Line line = chartData.lines.get(i);
+
+            chipsRectOnScreen[i] = new RectF();
+
+            chipsTextPaint[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
+            chipsTextPaint[i].setColor(line.color);
+            chipsTextPaint[i].setTextSize(chipTextSize);
+
+            chipsTextWidth[i] = chipsTextPaint[i].measureText(line.name) + 2 * chipPadding;
+
+            chipsBorderPaint[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
+            chipsBorderPaint[i].setColor(line.color);
+            chipsBorderPaint[i].setStyle(Paint.Style.STROKE);
+            chipsBorderPaint[i].setStrokeWidth(lineWidth / 2f);
+
+            chipsFillPaint[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
+            chipsFillPaint[i].setColor(line.color);
+            chipsFillPaint[i].setStyle(Paint.Style.FILL);
         }
 
         chartHeight = getResources().getDimension(R.dimen.chart_height);
@@ -134,30 +175,8 @@ public class ChartViewDelegateLines implements Delegate {
                 Path.Direction.CW
         );
 
-        //chips
-        chipsMarginTop = dp6;
-        chipMargin = dp12;
-        chipPadding = dp12 + dp12;
-        chipTextSize = dp12 + dp2;
-        chipHeight = chipPadding + chipTextSize;
-
-        chipWhiteTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        chipWhiteTextPaint.setColor(Color.WHITE);
-        chipWhiteTextPaint.setTextSize(chipTextSize);
 
         for (ChartData.Line line : chartData.lines) {
-            line.linePeriodPaint.setColor(line.color);
-            line.linePeriodPaint.setStrokeWidth(lineWidth / 2f * 0.9f);
-            line.linePeriodPaint.setStrokeCap(Paint.Cap.BUTT);
-
-            line.chipTextPaint.setColor(line.color);
-            line.chipTextPaint.setTextSize(chipTextSize);
-            line.chipTextWidth = line.chipTextPaint.measureText(line.name);
-
-            line.chipBorderPaint.setColor(line.color);
-            line.chipBorderPaint.setStyle(Paint.Style.STROKE);
-            line.chipBorderPaint.setStrokeWidth(lineWidth / 2f);
-
             line.panelTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             line.panelTextPaint.setColor(line.color);
             line.panelTextPaint.setTextSize(dp12 + dp2);
@@ -167,8 +186,10 @@ public class ChartViewDelegateLines implements Delegate {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
-                    for (ChartData.Line line : chartData.lines) {
-                        if (line.chipRectOnScreen.contains(e.getX(), e.getY())) {
+                    List<ChartData.Line> lines = chartData.lines;
+                    for (int i = 0; i < lines.size(); i++) {
+                        if (chipsRectOnScreen[i].contains(e.getX(), e.getY())) {
+                            ChartData.Line line = lines.get(i);
                             setLineVisible(line.name, !line.isVisibleOrWillBe);
                             return true;
                         }
@@ -180,9 +201,10 @@ public class ChartViewDelegateLines implements Delegate {
             @Override
             public void onLongPress(MotionEvent e) {
                 if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
-                    for (ChartData.Line line : chartData.lines) {
-                        if (line.chipRectOnScreen.contains(e.getX(), e.getY())) {
-                            setOnlyOneLineVisible(line.name);
+                    List<ChartData.Line> lines = chartData.lines;
+                    for (int i = 0; i < lines.size(); i++) {
+                        if (chipsRectOnScreen[i].contains(e.getX(), e.getY())) {
+                            setOnlyOneLineVisible(lines.get(i).name);
                             break;
                         }
                     }
@@ -238,9 +260,16 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint titlePaint;
     private final Paint datesRangePaint;
     private final Paint chipWhiteTextPaint;
+    private final Paint highlightChipPaint;
 
     private final Paint[] linesPaints;
     private final Paint[] periodSelectorLinesPaints;
+
+    private final RectF[] chipsRectOnScreen;
+    private final float[] chipsTextWidth;
+    private final Paint[] chipsBorderPaint;
+    private final Paint[] chipsFillPaint;
+    private final Paint[] chipsTextPaint;
 
     private float periodStartX = 0;
     private float periodEndX = 1;
@@ -281,16 +310,14 @@ public class ChartViewDelegateLines implements Delegate {
 
     @Override
     public int measureHeight(int width) {
-        final float drawingWidth = width - 2 * chartPadding;
         float currentLineX = chartPadding;
         float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
         if (chartData.lines.size() > 1) {
             titlePaint.setTextSize(chipTextSize);
             for (int c = 0; c < chartData.lines.size(); c++) {
-                final ChartData.Line line = chartData.lines.get(c);
-                final float chipWidth = line.chipTextWidth + 2 * chipPadding;
+                final float chipWidth = chipsTextWidth[c] + 2 * chipPadding;
 
-                if (chipWidth > drawingWidth - currentLineX) {
+                if (chipWidth > width - chartPadding - currentLineX) {
                     currentLineX = chartPadding;
                     currentLineY += chipHeight + chipMargin;
                 }
@@ -727,6 +754,7 @@ public class ChartViewDelegateLines implements Delegate {
     }
 
     // canvas translation must be (0, chartTitleHeight).
+    //todo: refactor
     private void drawChartSelection(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -954,21 +982,20 @@ public class ChartViewDelegateLines implements Delegate {
             float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
             for (int c = 0; c < chartData.lines.size(); c++) {
                 final ChartData.Line line = chartData.lines.get(c);
-                float chipWidth = line.chipTextWidth + 2 * chipPadding;
+                float chipWidth = chipsTextWidth[c];
 
-                if (chipWidth > drawingWidth - currentLineX) {
+                if (chipWidth > drawingWidth + chartPadding - currentLineX) {
                     currentLineX = chartPadding;
                     currentLineY += chipHeight + chipMargin;
                 }
 
-                line.chipRectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
+                chipsRectOnScreen[c].set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
 
                 if (line.isVisibleOrWillBe) {
-                    periodSelectorPaint.setColor(line.color);
-                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodSelectorPaint);
+                    canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, chipsFillPaint[c]);
 
-                    final int checkLeft = (int) (line.chipRectOnScreen.left + chipPadding / 2 - dp2);
-                    final int checkTop = (int) (line.chipRectOnScreen.top + chipPadding / 4 + dp2);
+                    final int checkLeft = (int) (chipsRectOnScreen[c].left + chipPadding / 2 - dp2);
+                    final int checkTop = (int) (chipsRectOnScreen[c].top + chipPadding / 4 + dp2);
                     drawableCheck.setBounds(
                             checkLeft,
                             checkTop,
@@ -977,21 +1004,19 @@ public class ChartViewDelegateLines implements Delegate {
                     );
                     drawableCheck.draw(canvas);
                 }
-                canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, line.chipBorderPaint);
+                canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, chipsBorderPaint[c]);
 
                 float textTransitionX = line.isVisibleOrWillBe ? chipPadding / 4 + dp2 : 0;
                 canvas.drawText(
                         line.name,
                         currentLineX + chipPadding + textTransitionX,
                         currentLineY + chipPadding,
-                        line.isVisibleOrWillBe ? chipWhiteTextPaint : line.chipTextPaint
+                        line.isVisibleOrWillBe ? chipWhiteTextPaint : chipsTextPaint[c]
                 );
 
-                if (lastDownX >= 0 && line.chipRectOnScreen.contains(lastDownX, lastDownY)) {
-                    periodSelectorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-                    periodSelectorPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
-                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodSelectorPaint);
-                    periodSelectorPaint.setStyle(Paint.Style.FILL);
+                if (lastDownX >= 0 && chipsRectOnScreen[c].contains(lastDownX, lastDownY)) {
+                    highlightChipPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
+                    canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, highlightChipPaint);
                 }
 
                 currentLineX += chipWidth + chipMargin;
@@ -1006,7 +1031,6 @@ public class ChartViewDelegateLines implements Delegate {
         drawDates(canvas);
         drawYSteps(canvas);
         drawChart(canvas);
-
         drawChips(canvas);
 
         canvas.translate(chartPadding, chartTitleHeight);
