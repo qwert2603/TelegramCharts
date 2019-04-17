@@ -46,8 +46,8 @@ public class ChartViewDelegateLines implements Delegate {
         this.chartData = chartData;
         points = new float[(chartData.xValues.length - 1) * 4];
 
-        periodPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        periodPaint.setStyle(Paint.Style.FILL);
+        periodSelectorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorPaint.setStyle(Paint.Style.FILL);
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
         minY = yLimits[0];
@@ -101,6 +101,16 @@ public class ChartViewDelegateLines implements Delegate {
             linesPaints[i] = paint;
         }
 
+        periodSelectorLinesPaints = new Paint[chartData.lines.size()];
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            final ChartData.Line line = chartData.lines.get(i);
+            final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(line.color);
+            paint.setStrokeWidth(lineWidth / 2f * 0.9f);
+            paint.setStrokeCap(Paint.Cap.BUTT);
+            periodSelectorLinesPaints[i] = paint;
+        }
+
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
         chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height);
@@ -110,11 +120,19 @@ public class ChartViewDelegateLines implements Delegate {
 
         chartPadding = getResources().getDimension(R.dimen.chart_padding);
 
-
         // period selector
         final float fillRadius = dp6;
         radiiLeft = new float[]{fillRadius, fillRadius, 0, 0, 0, 0, fillRadius, fillRadius};
         radiiRight = new float[]{0, 0, fillRadius, fillRadius, fillRadius, fillRadius, 0, 0};
+        periodSelectorClipPath = new Path();
+        periodSelectorClipPath.addRoundRect(
+                0,
+                0,
+                getDrawingWidth(),
+                periodSelectorHeight,
+                new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
+                Path.Direction.CW
+        );
 
         //chips
         chipsMarginTop = dp6;
@@ -176,16 +194,6 @@ public class ChartViewDelegateLines implements Delegate {
         });
 
         drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
-
-        periodSelectorClipPath = new Path();
-        periodSelectorClipPath.addRoundRect(
-                0,
-                chartHeight + datesHeight,
-                getDrawingWidth(),
-                chartHeight + datesHeight + periodSelectorHeight,
-                new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
-                Path.Direction.CW
-        );
     }
 
     private Resources getResources() {
@@ -223,7 +231,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint linesPaint;
     private final float[] points;
 
-    private final Paint periodPaint;
+    private final Paint periodSelectorPaint;
     private final Paint legendDatesPaint;
     private final Paint legendYStepsPaint;
     private final Paint yLinesPaint;
@@ -232,6 +240,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint chipWhiteTextPaint;
 
     private final Paint[] linesPaints;
+    private final Paint[] periodSelectorLinesPaints;
 
     private float periodStartX = 0;
     private float periodEndX = 1;
@@ -691,14 +700,16 @@ public class ChartViewDelegateLines implements Delegate {
 
         final float wid = (maxX - minX) / drawingWidth;
         final float hei = (maxY - minY) / chartHeight;
+        final float dX = chartPadding;
+        final float dY = chartTitleHeight + chartHeight;
 
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
             if (line.isVisible()) {
                 int q = 0;
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = chartPadding + ((float) chartData.xValues[i] - minX) / wid;
-                    final float _y = chartTitleHeight + chartHeight - ((float) line.values[i] - minY) / hei;
+                    final float _x = dX + ((float) chartData.xValues[i] - minX) / wid;
+                    final float _y = dY - ((float) line.values[i] - minY) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -741,7 +752,7 @@ public class ChartViewDelegateLines implements Delegate {
                 final float panelRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
 
                 linesPaint.setStrokeWidth(lineWidth);
-                periodPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
+                periodSelectorPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 
                 final float lineHeight = dp12 * 2;
                 float lineY = lineHeight;
@@ -753,7 +764,7 @@ public class ChartViewDelegateLines implements Delegate {
                         linesPaint.setAlpha(line.alpha);
 
                         final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
-                        canvas.drawCircle(_x, _y, dp4, periodPaint);
+                        canvas.drawCircle(_x, _y, dp4, periodSelectorPaint);
                         canvas.drawCircle(_x, _y, dp4, linesPaint);
 
                         lineY += lineHeight;
@@ -774,7 +785,7 @@ public class ChartViewDelegateLines implements Delegate {
                         0,
                         panelRight + panelPadding,
                         lineY + panelPadding,
-                        dp4, dp4, periodPaint);
+                        dp4, dp4, periodSelectorPaint);
                 linesPaint.setStrokeWidth(lineWidth / 2f);
                 linesPaint.setColor(MainActivity.NIGHT_MODE ? 0x77000000 : 0x99CCCCCC);
                 canvas.drawRoundRect(
@@ -848,13 +859,12 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (chartPadding, chartTitleHeight).
+    // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
     private void drawPeriodSelector(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
-        final float widP = (totalMaxX - totalMinX) / drawingWidth;
-        final float heiP = (totalMaxY - totalMinY) / periodSelectorHeight;
-        final float dYP = chartHeight + datesHeight + periodSelectorHeight;
+        final float wid = (totalMaxX - totalMinX) / drawingWidth;
+        final float hei = (totalMaxY - totalMinY) / periodSelectorHeight;
 
         canvas.save();
         canvas.clipPath(periodSelectorClipPath);
@@ -865,8 +875,8 @@ public class ChartViewDelegateLines implements Delegate {
                 int q = 0;
 
                 for (int i = 0; i < chartData.xValues.length; i++) {
-                    final float _x = ((float) chartData.xValues[i] - totalMinX) / widP;
-                    final float _y = dYP - ((float) line.values[i] - totalMinY) / heiP;
+                    final float _x = ((float) chartData.xValues[i] - totalMinX) / wid;
+                    final float _y = periodSelectorHeight - ((float) line.values[i] - totalMinY) / hei;
 
                     points[q++] = _x;
                     points[q++] = _y;
@@ -876,49 +886,44 @@ public class ChartViewDelegateLines implements Delegate {
                     }
                 }
 
-                line.linePeriodPaint.setAlpha(line.alpha);
-
-                canvas.drawLines(points, 0, q, line.linePeriodPaint);
+                final Paint paint = periodSelectorLinesPaints[c];
+                paint.setAlpha(line.alpha);
+                canvas.drawLines(points, paint);
             }
         }
 
         canvas.restore();
 
-        canvas.save();
-        canvas.translate(0, chartHeight + datesHeight);
-
-        float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
-        float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
-
-        periodPaint.setColor(MainActivity.NIGHT_MODE ? 0x99304259 : 0x99E2EEF9);
+        final float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
+        final float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
 
         final float borderHor = dp2 / 2;
         final float borderVer = dp12;
 
         // period's outside.
+        periodSelectorPaint.setColor(MainActivity.NIGHT_MODE ? 0x99304259 : 0x99E2EEF9);
         path.addRoundRect(0, 0, startX + borderVer, periodSelectorHeight, radiiLeft, Path.Direction.CW);
-        canvas.drawPath(path, periodPaint);
+        canvas.drawPath(path, periodSelectorPaint);
         path.rewind();
         path.addRoundRect(endX - borderVer, 0, drawingWidth, periodSelectorHeight, radiiRight, Path.Direction.CW);
-        canvas.drawPath(path, periodPaint);
+        canvas.drawPath(path, periodSelectorPaint);
         path.rewind();
 
-        periodPaint.setColor(MainActivity.NIGHT_MODE ? 0x996F899E : 0x8086A9C4);
-
         // horizontal borders
-        canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodPaint);
-        canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodPaint);
+        periodSelectorPaint.setColor(MainActivity.NIGHT_MODE ? 0x996F899E : 0x8086A9C4);
+        canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodSelectorPaint);
+        canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodSelectorPaint);
 
         // vertical borders
         path.addRoundRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, radiiLeft, Path.Direction.CW);
-        canvas.drawPath(path, periodPaint);
+        canvas.drawPath(path, periodSelectorPaint);
         path.rewind();
         path.addRoundRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, radiiRight, Path.Direction.CW);
-        canvas.drawPath(path, periodPaint);
+        canvas.drawPath(path, periodSelectorPaint);
         path.rewind();
 
         // white drag rects
-        periodPaint.setColor(0xD7FFFFFF);
+        periodSelectorPaint.setColor(0xD7FFFFFF);
         canvas.drawRoundRect(
                 startX + borderVer / 2 - dp2 / 2,
                 periodSelectorHeight / 2 - dp6,
@@ -926,7 +931,7 @@ public class ChartViewDelegateLines implements Delegate {
                 periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
-                periodPaint
+                periodSelectorPaint
         );
         canvas.drawRoundRect(
                 endX - borderVer / 2 - dp2 / 2,
@@ -935,10 +940,8 @@ public class ChartViewDelegateLines implements Delegate {
                 periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
-                periodPaint
+                periodSelectorPaint
         );
-
-        canvas.restore();
     }
 
     // canvas translation must be (0, 0).
@@ -961,8 +964,8 @@ public class ChartViewDelegateLines implements Delegate {
                 line.chipRectOnScreen.set(currentLineX, currentLineY, currentLineX + chipWidth, currentLineY + chipHeight);
 
                 if (line.isVisibleOrWillBe) {
-                    periodPaint.setColor(line.color);
-                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
+                    periodSelectorPaint.setColor(line.color);
+                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodSelectorPaint);
 
                     final int checkLeft = (int) (line.chipRectOnScreen.left + chipPadding / 2 - dp2);
                     final int checkTop = (int) (line.chipRectOnScreen.top + chipPadding / 4 + dp2);
@@ -985,10 +988,10 @@ public class ChartViewDelegateLines implements Delegate {
                 );
 
                 if (lastDownX >= 0 && line.chipRectOnScreen.contains(lastDownX, lastDownY)) {
-                    periodPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-                    periodPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
-                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodPaint);
-                    periodPaint.setStyle(Paint.Style.FILL);
+                    periodSelectorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                    periodSelectorPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
+                    canvas.drawRoundRect(line.chipRectOnScreen, chipCornerRadius, chipCornerRadius, periodSelectorPaint);
+                    periodSelectorPaint.setStyle(Paint.Style.FILL);
                 }
 
                 currentLineX += chipWidth + chipMargin;
@@ -1008,9 +1011,11 @@ public class ChartViewDelegateLines implements Delegate {
 
         canvas.translate(chartPadding, chartTitleHeight);
 
-        drawPeriodSelector(canvas);
-
         drawChartSelection(canvas);
+
+        canvas.translate(0, chartHeight + datesHeight);
+
+        drawPeriodSelector(canvas);
     }
 
     private float getDrawingWidth() {
