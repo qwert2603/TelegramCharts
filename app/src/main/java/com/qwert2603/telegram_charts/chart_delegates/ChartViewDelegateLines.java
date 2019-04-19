@@ -663,7 +663,8 @@ public class ChartViewDelegateLines implements Delegate {
                                 startSelectedIndexX = -1;
                                 startSelectedIndexY = -1;
                                 callbacks.requestDisallowInterceptTouchEvent(false);
-                            } else if (!draggingSelectedIndex && !panelRectOnScreen.contains(event.getX(), event.getY()) && Math.abs(event.getX() - startSelectedIndexX) > dp12 && Math.abs(event.getY() - startSelectedIndexY) < dp6) {
+                            } else if (!draggingSelectedIndex && !panelRectOnScreen.contains(event.getX(), event.getY())
+                                    && Math.abs(event.getX() - startSelectedIndexX) > dp12 && Math.abs(event.getY() - startSelectedIndexY) < dp6) {
                                 draggingSelectedIndex = true;
                             }
                             if (draggingSelectedIndex) {
@@ -691,10 +692,14 @@ public class ChartViewDelegateLines implements Delegate {
         return true;
     }
 
-    private void updateSelectedIndex(float x) {
-        int newSelectedIndex = (int) (startIndex + (endIndex - 1 - startIndex) * x);
-        if (newSelectedIndex < 0) newSelectedIndex = 0;
-        if (newSelectedIndex > endIndex - 1) newSelectedIndex = endIndex - 1;
+    private void updateSelectedIndex(float xRel) {
+        int newSelectedIndex = (int) (startIndex + (endIndex - 1 - startIndex) * xRel);
+        if (newSelectedIndex < 0) {
+            newSelectedIndex = 0;
+        }
+        if (newSelectedIndex > chartData.xValues.length - 1) {
+            newSelectedIndex = endIndex - chartData.xValues.length - 1;
+        }
 
         if (newSelectedIndex == selectedIndex) return;
         prevSelectedIndex = selectedIndex;
