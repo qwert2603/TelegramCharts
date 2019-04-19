@@ -850,7 +850,11 @@ public class ChartViewDelegateLines implements Delegate {
                         canvas.drawCircle(_x, _y, dp4, selectedCircleFillPaint);
                         canvas.drawCircle(_x, _y, dp4, selectedCirclesStrokePaint[c]);
 
-                        lineY += lineHeight * line.alpha / 255f;
+                        if (line.alpha <= 0x80) {
+                            lineY += lineHeight * line.alpha / 128f;
+                        } else {
+                            lineY += lineHeight;
+                        }
                     }
                 }
 
@@ -902,11 +906,23 @@ public class ChartViewDelegateLines implements Delegate {
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisible()) {
-                        lineY += lineHeight * line.alpha / 255f;
-                        panelLinesNamesPaint.setAlpha(line.alpha);
+
+                        if (line.alpha <= 0x80) {
+                            lineY += lineHeight * line.alpha / 128f;
+                        } else {
+                            lineY += lineHeight;
+                        }
+
+                        final int maxAlpha;
+                        if (line.alpha <= 0x80) {
+                            maxAlpha = 0;
+                        } else {
+                            maxAlpha = (line.alpha - 0x80) * 2;
+                        }
+
+                        panelLinesNamesPaint.setAlpha(maxAlpha);
                         canvas.drawText(line.name, panelContentLeft, lineY, panelLinesNamesPaint);
 
-                        final int maxAlpha = line.alpha;
                         panelYValuesPaint[c].setAlpha(prevSelectedIndex >= 0 ? (int) (maxAlpha * changeFraction) : maxAlpha);
                         String formatY = toStringWithSpaces(line.values[selectedIndex]);
                         canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValuesPaint[c]);
