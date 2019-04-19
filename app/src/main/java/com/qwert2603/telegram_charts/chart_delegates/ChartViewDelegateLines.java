@@ -16,7 +16,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 
-import com.qwert2603.telegram_charts.MainActivity;
 import com.qwert2603.telegram_charts.R;
 import com.qwert2603.telegram_charts.Utils;
 import com.qwert2603.telegram_charts.entity.ChartData;
@@ -32,7 +31,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final Resources resources;
     private final Context context;
 
-    private final Callbacks callbacks;
+    protected final Callbacks callbacks;
 
     public ChartViewDelegateLines(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
         this.callbacks = callbacks;
@@ -42,7 +41,7 @@ public class ChartViewDelegateLines implements Delegate {
         this.title = title;
 
         this.chartData = chartData;
-        points = new float[(chartData.xValues.length - 1) * 4];
+        points = new float[chartData.xValues.length * 4];
 
         int[] yLimits = chartData.calcYLimits(startIndex, endIndex);
         minY = yLimits[0];
@@ -105,7 +104,6 @@ public class ChartViewDelegateLines implements Delegate {
             final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(line.color);
             paint.setStrokeWidth(lineWidth * 0.9f);
-            paint.setStrokeCap(Paint.Cap.SQUARE);
             linesPaints[i] = paint;
         }
 
@@ -115,7 +113,6 @@ public class ChartViewDelegateLines implements Delegate {
             final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(line.color);
             paint.setStrokeWidth(lineWidth / 2f * 0.9f);
-            paint.setStrokeCap(Paint.Cap.BUTT);
             periodSelectorLinesPaints[i] = paint;
         }
 
@@ -191,16 +188,24 @@ public class ChartViewDelegateLines implements Delegate {
         panelBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         panelBackgroundPaint.setStyle(Paint.Style.FILL);
 
+        final float panelValueTextSize = dp12 + dp2;
+
         panelYValuesPaint = new Paint[chartData.lines.size()];
         for (int i = 0; i < chartData.lines.size(); i++) {
             final ChartData.Line line = chartData.lines.get(i);
             final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(line.color);
-            paint.setTextSize(dp12 + dp2);
+            paint.setTextSize(panelValueTextSize);
             paint.setTypeface(Typeface.DEFAULT_BOLD);
             paint.setTextAlign(Paint.Align.RIGHT);
             panelYValuesPaint[i] = paint;
         }
+
+        panelYValueAllPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelYValueAllPaint.setColor(Color.BLACK);
+        panelYValueAllPaint.setTextSize(panelValueTextSize);
+        panelYValueAllPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        panelYValueAllPaint.setTextAlign(Paint.Align.RIGHT);
 
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
@@ -250,12 +255,14 @@ public class ChartViewDelegateLines implements Delegate {
         });
 
         drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
-
-        setNightMode(MainActivity.NIGHT_MODE);
     }
 
     private Resources getResources() {
         return resources;
+    }
+
+    boolean selectionPanelAllString() {
+        return false;
     }
 
     private final GestureDetector gestureDetector;
@@ -263,18 +270,18 @@ public class ChartViewDelegateLines implements Delegate {
 
     private int maxLegendAlpha;
 
-    private final float chartHeight;
-    private final float datesHeight;
-    private final float chartTitleHeight;
-    private final float periodSelectorHeight;
+    protected final float chartHeight;
+    protected final float datesHeight;
+    protected final float chartTitleHeight;
+    protected final float periodSelectorHeight;
     private final float minPeriodSelectorWidth;
     private final float periodSelectorDraggableWidth;
-    private final float chartPadding;
+    protected final float chartPadding;
     private final float dp2;
     private final float dp4;
     private final float dp6;
     private final float dp8;
-    private final float dp12;
+    protected final float dp12;
     private final float chipsMarginHorizontal;
     private final float chipMargin;
     private final float chipPadding;
@@ -288,10 +295,10 @@ public class ChartViewDelegateLines implements Delegate {
     private final float[] radiiRight;
 
     private final String title;
-    private final ChartData chartData;
+    protected final ChartData chartData;
     private final Paint panelBackgroundPaint;
     private final Paint panelShadowPaint;
-    private final float[] points;
+    protected final float[] points;
 
     private final Paint periodSelectorOutsidePaint;
     private final Paint periodSelectorDragBorderPaint;
@@ -305,8 +312,8 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint chipWhiteTextPaint;
     private final Paint highlightChipPaint;
 
-    private final Paint[] linesPaints;
-    private final Paint[] periodSelectorLinesPaints;
+    protected final Paint[] linesPaints;
+    protected final Paint[] periodSelectorLinesPaints;
 
     private final RectF[] chipsRectOnScreen;
     private final float[] chipsWidth;
@@ -320,20 +327,21 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint panelDatePaint;
     private final Paint panelLinesNamesPaint;
     private final Paint[] panelYValuesPaint;
+    private final Paint panelYValueAllPaint;
 
     private float periodStartXRel = 0;
     private float periodEndXRel = 1;
     private int startIndex;
     private int endIndex;
 
-    private int selectedIndex = -1;
+    protected int selectedIndex = -1;
     private int prevSelectedIndex = -1;
 
-    private long minX;
-    private long maxX;
+    protected long minX;
+    protected long maxX;
 
-    private final long totalMinX;
-    private final long totalMaxX;
+    protected final long totalMinX;
+    protected final long totalMaxX;
 
     // step on X-axis (in indices).
     private int stepX;
@@ -343,11 +351,11 @@ public class ChartViewDelegateLines implements Delegate {
     private final float[] stepsY = new float[HOR_LINES];
     private final float[] prevStepsY = new float[HOR_LINES];
 
-    private int minY;
-    private int maxY;
+    protected int minY;
+    protected int maxY;
 
-    private int totalMinY;
-    private int totalMaxY;
+    protected int totalMinY;
+    protected int totalMaxY;
 
     private ValueAnimator yLimitsAnimator;
     private ValueAnimator selectedIndexAnimator;
@@ -356,7 +364,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final Drawable drawableCheck;
 
-    private final Path periodSelectorClipPath = new Path();
+    protected final Path periodSelectorClipPath = new Path();
 
     @Override
     public int measureHeight(int width) {
@@ -798,7 +806,7 @@ public class ChartViewDelegateLines implements Delegate {
     }
 
     // canvas translation must be (0, 0).
-    private void drawChart(Canvas canvas) {
+    protected void drawChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
         final float wid = (maxX - minX) / drawingWidth;
@@ -824,13 +832,13 @@ public class ChartViewDelegateLines implements Delegate {
 
                 final Paint paint = linesPaints[c];
                 paint.setAlpha(line.alpha);
-                canvas.drawLines(points, paint);
+                canvas.drawLines(points, 0, q, paint);
             }
         }
     }
 
     // canvas translation must be (0, chartTitleHeight).
-    private void drawSelectionOnChart(Canvas canvas) {
+    protected void drawSelectionOnChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
         final float wid = (maxX - minX) / drawingWidth;
@@ -892,6 +900,9 @@ public class ChartViewDelegateLines implements Delegate {
                         }
                     }
                 }
+                if (selectionPanelAllString()) {
+                    lineY += lineHeight;
+                }
 
                 final float panelPadding = dp12;
 
@@ -938,8 +949,18 @@ public class ChartViewDelegateLines implements Delegate {
                 String datesCommonEnd = selectedDate.substring(selectedDate.length() - commonChars);
                 canvas.drawText(datesCommonEnd, panelContentLeft + panelDatePaint.measureText(changeOfSelected), lineY, panelDatePaint);
 
+                int sum = 0;
+                int prevSum = 0;
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
+
+                    if (line.isVisibleOrWillBe) {
+                        sum += line.values[selectedIndex];
+                        if (prevSelectedIndex >= 0) {
+                            prevSum += line.values[prevSelectedIndex];
+                        }
+                    }
+
                     if (line.isVisible()) {
 
                         if (line.alpha <= 0x80) {
@@ -969,6 +990,22 @@ public class ChartViewDelegateLines implements Delegate {
                         }
                     }
                 }
+                if (selectionPanelAllString()) {
+                    lineY += lineHeight;
+
+                    panelLinesNamesPaint.setAlpha(0xFF);
+                    canvas.drawText("All", panelContentLeft, lineY, panelLinesNamesPaint);
+
+                    panelYValueAllPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0xFF);
+                    String formatY = Utils.toStringWithSpaces(sum);
+                    canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValueAllPaint);
+
+                    if (prevSelectedIndex >= 0) {
+                        panelYValueAllPaint.setAlpha(0xFF - (int) (0xFF * changeFraction));
+                        String formatPrevY = Utils.toStringWithSpaces(prevSum);
+                        canvas.drawText(formatPrevY, panelContentRight, lineY + translationDisappear, panelYValueAllPaint);
+                    }
+                }
             } else {
                 panelRectOnScreen.set(0, 0, 0, 0);
             }
@@ -984,7 +1021,7 @@ public class ChartViewDelegateLines implements Delegate {
     }
 
     // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
-    private void drawPeriodSelectorChart(Canvas canvas) {
+    protected void drawPeriodSelectorChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
         final float wid = (totalMaxX - totalMinX) / drawingWidth;
@@ -1012,7 +1049,7 @@ public class ChartViewDelegateLines implements Delegate {
 
                 final Paint paint = periodSelectorLinesPaints[c];
                 paint.setAlpha(line.alpha);
-                canvas.drawLines(points, paint);
+                canvas.drawLines(points, 0, q, paint);
             }
         }
 
@@ -1148,7 +1185,7 @@ public class ChartViewDelegateLines implements Delegate {
         drawPeriodSelector(canvas);
     }
 
-    private float getDrawingWidth() {
+    protected float getDrawingWidth() {
         return callbacks.getWidth() - 2 * chartPadding;
     }
 }

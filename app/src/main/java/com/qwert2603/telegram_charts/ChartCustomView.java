@@ -58,6 +58,8 @@ public class ChartCustomView extends View {
                 throw new RuntimeException();
 
         }
+
+        setNightMode(MainActivity.NIGHT_MODE);
     }
 
     @Override
