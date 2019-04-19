@@ -74,6 +74,7 @@ public class ChartViewDelegateLines implements Delegate {
         datesRangePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         datesRangePaint.setTextSize(dp12 + dp2);
         datesRangePaint.setTypeface(Typeface.DEFAULT_BOLD);
+        datesRangePaint.setTextAlign(Paint.Align.RIGHT);
 
         legendDatesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         legendDatesPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -747,8 +748,7 @@ public class ChartViewDelegateLines implements Delegate {
         canvas.drawText(title, chartPadding, textY, titlePaint);
 
         final String text = chartData.fullDates[startIndex] + " - " + chartData.fullDates[endIndex - 1];
-        final float measureText = datesRangePaint.measureText(text);
-        canvas.drawText(text, callbacks.getWidth() - chartPadding - measureText, textY, datesRangePaint);
+        canvas.drawText(text, callbacks.getWidth() - chartPadding, textY, datesRangePaint);
     }
 
     // canvas translation must be (0, 0).
