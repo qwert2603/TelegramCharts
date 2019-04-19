@@ -905,31 +905,16 @@ public class ChartViewDelegateLines implements Delegate {
                         lineY += lineHeight * line.alpha / 255f;
                         panelLinesNamesPaint.setAlpha(line.alpha);
                         canvas.drawText(line.name, panelContentLeft, lineY, panelLinesNamesPaint);
-                    }
-                }
 
-                lineY = lineHeight;
-
-                for (int c = 0; c < chartData.lines.size(); c++) {
-                    final ChartData.Line line = chartData.lines.get(c);
-                    if (line.isVisible()) {
                         final int maxAlpha = line.alpha;
                         panelYValuesPaint[c].setAlpha(prevSelectedIndex >= 0 ? (int) (maxAlpha * changeFraction) : maxAlpha);
-                        lineY += lineHeight * maxAlpha / 255f;
                         String formatY = toStringWithSpaces(line.values[selectedIndex]);
                         canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValuesPaint[c]);
-                    }
-                }
-                if (prevSelectedIndex >= 0) {
-                    lineY = lineHeight;
-                    for (int c = 0; c < chartData.lines.size(); c++) {
-                        final ChartData.Line line = chartData.lines.get(c);
-                        if (line.isVisible()) {
-                            final int maxAlpha = line.alpha;
+
+                        if (prevSelectedIndex >= 0) {
                             panelYValuesPaint[c].setAlpha(maxAlpha - (int) (maxAlpha * changeFraction));
-                            lineY += lineHeight * maxAlpha / 255f;
-                            String formatY = toStringWithSpaces(line.values[prevSelectedIndex]);
-                            canvas.drawText(formatY, panelContentRight, lineY + translationDisappear, panelYValuesPaint[c]);
+                            String formatPrevY = toStringWithSpaces(line.values[prevSelectedIndex]);
+                            canvas.drawText(formatPrevY, panelContentRight, lineY + translationDisappear, panelYValuesPaint[c]);
                         }
                     }
                 }
