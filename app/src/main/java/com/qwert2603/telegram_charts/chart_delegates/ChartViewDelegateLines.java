@@ -202,7 +202,6 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         panelYValueAllPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        panelYValueAllPaint.setColor(Color.BLACK);
         panelYValueAllPaint.setTextSize(panelValueTextSize);
         panelYValueAllPaint.setTypeface(Typeface.DEFAULT_BOLD);
         panelYValueAllPaint.setTextAlign(Paint.Align.RIGHT);
@@ -414,6 +413,7 @@ public class ChartViewDelegateLines implements Delegate {
         panelShadowPaint.setColor(night ? 0x77000000 : 0x99CCCCCC);
         panelDatePaint.setColor(night ? Color.WHITE : Color.BLACK);
         panelLinesNamesPaint.setColor(night ? Color.WHITE : Color.BLACK);
+        panelYValueAllPaint.setColor(night ? Color.WHITE : Color.BLACK);
         periodSelectorOutsidePaint.setColor(night ? 0x99304259 : 0x99E2EEF9);
         periodSelectorDragBorderPaint.setColor(night ? 0x806F899E : 0x8086A9C4);
         periodSelectorDragBorderPaintDragging.setColor(night ? 0xE06F899E : 0xE086A9C4);
