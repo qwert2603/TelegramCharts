@@ -16,7 +16,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 
-import com.qwert2603.telegram_charts.LogUtils;
 import com.qwert2603.telegram_charts.MainActivity;
 import com.qwert2603.telegram_charts.R;
 import com.qwert2603.telegram_charts.Utils;
@@ -28,7 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ChartViewDelegateLines_2Y implements Delegate {
+    @Override
+    public void setNightMode(boolean night) {
 
+    }
     private static final long ANIMATION_DURATION = 200L;
 
     private final Resources resources;

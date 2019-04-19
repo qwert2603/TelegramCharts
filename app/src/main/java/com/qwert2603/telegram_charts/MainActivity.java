@@ -135,6 +135,9 @@ public class MainActivity extends Activity {
         footer.setTextColor(NIGHT_MODE ? Color.WHITE : Color.BLACK);
 
         for (View view : views) {
+            if (view instanceof ChartCustomView) {
+                ((ChartCustomView) view).setNightMode(NIGHT_MODE);
+            }
             view.invalidate();
         }
     }

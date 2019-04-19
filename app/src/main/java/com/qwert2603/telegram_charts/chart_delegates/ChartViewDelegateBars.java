@@ -25,7 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ChartViewDelegateBars implements Delegate {
+    @Override
+    public void setNightMode(boolean night) {
 
+    }
     private static final long ANIMATION_DURATION = 200L;
 
     private final Resources resources;

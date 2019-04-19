@@ -74,4 +74,8 @@ public class ChartCustomView extends View {
     protected void onDraw(Canvas canvas) {
         delegate.onDraw(canvas);
     }
+
+    public void setNightMode(boolean night) {
+        delegate.setNightMode(night);
+    }
 }

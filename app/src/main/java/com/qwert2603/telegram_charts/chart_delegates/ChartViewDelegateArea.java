@@ -26,6 +26,11 @@ import java.util.Map;
 
 public class ChartViewDelegateArea implements Delegate {
 
+    @Override
+    public void setNightMode(boolean night) {
+
+    }
+
     private static final long ANIMATION_DURATION = 200L;
 
     private final Resources resources;

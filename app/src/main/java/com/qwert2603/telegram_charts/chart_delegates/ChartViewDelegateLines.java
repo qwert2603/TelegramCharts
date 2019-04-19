@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class ChartViewDelegateLines implements Delegate {
 
-    private static final long ANIMATION_DURATION = 1200L;
+    private static final long ANIMATION_DURATION = 300L;
 
     private final Resources resources;
     private final Context context;
@@ -81,8 +81,13 @@ public class ChartViewDelegateLines implements Delegate {
         legendYStepsPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         legendYStepsPaint.setTextSize(dp12 - dp12 / 12f);
 
-        periodSelectorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        periodSelectorPaint.setStyle(Paint.Style.FILL);
+        periodSelectorOutsidePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorOutsidePaint.setStyle(Paint.Style.FILL);
+        periodSelectorDragBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorDragBorderPaint.setStyle(Paint.Style.FILL);
+        periodSelectorWhiteDragPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorWhiteDragPaint.setStyle(Paint.Style.FILL);
+        periodSelectorWhiteDragPaint.setColor(0xD7FFFFFF);
 
         yLinesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         yLinesPaint.setStyle(Paint.Style.STROKE);
@@ -248,6 +253,8 @@ public class ChartViewDelegateLines implements Delegate {
         });
 
         drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+
+        setNightMode(MainActivity.NIGHT_MODE);
     }
 
     private Resources getResources() {
@@ -256,6 +263,8 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final GestureDetector gestureDetector;
     private final RectF panelRectOnScreen = new RectF();
+
+    private int maxLegendAlpha;
 
     private final float chartHeight;
     private final float datesHeight;
@@ -284,7 +293,9 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint panelShadowPaint;
     private final float[] points;
 
-    private final Paint periodSelectorPaint;
+    private final Paint periodSelectorOutsidePaint;
+    private final Paint periodSelectorDragBorderPaint;
+    private final Paint periodSelectorWhiteDragPaint;
     private final Paint legendDatesPaint;
     private final Paint legendYStepsPaint;
     private final Paint yLinesPaint;
@@ -367,6 +378,27 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         return (int) (currentLineY + dp6);
+    }
+
+    @Override
+    public void setNightMode(boolean night) {
+        titlePaint.setColor(night ? Color.WHITE : Color.BLACK);
+        datesRangePaint.setColor(night ? Color.WHITE : Color.BLACK);
+        maxLegendAlpha = night ? 0x99 : 0xFF;
+        legendDatesPaint.setColor(night ? 0x99A3B1C2 : 0xFF8E8E93);
+        legendYStepsPaint.setColor(night ? 0x99A3B1C2 : 0xFF8E8E93);
+        yLinesPaint.setColor(night ? 0x19FFFFFF : 0x19182D3B);
+        selectedXLinePaint.setColor(night ? 0x19FFFFFF : 0x19182D3B);
+        selectedCircleFillPaint.setColor(night ? 0xFF1c2533 : Color.WHITE);
+        panelBackgroundPaint.setColor(night ? 0xFF1c2533 : Color.WHITE);
+        panelShadowPaint.setColor(night ? 0x77000000 : 0x99CCCCCC);
+        panelDatePaint.setColor(night ? Color.WHITE : Color.BLACK);
+        panelLinesNamesPaint.setColor(night ? Color.WHITE : Color.BLACK);
+        periodSelectorOutsidePaint.setColor(night ? 0x99304259 : 0x99E2EEF9);
+        periodSelectorDragBorderPaint.setColor(night ? 0x996F899E : 0x8086A9C4);
+        highlightChipPaint.setColor(night/* && !line.isVisibleOrWillBe*/ ? 0x54727272 : 0x54B0B0B0);
+
+        callbacks.invalidate();
     }
 
     private void setOnlyOneLineVisible(String name) {
@@ -699,10 +731,8 @@ public class ChartViewDelegateLines implements Delegate {
     private void drawTitle(Canvas canvas) {
         final float textY = dp12 + dp12 + dp8;
 
-        titlePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
         canvas.drawText(title, chartPadding, textY, titlePaint);
 
-        datesRangePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
         final String text = chartData.fullDates[startIndex] + " - " + chartData.fullDates[endIndex - 1];
         final float measureText = datesRangePaint.measureText(text);
         canvas.drawText(text, callbacks.getWidth() - chartPadding - measureText, textY, datesRangePaint);
@@ -711,9 +741,6 @@ public class ChartViewDelegateLines implements Delegate {
     // canvas translation must be (0, 0).
     private void drawDates(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
-
-        final int maxLegendAlpha = MainActivity.NIGHT_MODE ? 0x99 : 0xFF;
-        legendDatesPaint.setColor(MainActivity.NIGHT_MODE ? 0x99A3B1C2 : 0xFF8E8E93);
 
         final float showingDatesCount = (endIndex - startIndex) * 1f / stepX;
         final int oddDatesAlpha = maxLegendAlpha - (int) ((showingDatesCount - VER_DATES) / VER_DATES * maxLegendAlpha);
@@ -732,11 +759,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     // canvas translation must be (0, 0).
     private void drawYSteps(Canvas canvas) {
-        final int maxLegendAlpha = MainActivity.NIGHT_MODE ? 0x99 : 0xFF;
         final float drawingWidth = getDrawingWidth();
-
-        legendYStepsPaint.setColor(MainActivity.NIGHT_MODE ? 0x99A3B1C2 : 0xFF8E8E93);
-        yLinesPaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
 
         yLinesPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * 0x19));
         legendYStepsPaint.setAlpha((int) (yLimitsAnimator.getAnimatedFraction() * maxLegendAlpha));
@@ -804,7 +827,6 @@ public class ChartViewDelegateLines implements Delegate {
             if (0 < _x && _x < callbacks.getWidth()) {
                 final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
-                selectedXLinePaint.setColor(MainActivity.NIGHT_MODE ? 0x19FFFFFF : 0x19182D3B);
                 canvas.drawLine(_x, 0, _x, chartHeight, selectedXLinePaint);
 
                 final boolean panelLefted = _x < callbacks.getWidth() / 2;
@@ -813,8 +835,6 @@ public class ChartViewDelegateLines implements Delegate {
 
                 final float panelContentLeft = panelAnchor + (panelLefted ? dp12 * 2 : dp12 * -14);
                 final float panelContentRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
-
-                selectedCircleFillPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
 
                 final float lineHeight = dp12 * 2;
 
@@ -843,14 +863,12 @@ public class ChartViewDelegateLines implements Delegate {
                         chartTitleHeight + lineY + panelPadding
                 );
 
-                panelBackgroundPaint.setColor(MainActivity.NIGHT_MODE ? 0xFF1c2533 : Color.WHITE);
                 canvas.drawRoundRect(
                         panelContentLeft - panelPadding,
                         0,
                         panelContentRight + panelPadding,
                         lineY + panelPadding,
                         dp4, dp4, panelBackgroundPaint);
-                panelShadowPaint.setColor(MainActivity.NIGHT_MODE ? 0x77000000 : 0x99CCCCCC);
                 canvas.drawRoundRect(
                         panelContentLeft - panelPadding,
                         0,
@@ -860,7 +878,6 @@ public class ChartViewDelegateLines implements Delegate {
 
                 lineY = lineHeight;
 
-                panelDatePaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
                 final boolean isBack = selectedIndex < prevSelectedIndex;
                 final String selectedDate = chartData.selectedDates[selectedIndex];
                 final String prevDate = prevSelectedIndex >= 0 ? chartData.selectedDates[prevSelectedIndex] : selectedDate;
@@ -882,7 +899,6 @@ public class ChartViewDelegateLines implements Delegate {
                 String datesCommonEnd = selectedDate.substring(selectedDate.length() - commonChars);
                 canvas.drawText(datesCommonEnd, panelContentLeft + panelDatePaint.measureText(changeOfSelected), lineY, panelDatePaint);
 
-                panelLinesNamesPaint.setColor(MainActivity.NIGHT_MODE ? Color.WHITE : Color.BLACK);
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisible()) {
@@ -967,29 +983,26 @@ public class ChartViewDelegateLines implements Delegate {
         final float borderVer = dp12;
 
         // period's outside.
-        periodSelectorPaint.setColor(MainActivity.NIGHT_MODE ? 0x99304259 : 0x99E2EEF9);
         path.addRoundRect(0, 0, startX + borderVer, periodSelectorHeight, radiiLeft, Path.Direction.CW);
-        canvas.drawPath(path, periodSelectorPaint);
+        canvas.drawPath(path, periodSelectorOutsidePaint);
         path.rewind();
         path.addRoundRect(endX - borderVer, 0, drawingWidth, periodSelectorHeight, radiiRight, Path.Direction.CW);
-        canvas.drawPath(path, periodSelectorPaint);
+        canvas.drawPath(path, periodSelectorOutsidePaint);
         path.rewind();
 
         // horizontal borders
-        periodSelectorPaint.setColor(MainActivity.NIGHT_MODE ? 0x996F899E : 0x8086A9C4);
-        canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodSelectorPaint);
-        canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodSelectorPaint);
+        canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodSelectorDragBorderPaint);
+        canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodSelectorDragBorderPaint);
 
         // vertical borders
         path.addRoundRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, radiiLeft, Path.Direction.CW);
-        canvas.drawPath(path, periodSelectorPaint);
+        canvas.drawPath(path, periodSelectorDragBorderPaint);
         path.rewind();
         path.addRoundRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, radiiRight, Path.Direction.CW);
-        canvas.drawPath(path, periodSelectorPaint);
+        canvas.drawPath(path, periodSelectorDragBorderPaint);
         path.rewind();
 
         // white drag rects
-        periodSelectorPaint.setColor(0xD7FFFFFF);
         canvas.drawRoundRect(
                 startX + borderVer / 2 - dp2 / 2,
                 periodSelectorHeight / 2 - dp6,
@@ -997,7 +1010,7 @@ public class ChartViewDelegateLines implements Delegate {
                 periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
-                periodSelectorPaint
+                periodSelectorWhiteDragPaint
         );
         canvas.drawRoundRect(
                 endX - borderVer / 2 - dp2 / 2,
@@ -1006,7 +1019,7 @@ public class ChartViewDelegateLines implements Delegate {
                 periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
-                periodSelectorPaint
+                periodSelectorWhiteDragPaint
         );
     }
 
@@ -1053,7 +1066,6 @@ public class ChartViewDelegateLines implements Delegate {
                 );
 
                 if (lastDownX >= 0 && chipsRectOnScreen[c].contains(lastDownX, lastDownY)) {
-                    highlightChipPaint.setColor(MainActivity.NIGHT_MODE && !line.isVisibleOrWillBe ? 0x54727272 : 0x54B0B0B0);
                     canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, highlightChipPaint);
                 }
 
