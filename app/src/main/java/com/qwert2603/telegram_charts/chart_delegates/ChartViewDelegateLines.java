@@ -853,7 +853,7 @@ public class ChartViewDelegateLines implements Delegate {
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
             if (0 < _x && _x < callbacks.getWidth()) {
-                final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
+                final float changeFraction = (float) selectedIndexAnimator.getAnimatedValue();
 
                 final boolean panelLefted = _x < callbacks.getWidth() / 2;
                 final float prevX = prevSelectedIndex < 0 ? _x : chartPadding + (chartData.xValues[prevSelectedIndex] - minX) / wid;
