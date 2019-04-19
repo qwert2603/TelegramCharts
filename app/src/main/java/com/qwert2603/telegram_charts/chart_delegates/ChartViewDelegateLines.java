@@ -320,8 +320,8 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint panelLinesNamesPaint;
     private final Paint[] panelYValuesPaint;
 
-    private float periodStartX = 0;
-    private float periodEndX = 1;
+    private float periodStartXRel = 0;
+    private float periodEndXRel = 1;
     private int startIndex;
     private int endIndex;
 
@@ -555,7 +555,7 @@ public class ChartViewDelegateLines implements Delegate {
     private static final int DRAG_SELECTED_INDEX = 4;
     private int dragPointerId = -1;
     private int currentDrag = 0;
-    private float selectorDragCenterOffset = 0f;
+    private float selectorDragCenterOffsetRel = 0f;
 
     private float startSelectedIndexX = -1;
     private float startSelectedIndexY = -1;
@@ -570,34 +570,34 @@ public class ChartViewDelegateLines implements Delegate {
 
         final int pointerId = event.getPointerId(event.getActionIndex());
 
-        final float selectorCenter = (periodStartX + periodEndX) / 2f;
-        final float selectorWidth = periodEndX - periodStartX;
-        final float selectorWidthPixels = callbacks.getWidth() - 2 * chartPadding;
-        float x = (event.getX() - chartPadding) / selectorWidthPixels;
+        final float selectorCenterRel = (periodStartXRel + periodEndXRel) / 2f;
+        final float selectorWidthRel = periodEndXRel - periodStartXRel;
+        final float drawingWidth = getDrawingWidth();
+        float xRel = (event.getX() - chartPadding) / drawingWidth;
 
-        final float minSelectorWidthRel = minPeriodSelectorWidth * 1f / selectorWidthPixels;
+        final float minSelectorWidthRel = minPeriodSelectorWidth / drawingWidth;
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if (chartTitleHeight + chartHeight + datesHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight) {
-                    if (Math.abs(periodStartX - x) * selectorWidthPixels < periodSelectorDraggableWidth) {
+                    if (Math.abs(periodStartXRel - xRel) * drawingWidth < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_START;
                         callbacks.requestDisallowInterceptTouchEvent(true);
-                    } else if (Math.abs(periodEndX - x) * selectorWidthPixels < periodSelectorDraggableWidth) {
+                    } else if (Math.abs(periodEndXRel - xRel) * drawingWidth < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_END;
                         callbacks.requestDisallowInterceptTouchEvent(true);
-                    } else if (periodStartX < x && x < periodEndX) {
+                    } else if (periodStartXRel < xRel && xRel < periodEndXRel) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_SELECTOR;
-                        selectorDragCenterOffset = selectorCenter - x;
-                        movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
+                        selectorDragCenterOffsetRel = selectorCenterRel - xRel;
+                        movePeriodSelectorTo(xRel + selectorDragCenterOffsetRel, selectorWidthRel);
                         callbacks.requestDisallowInterceptTouchEvent(true);
                     }
                 } else if (chartTitleHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight) {
                     if (selectedIndex < 0) {
-                        updateSelectedIndex(x);
+                        updateSelectedIndex(xRel);
                     } else {
                         if (!panelRectOnScreen.contains(event.getX(), event.getY())) {
                             selectedIndex = -1;
@@ -624,23 +624,29 @@ public class ChartViewDelegateLines implements Delegate {
                 if (pointerId == dragPointerId) {
                     switch (currentDrag) {
                         case DRAG_START:
-                            if (x > selectorCenter - minSelectorWidthRel) {
-                                x = selectorCenter - minSelectorWidthRel;
+                            if (xRel > periodEndXRel - minSelectorWidthRel) {
+                                xRel = periodEndXRel - minSelectorWidthRel;
                             }
-                            periodStartX = x;
-                            int newStartIndex = (int) (x * chartData.xValues.length);
+                            if (xRel < 0) {
+                                xRel = 0;
+                            }
+                            periodStartXRel = xRel;
+                            int newStartIndex = (int) (xRel * chartData.xValues.length);
                             setPeriodIndices(newStartIndex, endIndex);
                             break;
                         case DRAG_END:
-                            if (x < selectorCenter + minSelectorWidthRel) {
-                                x = selectorCenter + minSelectorWidthRel;
+                            if (xRel < periodStartXRel + minSelectorWidthRel) {
+                                xRel = periodStartXRel + minSelectorWidthRel;
                             }
-                            periodEndX = x;
-                            int newEndIndex = (int) (x * chartData.xValues.length);
+                            if (xRel > 1) {
+                                xRel = 1;
+                            }
+                            periodEndXRel = xRel;
+                            int newEndIndex = (int) (xRel * chartData.xValues.length);
                             setPeriodIndices(startIndex, newEndIndex);
                             break;
                         case DRAG_SELECTOR:
-                            movePeriodSelectorTo(x + selectorDragCenterOffset, selectorWidth);
+                            movePeriodSelectorTo(xRel + selectorDragCenterOffsetRel, selectorWidthRel);
                             break;
                         case DRAG_SELECTED_INDEX:
                             if (!draggingSelectedIndex && Math.abs(event.getX() - startSelectedIndexX) < dp6 && Math.abs(event.getY() - startSelectedIndexY) > dp12) {
@@ -655,7 +661,7 @@ public class ChartViewDelegateLines implements Delegate {
                                 draggingSelectedIndex = true;
                             }
                             if (draggingSelectedIndex) {
-                                updateSelectedIndex(x);
+                                updateSelectedIndex(xRel);
                             }
                             break;
                     }
@@ -702,20 +708,20 @@ public class ChartViewDelegateLines implements Delegate {
         selectedIndexAnimator.start();
     }
 
-    private void movePeriodSelectorTo(float x, float selectorWidth) {
-        float newMin = x - selectorWidth / 2;
-        float newMax = x + selectorWidth / 2;
+    private void movePeriodSelectorTo(float xRel, float selectorWidthRel) {
+        float newMin = xRel - selectorWidthRel / 2;
+        float newMax = xRel + selectorWidthRel / 2;
         if (newMin < 0) {
             newMin = 0;
-            newMax = selectorWidth;
+            newMax = selectorWidthRel;
         }
         if (newMax > 1) {
-            newMin = 1 - selectorWidth;
+            newMin = 1 - selectorWidthRel;
             newMax = 1;
         }
 
-        periodStartX = newMin;
-        periodEndX = newMax;
+        periodStartXRel = newMin;
+        periodEndXRel = newMax;
 
         int newStartIndex = (int) (newMin * chartData.xValues.length);
         int newEndIndex = (int) (newMax * chartData.xValues.length);
