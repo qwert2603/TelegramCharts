@@ -968,7 +968,7 @@ public class ChartViewDelegateLines implements Delegate {
     }
 
     // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
-    private void drawPeriodSelector(Canvas canvas) {
+    private void drawPeriodSelectorChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
         final float wid = (totalMaxX - totalMinX) / drawingWidth;
@@ -1001,6 +1001,11 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         canvas.restore();
+    }
+
+    // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
+    private void drawPeriodSelectorUi(Canvas canvas) {
+        final float drawingWidth = getDrawingWidth();
 
         final float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
         final float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
@@ -1047,6 +1052,12 @@ public class ChartViewDelegateLines implements Delegate {
                 dp2,
                 periodSelectorWhiteDragPaint
         );
+    }
+
+    // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
+    private void drawPeriodSelector(Canvas canvas) {
+        drawPeriodSelectorChart(canvas);
+        drawPeriodSelectorUi(canvas);
     }
 
     // canvas translation must be (0, 0).
