@@ -88,6 +88,8 @@ public class ChartViewDelegateLines implements Delegate {
         periodSelectorOutsidePaint.setStyle(Paint.Style.FILL);
         periodSelectorDragBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         periodSelectorDragBorderPaint.setStyle(Paint.Style.FILL);
+        periodSelectorDragBorderPaintDragging = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorDragBorderPaintDragging.setStyle(Paint.Style.FILL);
         periodSelectorWhiteDragPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         periodSelectorWhiteDragPaint.setStyle(Paint.Style.FILL);
         periodSelectorWhiteDragPaint.setColor(0xD7FFFFFF);
@@ -300,6 +302,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final Paint periodSelectorOutsidePaint;
     private final Paint periodSelectorDragBorderPaint;
+    private final Paint periodSelectorDragBorderPaintDragging;
     private final Paint periodSelectorWhiteDragPaint;
     private final Paint legendDatesPaint;
     private final Paint legendYStepsPaint;
@@ -401,6 +404,7 @@ public class ChartViewDelegateLines implements Delegate {
         panelLinesNamesPaint.setColor(night ? Color.WHITE : Color.BLACK);
         periodSelectorOutsidePaint.setColor(night ? 0x99304259 : 0x99E2EEF9);
         periodSelectorDragBorderPaint.setColor(night ? 0x806F899E : 0x8086A9C4);
+        periodSelectorDragBorderPaintDragging.setColor(night ? 0xE06F899E : 0xE086A9C4);
         highlightChipPaint.setColor(night ? 0x54727272 : 0x54B0B0B0);
 
         callbacks.invalidate();
@@ -610,7 +614,6 @@ public class ChartViewDelegateLines implements Delegate {
                             dragPointerId = -1;
                             startSelectedIndexX = -1;
                             startSelectedIndexY = -1;
-                            callbacks.invalidate();
                         }
                     }
                     dragPointerId = pointerId;
@@ -622,7 +625,6 @@ public class ChartViewDelegateLines implements Delegate {
                     dragPointerId = pointerId;
                     lastChipsDownX = event.getX();
                     lastChipsDownY = event.getY();
-                    callbacks.invalidate();
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -661,7 +663,6 @@ public class ChartViewDelegateLines implements Delegate {
                                 startSelectedIndexX = -1;
                                 startSelectedIndexY = -1;
                                 callbacks.requestDisallowInterceptTouchEvent(false);
-                                callbacks.invalidate();
                             } else if (!draggingSelectedIndex && !panelRectOnScreen.contains(event.getX(), event.getY()) && Math.abs(event.getX() - startSelectedIndexX) > dp12 && Math.abs(event.getY() - startSelectedIndexY) < dp6) {
                                 draggingSelectedIndex = true;
                             }
@@ -681,10 +682,11 @@ public class ChartViewDelegateLines implements Delegate {
                     draggingSelectedIndex = false;
                     lastChipsDownX = -1;
                     lastChipsDownY = -1;
-                    callbacks.invalidate();
                 }
                 break;
         }
+
+        callbacks.invalidate();
 
         return true;
     }
@@ -1025,15 +1027,21 @@ public class ChartViewDelegateLines implements Delegate {
         path.rewind();
 
         // horizontal borders
-        canvas.drawRect(startX + periodSelectorBorderVer, -periodSelectorBorderHor, endX - periodSelectorBorderVer, 0, periodSelectorDragBorderPaint);
-        canvas.drawRect(startX + periodSelectorBorderVer, periodSelectorHeight, endX - periodSelectorBorderVer, periodSelectorHeight + periodSelectorBorderHor, periodSelectorDragBorderPaint);
+        canvas.drawRect(
+                startX + periodSelectorBorderVer, -periodSelectorBorderHor, endX - periodSelectorBorderVer, 0,
+                currentDrag == DRAG_SELECTOR ? periodSelectorDragBorderPaintDragging : periodSelectorDragBorderPaint
+        );
+        canvas.drawRect(
+                startX + periodSelectorBorderVer, periodSelectorHeight, endX - periodSelectorBorderVer, periodSelectorHeight + periodSelectorBorderHor,
+                currentDrag == DRAG_SELECTOR ? periodSelectorDragBorderPaintDragging : periodSelectorDragBorderPaint
+        );
 
         // vertical borders
         path.addRoundRect(startX, -periodSelectorBorderHor, startX + periodSelectorBorderVer, periodSelectorHeight + periodSelectorBorderHor, radiiLeft, Path.Direction.CW);
-        canvas.drawPath(path, periodSelectorDragBorderPaint);
+        canvas.drawPath(path, currentDrag == DRAG_START || currentDrag == DRAG_SELECTOR ? periodSelectorDragBorderPaintDragging : periodSelectorDragBorderPaint);
         path.rewind();
         path.addRoundRect(endX - periodSelectorBorderVer, -periodSelectorBorderHor, endX, periodSelectorHeight + periodSelectorBorderHor, radiiRight, Path.Direction.CW);
-        canvas.drawPath(path, periodSelectorDragBorderPaint);
+        canvas.drawPath(path, currentDrag == DRAG_END || currentDrag == DRAG_SELECTOR ? periodSelectorDragBorderPaintDragging : periodSelectorDragBorderPaint);
         path.rewind();
 
         // white drag rects
