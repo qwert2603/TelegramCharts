@@ -814,7 +814,7 @@ public class ChartViewDelegateLines implements Delegate {
     }
 
     // canvas translation must be (0, chartTitleHeight).
-    private void drawChartSelection(Canvas canvas) {
+    private void drawSelectionOnChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
         final float wid = (maxX - minX) / drawingWidth;
@@ -825,9 +825,35 @@ public class ChartViewDelegateLines implements Delegate {
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
             if (0 < _x && _x < callbacks.getWidth()) {
-                final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
-
                 canvas.drawLine(_x, 0, _x, chartHeight, selectedXLinePaint);
+
+                for (int c = 0; c < chartData.lines.size(); c++) {
+                    final ChartData.Line line = chartData.lines.get(c);
+                    if (line.isVisible()) {
+                        selectedCircleFillPaint.setAlpha(line.alpha);
+                        selectedCirclesStrokePaint[c].setAlpha(line.alpha);
+
+                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
+                        canvas.drawCircle(_x, _y, dp4, selectedCircleFillPaint);
+                        canvas.drawCircle(_x, _y, dp4, selectedCirclesStrokePaint[c]);
+                    }
+                }
+            }
+        }
+    }
+
+    // canvas translation must be (0, chartTitleHeight).
+    private void drawSelectionPanel(Canvas canvas) {
+        final float drawingWidth = getDrawingWidth();
+
+        final float wid = (maxX - minX) / drawingWidth;
+
+        if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
+
+            final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
+
+            if (0 < _x && _x < callbacks.getWidth()) {
+                final float changeFraction = selectedIndexAnimator.getAnimatedFraction();
 
                 final boolean panelLefted = _x < callbacks.getWidth() / 2;
                 final float prevX = prevSelectedIndex < 0 ? _x : chartPadding + (chartData.xValues[prevSelectedIndex] - minX) / wid;
@@ -843,13 +869,6 @@ public class ChartViewDelegateLines implements Delegate {
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisible()) {
-                        selectedCircleFillPaint.setAlpha(line.alpha);
-                        selectedCirclesStrokePaint[c].setAlpha(line.alpha);
-
-                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
-                        canvas.drawCircle(_x, _y, dp4, selectedCircleFillPaint);
-                        canvas.drawCircle(_x, _y, dp4, selectedCirclesStrokePaint[c]);
-
                         if (line.alpha <= 0x80) {
                             lineY += lineHeight * line.alpha / 128f;
                         } else {
@@ -940,6 +959,12 @@ public class ChartViewDelegateLines implements Delegate {
         } else {
             panelRectOnScreen.set(0, 0, 0, 0);
         }
+    }
+
+    // canvas translation must be (0, chartTitleHeight).
+    private void drawChartSelection(Canvas canvas) {
+        drawSelectionOnChart(canvas);
+        drawSelectionPanel(canvas);
     }
 
     // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
