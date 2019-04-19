@@ -407,17 +407,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             ValueAnimator animator = opacityAnimators.get(line.name);
             if (animator == null) {
-                animator = ValueAnimator
-                        .ofInt(0x00)
-                        .setDuration(ANIMATION_DURATION);
-                animator.setInterpolator(new DecelerateInterpolator());
-                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        line.alpha = (int) animation.getAnimatedValue();
-                        callbacks.invalidate();
-                    }
-                });
+                animator = createAnimatorForLineOpacity(line);
                 opacityAnimators.put(line.name, animator);
             }
 
@@ -430,23 +420,13 @@ public class ChartViewDelegateLines implements Delegate {
         animateYLimits();
     }
 
-    void setLineVisible(String name, boolean visible) {
+    private void setLineVisible(String name, boolean visible) {
         for (final ChartData.Line line : chartData.lines) {
             if (line.name.equals(name)) {
 
                 ValueAnimator animator = opacityAnimators.get(line.name);
                 if (animator == null) {
-                    animator = ValueAnimator
-                            .ofInt(0x00)
-                            .setDuration(ANIMATION_DURATION);
-                    animator.setInterpolator(new DecelerateInterpolator());
-                    animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                        @Override
-                        public void onAnimationUpdate(ValueAnimator animation) {
-                            line.alpha = (int) animation.getAnimatedValue();
-                            callbacks.invalidate();
-                        }
-                    });
+                    animator = createAnimatorForLineOpacity(line);
                     opacityAnimators.put(line.name, animator);
                 }
 
@@ -460,6 +440,21 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         animateYLimits();
+    }
+
+    private ValueAnimator createAnimatorForLineOpacity(final ChartData.Line line) {
+        ValueAnimator animator = ValueAnimator
+                .ofInt(0x00)
+                .setDuration(ANIMATION_DURATION);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                line.alpha = (int) animation.getAnimatedValue();
+                callbacks.invalidate();
+            }
+        });
+        return animator;
     }
 
     private void setPeriodIndices(int start, int end) {
