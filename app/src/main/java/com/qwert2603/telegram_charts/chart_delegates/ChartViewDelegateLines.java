@@ -245,8 +245,8 @@ public class ChartViewDelegateLines implements Delegate {
                             break;
                         }
                     }
-                    lastDownX = -1;
-                    lastDownY = -1;
+                    lastChipsDownX = -1;
+                    lastChipsDownY = -1;
                     callbacks.invalidate();
                 }
             }
@@ -396,7 +396,7 @@ public class ChartViewDelegateLines implements Delegate {
         panelLinesNamesPaint.setColor(night ? Color.WHITE : Color.BLACK);
         periodSelectorOutsidePaint.setColor(night ? 0x99304259 : 0x99E2EEF9);
         periodSelectorDragBorderPaint.setColor(night ? 0x806F899E : 0x8086A9C4);
-        highlightChipPaint.setColor(night/* && !line.isVisibleOrWillBe*/ ? 0x54727272 : 0x54B0B0B0);
+        highlightChipPaint.setColor(night ? 0x54727272 : 0x54B0B0B0);
 
         callbacks.invalidate();
     }
@@ -561,8 +561,8 @@ public class ChartViewDelegateLines implements Delegate {
     private float startSelectedIndexY = -1;
     private boolean draggingSelectedIndex = false;
 
-    private float lastDownX = -1;
-    private float lastDownY = -1;
+    private float lastChipsDownX = -1;
+    private float lastChipsDownY = -1;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -615,8 +615,8 @@ public class ChartViewDelegateLines implements Delegate {
                     callbacks.requestDisallowInterceptTouchEvent(true);
                 } else if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < event.getY()) {
                     dragPointerId = pointerId;
-                    lastDownX = event.getX();
-                    lastDownY = event.getY();
+                    lastChipsDownX = event.getX();
+                    lastChipsDownY = event.getY();
                     callbacks.invalidate();
                 }
                 break;
@@ -668,8 +668,8 @@ public class ChartViewDelegateLines implements Delegate {
                     startSelectedIndexX = -1;
                     startSelectedIndexY = -1;
                     draggingSelectedIndex = false;
-                    lastDownX = -1;
-                    lastDownY = -1;
+                    lastChipsDownX = -1;
+                    lastChipsDownY = -1;
                     callbacks.invalidate();
                 }
                 break;
@@ -1097,7 +1097,7 @@ public class ChartViewDelegateLines implements Delegate {
                         line.isVisibleOrWillBe ? chipWhiteTextPaint : chipsTextPaint[c]
                 );
 
-                if (lastDownX >= 0 && chipsRectOnScreen[c].contains(lastDownX, lastDownY)) {
+                if (lastChipsDownX >= 0 && chipsRectOnScreen[c].contains(lastChipsDownX, lastChipsDownY)) {
                     canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, highlightChipPaint);
                 }
 
