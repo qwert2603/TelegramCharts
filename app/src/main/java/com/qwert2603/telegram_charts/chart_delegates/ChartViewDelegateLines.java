@@ -120,7 +120,7 @@ public class ChartViewDelegateLines implements Delegate {
         }
 
         //chips
-        chipsMarginTop = dp6;
+        chipsMarginHorizontal = dp6;
         chipMargin = dp12;
         chipPadding = dp12 + dp12;
         float chipTextSize = dp12 + dp2;
@@ -134,7 +134,7 @@ public class ChartViewDelegateLines implements Delegate {
         highlightChipPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         chipsRectOnScreen = new RectF[chartData.lines.size()];
-        chipsTextWidth = new float[chartData.lines.size()];
+        chipsWidth = new float[chartData.lines.size()];
         chipsFillPaint = new Paint[chartData.lines.size()];
         chipsTextPaint = new Paint[chartData.lines.size()];
         chipsBorderPaint = new Paint[chartData.lines.size()];
@@ -148,7 +148,7 @@ public class ChartViewDelegateLines implements Delegate {
             chipsTextPaint[i].setColor(line.color);
             chipsTextPaint[i].setTextSize(chipTextSize);
 
-            chipsTextWidth[i] = chipsTextPaint[i].measureText(line.name) + 2 * chipPadding;
+            chipsWidth[i] = chipsTextPaint[i].measureText(line.name) + 2 * chipPadding;
 
             chipsBorderPaint[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
             chipsBorderPaint[i].setColor(line.color);
@@ -212,18 +212,9 @@ public class ChartViewDelegateLines implements Delegate {
         chartPadding = getResources().getDimension(R.dimen.chart_padding);
 
         // period selector
-        final float fillRadius = dp6;
-        radiiLeft = new float[]{fillRadius, fillRadius, 0, 0, 0, 0, fillRadius, fillRadius};
-        radiiRight = new float[]{0, 0, fillRadius, fillRadius, fillRadius, fillRadius, 0, 0};
-        periodSelectorClipPath = new Path();
-        periodSelectorClipPath.addRoundRect(
-                0,
-                0,
-                getDrawingWidth(),
-                periodSelectorHeight,
-                new float[]{fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius, fillRadius},
-                Path.Direction.CW
-        );
+        psFillRadius = dp6;
+        radiiLeft = new float[]{psFillRadius, psFillRadius, 0, 0, 0, 0, psFillRadius, psFillRadius};
+        radiiRight = new float[]{0, 0, psFillRadius, psFillRadius, psFillRadius, psFillRadius, 0, 0};
 
         gestureDetector = new GestureDetector(this.context, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -284,12 +275,13 @@ public class ChartViewDelegateLines implements Delegate {
     private final float dp6;
     private final float dp8;
     private final float dp12;
-    private final float chipsMarginTop;
+    private final float chipsMarginHorizontal;
     private final float chipMargin;
     private final float chipPadding;
     private final float chipHeight;
     private final float periodSelectorBorderHor;
     private final float periodSelectorBorderVer;
+    private final float psFillRadius;
 
     private final Path path = new Path();
     private final float[] radiiLeft;
@@ -317,7 +309,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint[] periodSelectorLinesPaints;
 
     private final RectF[] chipsRectOnScreen;
-    private final float[] chipsTextWidth;
+    private final float[] chipsWidth;
     private final Paint[] chipsBorderPaint;
     private final Paint[] chipsFillPaint;
     private final Paint[] chipsTextPaint;
@@ -364,15 +356,26 @@ public class ChartViewDelegateLines implements Delegate {
 
     private final Drawable drawableCheck;
 
-    private final Path periodSelectorClipPath;
+    private final Path periodSelectorClipPath = new Path();
 
     @Override
     public int measureHeight(int width) {
+        float drawingWidth = width - 2 * chartPadding;
+        periodSelectorClipPath.rewind();
+        periodSelectorClipPath.addRoundRect(
+                0,
+                0,
+                drawingWidth,
+                periodSelectorHeight,
+                new float[]{psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius},
+                Path.Direction.CW
+        );
+
         float currentLineX = chartPadding;
-        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
+        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginHorizontal + chipMargin;
         if (chartData.lines.size() > 1) {
             for (int c = 0; c < chartData.lines.size(); c++) {
-                final float chipWidth = chipsTextWidth[c] + 2 * chipPadding;
+                final float chipWidth = chipsWidth[c];
 
                 if (chipWidth > width - chartPadding - currentLineX) {
                     currentLineX = chartPadding;
@@ -386,7 +389,7 @@ public class ChartViewDelegateLines implements Delegate {
             currentLineY += chipHeight + chipMargin;
         }
 
-        return (int) (currentLineY + dp6);
+        return (int) (currentLineY + chipsMarginHorizontal);
     }
 
     @Override
@@ -1083,10 +1086,10 @@ public class ChartViewDelegateLines implements Delegate {
         if (chartData.lines.size() > 1) {
             final float chipCornerRadius = dp12 * 4;
             float currentLineX = chartPadding;
-            float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginTop + chipMargin;
+            float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginHorizontal + chipMargin;
             for (int c = 0; c < chartData.lines.size(); c++) {
                 final ChartData.Line line = chartData.lines.get(c);
-                float chipWidth = chipsTextWidth[c];
+                float chipWidth = chipsWidth[c];
 
                 if (chipWidth > drawingWidth + chartPadding - currentLineX) {
                     currentLineX = chartPadding;

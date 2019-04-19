@@ -33,8 +33,12 @@ public class ChartCustomView extends View {
 
             @Override
             public float getWidth() {
-//               todo ChartCustomView.this.getWidth();
-                return getResources().getDisplayMetrics().widthPixels;
+//                todo
+                if (delegate instanceof ChartViewDelegateLines) {
+                    return ChartCustomView.this.getWidth();
+                } else {
+                    return getResources().getDisplayMetrics().widthPixels;
+                }
             }
         };
         switch (chartData.type) {
