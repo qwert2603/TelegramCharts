@@ -60,7 +60,10 @@ public class ChartViewDelegateLines implements Delegate {
         dp4 = getResources().getDimension(R.dimen.dp4);
         dp6 = getResources().getDimension(R.dimen.dp6);
         dp8 = getResources().getDimension(R.dimen.dp8);
-        float lineWidth = getResources().getDimension(R.dimen.line_width);
+        final float lineWidth = getResources().getDimension(R.dimen.line_width);
+
+        periodSelectorBorderHor = dp2 / 2;
+        periodSelectorBorderVer = dp12;
 
         titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -282,6 +285,8 @@ public class ChartViewDelegateLines implements Delegate {
     private final float chipMargin;
     private final float chipPadding;
     private final float chipHeight;
+    private final float periodSelectorBorderHor;
+    private final float periodSelectorBorderVer;
 
     private final Path path = new Path();
     private final float[] radiiLeft;
@@ -1011,43 +1016,40 @@ public class ChartViewDelegateLines implements Delegate {
         final float startX = startIndex * 1f / chartData.xValues.length * drawingWidth;
         final float endX = endIndex * 1f / chartData.xValues.length * drawingWidth;
 
-        final float borderHor = dp2 / 2;
-        final float borderVer = dp12;
-
         // period's outside.
-        path.addRoundRect(0, 0, startX + borderVer, periodSelectorHeight, radiiLeft, Path.Direction.CW);
+        path.addRoundRect(0, 0, startX + periodSelectorBorderVer, periodSelectorHeight, radiiLeft, Path.Direction.CW);
         canvas.drawPath(path, periodSelectorOutsidePaint);
         path.rewind();
-        path.addRoundRect(endX - borderVer, 0, drawingWidth, periodSelectorHeight, radiiRight, Path.Direction.CW);
+        path.addRoundRect(endX - periodSelectorBorderVer, 0, drawingWidth, periodSelectorHeight, radiiRight, Path.Direction.CW);
         canvas.drawPath(path, periodSelectorOutsidePaint);
         path.rewind();
 
         // horizontal borders
-        canvas.drawRect(startX + borderVer, -borderHor, endX - borderVer, 0, periodSelectorDragBorderPaint);
-        canvas.drawRect(startX + borderVer, periodSelectorHeight, endX - borderVer, periodSelectorHeight + borderHor, periodSelectorDragBorderPaint);
+        canvas.drawRect(startX + periodSelectorBorderVer, -periodSelectorBorderHor, endX - periodSelectorBorderVer, 0, periodSelectorDragBorderPaint);
+        canvas.drawRect(startX + periodSelectorBorderVer, periodSelectorHeight, endX - periodSelectorBorderVer, periodSelectorHeight + periodSelectorBorderHor, periodSelectorDragBorderPaint);
 
         // vertical borders
-        path.addRoundRect(startX, -borderHor, startX + borderVer, periodSelectorHeight + borderHor, radiiLeft, Path.Direction.CW);
+        path.addRoundRect(startX, -periodSelectorBorderHor, startX + periodSelectorBorderVer, periodSelectorHeight + periodSelectorBorderHor, radiiLeft, Path.Direction.CW);
         canvas.drawPath(path, periodSelectorDragBorderPaint);
         path.rewind();
-        path.addRoundRect(endX - borderVer, -borderHor, endX, periodSelectorHeight + borderHor, radiiRight, Path.Direction.CW);
+        path.addRoundRect(endX - periodSelectorBorderVer, -periodSelectorBorderHor, endX, periodSelectorHeight + periodSelectorBorderHor, radiiRight, Path.Direction.CW);
         canvas.drawPath(path, periodSelectorDragBorderPaint);
         path.rewind();
 
         // white drag rects
         canvas.drawRoundRect(
-                startX + borderVer / 2 - dp2 / 2,
+                startX + periodSelectorBorderVer / 2 - dp2 / 2,
                 periodSelectorHeight / 2 - dp6,
-                startX + borderVer / 2 + dp2 / 2,
+                startX + periodSelectorBorderVer / 2 + dp2 / 2,
                 periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
                 periodSelectorWhiteDragPaint
         );
         canvas.drawRoundRect(
-                endX - borderVer / 2 - dp2 / 2,
+                endX - periodSelectorBorderVer / 2 - dp2 / 2,
                 periodSelectorHeight / 2 - dp6,
-                endX - borderVer / 2 + dp2 / 2,
+                endX - periodSelectorBorderVer / 2 + dp2 / 2,
                 periodSelectorHeight / 2 + dp6,
                 dp2,
                 dp2,
