@@ -85,29 +85,22 @@ public class ChartData {
             int totalMinY = Integer.MAX_VALUE;
             int totalMaxY = Integer.MIN_VALUE;
 
-            if (line.isVisibleOrWillBe) {
-                int[] values = line.values;
-                for (int i = startIndex; i < endIndex; i++) {
-                    int y = values[i];
-                    if (y < minY) minY = y;
-                    if (y > maxY) maxY = y;
-                }
-                for (int i = 0; i < xValues.length; i++) {
-                    int y = values[i];
-                    if (y < totalMinY) totalMinY = y;
-                    if (y > totalMaxY) totalMaxY = y;
-                }
-
-                result[lineIndex * 4] = minY;
-                result[lineIndex * 4 + 1] = maxY;
-                result[lineIndex * 4 + 2] = totalMinY;
-                result[lineIndex * 4 + 3] = totalMaxY;
-            } else {
-                result[lineIndex * 4] = 0;
-                result[lineIndex * 4 + 1] = 0;
-                result[lineIndex * 4 + 2] = 0;
-                result[lineIndex * 4 + 3] = 0;
+            int[] values = line.values;
+            for (int i = startIndex; i < endIndex; i++) {
+                int y = values[i];
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
             }
+            for (int i = 0; i < xValues.length; i++) {
+                int y = values[i];
+                if (y < totalMinY) totalMinY = y;
+                if (y > totalMaxY) totalMaxY = y;
+            }
+
+            result[lineIndex * 4] = minY;
+            result[lineIndex * 4 + 1] = maxY;
+            result[lineIndex * 4 + 2] = totalMinY;
+            result[lineIndex * 4 + 3] = totalMaxY;
         }
 
         return result;
