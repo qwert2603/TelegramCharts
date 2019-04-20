@@ -85,22 +85,23 @@ public class ChartViewDelegateBars extends ChartViewDelegateLines {
     @Override
     protected void drawSelectionOnChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
+        final float titleHeight = getChartTitleHeight();
 
         final float wid = (maxX - minX) / drawingWidth;
 
         if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
             canvas.drawRect(
                     chartPadding + ((float) chartData.xValues[0] - minX - chartData.xStep / 2) / wid,
-                    -getChartTitleHeight(),
+                    0,
                     chartPadding + ((float) chartData.xValues[selectedIndex] - minX - chartData.xStep / 2) / wid,
-                    chartHeight,
+                    titleHeight + chartHeight,
                     lightenMaskPaint
             );
             canvas.drawRect(
                     chartPadding + ((float) chartData.xValues[selectedIndex] - minX + chartData.xStep / 2) / wid,
-                    -getChartTitleHeight(),
+                    0,
                     chartPadding + ((float) chartData.xValues[chartData.xValues.length - 1] - minX + chartData.xStep / 2) / wid,
-                    chartHeight,
+                    titleHeight + chartHeight,
                     lightenMaskPaint
             );
         }

@@ -110,6 +110,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     @Override
     protected void drawSelectionOnChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
+        final float titleHeight = getChartTitleHeight();
 
         final float wid = (maxX - minX) / drawingWidth;
 
@@ -118,7 +119,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
             if (0 < _x && _x < callbacks.getWidth()) {
-                canvas.drawLine(_x, 0, _x, chartHeight, selectedXLinePaint);
+                canvas.drawLine(_x, titleHeight, _x, titleHeight + chartHeight, selectedXLinePaint);
             }
         }
     }

@@ -866,9 +866,10 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, getChartTitleHeight()).
+    // canvas translation must be (0, 0).
     protected void drawSelectionOnChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
+        final float titleHeight = getChartTitleHeight();
 
         final float wid = (maxX - minX) / drawingWidth;
         final float hei = (maxY - minY) / chartHeight;
@@ -878,7 +879,7 @@ public class ChartViewDelegateLines implements Delegate {
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
             if (0 < _x && _x < callbacks.getWidth()) {
-                canvas.drawLine(_x, 0, _x, chartHeight, selectedXLinePaint);
+                canvas.drawLine(_x, titleHeight, _x, titleHeight + chartHeight, selectedXLinePaint);
 
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
@@ -886,7 +887,7 @@ public class ChartViewDelegateLines implements Delegate {
                         selectedCircleFillPaint.setAlpha(line.alpha);
                         selectedCirclesStrokePaint[c].setAlpha(line.alpha);
 
-                        final float _y = chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
+                        final float _y = titleHeight + chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
                         canvas.drawCircle(_x, _y, dp4, selectedCircleFillPaint);
                         canvas.drawCircle(_x, _y, dp4, selectedCirclesStrokePaint[c]);
                     }
@@ -895,9 +896,10 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, getChartTitleHeight()).
+    // canvas translation must be (0, 0).
     private void drawSelectionPanel(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
+        final float titleHeight = getChartTitleHeight();
 
         final float wid = (maxX - minX) / drawingWidth;
 
@@ -942,22 +944,22 @@ public class ChartViewDelegateLines implements Delegate {
 
                 panelRectOnScreen.set(
                         panelContentLeft - panelPadding,
-                        getChartTitleHeight() + panelMarginTop,
+                        titleHeight + panelMarginTop,
                         panelContentRight + panelPadding,
-                        getChartTitleHeight() + lineY + panelPadding
+                        titleHeight + lineY + panelPadding
                 );
 
                 canvas.drawRoundRect(
                         panelContentLeft - panelPadding,
-                        panelMarginTop,
+                        titleHeight + panelMarginTop,
                         panelContentRight + panelPadding,
-                        lineY + panelPadding,
+                        titleHeight + lineY + panelPadding,
                         dp4, dp4, panelBackgroundPaint);
                 canvas.drawRoundRect(
                         panelContentLeft - panelPadding,
-                        panelMarginTop,
+                        titleHeight + panelMarginTop,
                         panelContentRight + panelPadding,
-                        lineY + panelPadding,
+                        titleHeight + lineY + panelPadding,
                         dp4, dp4, panelShadowPaint);
 
                 lineY = panelMarginTop + lineHeight;
@@ -973,15 +975,15 @@ public class ChartViewDelegateLines implements Delegate {
                 final float translationDisappear = -changeFraction * dp12 * (isBack ? -1 : 1);
 
                 panelDatePaint.setAlpha((int) (0xFF * changeFraction));
-                canvas.drawText(changeOfSelected, panelContentLeft, lineY + translationAppear, panelDatePaint);
+                canvas.drawText(changeOfSelected, panelContentLeft, titleHeight + lineY + translationAppear, panelDatePaint);
                 if (prevSelectedIndex >= 0) {
                     panelDatePaint.setAlpha(0XFF - (int) (0xFF * changeFraction));
                     String changeOfPrev = prevDate.substring(0, prevDate.length() - commonChars);
-                    canvas.drawText(changeOfPrev, panelContentLeft, lineY + translationDisappear, panelDatePaint);
+                    canvas.drawText(changeOfPrev, panelContentLeft, titleHeight + lineY + translationDisappear, panelDatePaint);
                 }
                 panelDatePaint.setAlpha(0xFF);
                 String datesCommonEnd = selectedDate.substring(selectedDate.length() - commonChars);
-                canvas.drawText(datesCommonEnd, panelContentLeft + panelDatePaint.measureText(changeOfSelected), lineY, panelDatePaint);
+                canvas.drawText(datesCommonEnd, panelContentLeft + panelDatePaint.measureText(changeOfSelected), titleHeight + lineY, panelDatePaint);
 
                 int sum = 0;
                 int prevSum = 0;
@@ -1015,30 +1017,30 @@ public class ChartViewDelegateLines implements Delegate {
                         }
 
                         panelLinesNamesPaint.setAlpha(maxAlpha);
-                        canvas.drawText(line.name, panelContentLeft + (isSelectionPanelWithPercents ? percentsWidth : 0), lineY, panelLinesNamesPaint);
+                        canvas.drawText(line.name, panelContentLeft + (isSelectionPanelWithPercents ? percentsWidth : 0), titleHeight + lineY, panelLinesNamesPaint);
 
                         final int alphaAppear = prevSelectedIndex >= 0 ? (int) (maxAlpha * changeFraction) : maxAlpha;
                         final int alphaDisappear = maxAlpha - (int) (maxAlpha * changeFraction);
 
                         panelYValuesPaint[c].setAlpha(alphaAppear);
                         String formatY = Utils.toStringWithSpaces(line.values[selectedIndex]);
-                        canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValuesPaint[c]);
+                        canvas.drawText(formatY, panelContentRight, titleHeight + lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValuesPaint[c]);
 
                         if (isSelectionPanelWithPercents) {
                             panelPercentsPaint.setAlpha(alphaAppear);
                             String percentsFormatY = Utils.toStringWithSpaces(Math.round(line.values[selectedIndex] * 100f / sum)) + '%';
-                            canvas.drawText(percentsFormatY, panelContentLeft + percentsWidth - dp8, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelPercentsPaint);
+                            canvas.drawText(percentsFormatY, panelContentLeft + percentsWidth - dp8, titleHeight + lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelPercentsPaint);
                         }
 
                         if (prevSelectedIndex >= 0) {
                             panelYValuesPaint[c].setAlpha(alphaDisappear);
                             String formatPrevY = Utils.toStringWithSpaces(line.values[prevSelectedIndex]);
-                            canvas.drawText(formatPrevY, panelContentRight, lineY + translationDisappear, panelYValuesPaint[c]);
+                            canvas.drawText(formatPrevY, panelContentRight, titleHeight + lineY + translationDisappear, panelYValuesPaint[c]);
 
                             if (isSelectionPanelWithPercents) {
                                 panelPercentsPaint.setAlpha(alphaDisappear);
                                 String prevPercentsFormatY = Utils.toStringWithSpaces(Math.round(line.values[prevSelectedIndex] * 100f / prevSum)) + '%';
-                                canvas.drawText(prevPercentsFormatY, panelContentLeft + percentsWidth - dp8, lineY + translationDisappear, panelPercentsPaint);
+                                canvas.drawText(prevPercentsFormatY, panelContentLeft + percentsWidth - dp8, titleHeight + lineY + translationDisappear, panelPercentsPaint);
                             }
                         }
                     }
@@ -1047,16 +1049,16 @@ public class ChartViewDelegateLines implements Delegate {
                     lineY += lineHeight;
 
                     panelLinesNamesPaint.setAlpha(0xFF);
-                    canvas.drawText("All", panelContentLeft, lineY, panelLinesNamesPaint);
+                    canvas.drawText("All", panelContentLeft, titleHeight + lineY, panelLinesNamesPaint);
 
                     panelYValueAllPaint.setAlpha(prevSelectedIndex >= 0 ? (int) (0xFF * changeFraction) : 0xFF);
                     String formatY = Utils.toStringWithSpaces(sum);
-                    canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValueAllPaint);
+                    canvas.drawText(formatY, panelContentRight, titleHeight + lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValueAllPaint);
 
                     if (prevSelectedIndex >= 0) {
                         panelYValueAllPaint.setAlpha(0xFF - (int) (0xFF * changeFraction));
                         String formatPrevY = Utils.toStringWithSpaces(prevSum);
-                        canvas.drawText(formatPrevY, panelContentRight, lineY + translationDisappear, panelYValueAllPaint);
+                        canvas.drawText(formatPrevY, panelContentRight, titleHeight + lineY + translationDisappear, panelYValueAllPaint);
                     }
                 }
             } else {
@@ -1067,7 +1069,7 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, getChartTitleHeight()).
+    // canvas translation must be (0, 0).
     private void drawChartSelection(Canvas canvas) {
         drawSelectionOnChart(canvas);
         drawSelectionPanel(canvas);
@@ -1225,20 +1227,14 @@ public class ChartViewDelegateLines implements Delegate {
 
     @Override
     public void onDraw(Canvas canvas) {
-
-        //todo: correct order
-
+        drawChart(canvas);
+        drawChartSelection(canvas);
         drawTitle(canvas);
         drawDates(canvas);
         drawYSteps(canvas);
-        drawChart(canvas);
         drawChips(canvas);
 
-        canvas.translate(0, getChartTitleHeight());
-
-        drawChartSelection(canvas);
-
-        canvas.translate(chartPadding, chartHeight + datesHeight);
+        canvas.translate(chartPadding, getChartTitleHeight() + chartHeight + datesHeight);
 
         drawPeriodSelector(canvas);
     }
