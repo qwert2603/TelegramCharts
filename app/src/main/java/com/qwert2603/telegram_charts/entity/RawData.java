@@ -40,7 +40,7 @@ public class RawData {
         chartData.fullDates = new String[valuesCount];
         chartData.selectedDates = new String[valuesCount];
         for (int i = 0; i < valuesCount; i++) {
-            long millis = ((Double) columns.get(0).get(i + 1)).longValue();
+            long millis = (long) columns.get(0).get(i + 1);
             chartData.xValues[i] = millis;
             chartData.dates[i] = DATE_FORMAT.format(new Date(chartData.xValues[i]));
             chartData.fullDates[i] = FULL_DATE_FORMAT.format(new Date(chartData.xValues[i]));
@@ -65,52 +65,10 @@ public class RawData {
                 }
             }
             for (int i = 0; i < valuesCount; i++) {
-                line.values[i] = ((Double) values.get(i + 1)).intValue();
+                line.values[i] = (int) values.get(i + 1);
             }
         }
 
         return chartData;
-    }
-
-    public RawData() {
-    }
-
-    public RawData(List<List<Object>> columns, Map<String, String> types, Map<String, String> names, Map<String, String> colors) {
-        this.columns = columns;
-        this.types = types;
-        this.names = names;
-        this.colors = colors;
-    }
-
-    public List<List<Object>> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<List<Object>> columns) {
-        this.columns = columns;
-    }
-
-    public Map<String, String> getTypes() {
-        return types;
-    }
-
-    public void setTypes(Map<String, String> types) {
-        this.types = types;
-    }
-
-    public Map<String, String> getNames() {
-        return names;
-    }
-
-    public void setNames(Map<String, String> names) {
-        this.names = names;
-    }
-
-    public Map<String, String> getColors() {
-        return colors;
-    }
-
-    public void setColors(Map<String, String> colors) {
-        this.colors = colors;
     }
 }
