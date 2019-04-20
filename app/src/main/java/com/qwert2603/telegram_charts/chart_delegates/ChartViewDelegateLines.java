@@ -429,6 +429,7 @@ public class ChartViewDelegateLines implements Delegate {
         panelBackgroundPaint.setColor(night ? 0xFF1c2533 : Color.WHITE);
         panelShadowPaint.setColor(night ? 0x77000000 : 0x99CCCCCC);
         panelDatePaint.setColor(night ? Color.WHITE : Color.BLACK);
+        panelPercentsPaint.setColor(night ? Color.WHITE : Color.BLACK);
         panelLinesNamesPaint.setColor(night ? Color.WHITE : Color.BLACK);
         panelYValueAllPaint.setColor(night ? Color.WHITE : Color.BLACK);
         periodSelectorOutsidePaint.setColor(night ? 0x99304259 : 0x99E2EEF9);
