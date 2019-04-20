@@ -260,7 +260,11 @@ public class ChartViewDelegateLines implements Delegate {
             }
         });
 
-        drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+        final Drawable drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
+        drawablesCheck = new Drawable[chartData.xValues.length];
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            drawablesCheck[i] = drawableCheck.getConstantState().newDrawable().mutate();
+        }
     }
 
     private Resources getResources() {
@@ -378,7 +382,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     private Map<String, ValueAnimator> opacityAnimators = new HashMap<>();
 
-    private final Drawable drawableCheck;
+    private final Drawable[] drawablesCheck;
 
     protected final Path periodSelectorClipPath = new Path();
 
@@ -1179,20 +1183,23 @@ public class ChartViewDelegateLines implements Delegate {
 
                 if (line.isVisibleOrWillBe) {
                     canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, chipsFillPaint[c]);
-
-                    final int checkLeft = (int) (chipsRectOnScreen[c].left + chipPadding / 2 - dp2);
-                    final int checkTop = (int) (chipsRectOnScreen[c].top + chipPadding / 4 + dp2);
-                    drawableCheck.setBounds(
-                            checkLeft,
-                            checkTop,
-                            checkLeft + drawableCheck.getIntrinsicWidth(),
-                            checkTop + drawableCheck.getIntrinsicHeight()
-                    );
-                    drawableCheck.draw(canvas);
                 }
+
+                Drawable drawableCheck = drawablesCheck[c];
+                final int checkLeft = (int) (chipsRectOnScreen[c].left + chipPadding / 2 - dp2);
+                final int checkTop = (int) (chipsRectOnScreen[c].top + chipPadding / 4 + dp2);
+                drawableCheck.setBounds(
+                        checkLeft,
+                        checkTop,
+                        checkLeft + drawableCheck.getIntrinsicWidth(),
+                        checkTop + drawableCheck.getIntrinsicHeight()
+                );
+                drawableCheck.setAlpha(line.alpha);
+                drawableCheck.draw(canvas);
+
                 canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, chipsBorderPaint[c]);
 
-                float textTransitionX = line.isVisibleOrWillBe ? chipPadding / 4 + dp2 : 0;
+                float textTransitionX = line.alpha / 255f * (chipPadding / 4 + dp2);
                 canvas.drawText(
                         line.name,
                         currentLineX + chipPadding + textTransitionX,
