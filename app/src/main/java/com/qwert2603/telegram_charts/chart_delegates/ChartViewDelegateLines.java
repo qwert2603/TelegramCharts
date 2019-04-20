@@ -1226,6 +1226,8 @@ public class ChartViewDelegateLines implements Delegate {
     @Override
     public void onDraw(Canvas canvas) {
 
+        //todo: correct order
+
         drawTitle(canvas);
         drawDates(canvas);
         drawYSteps(canvas);
