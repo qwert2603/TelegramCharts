@@ -43,6 +43,11 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     }
 
     @Override
+    float getYLinesCompressFactor() {
+        return 1f;
+    }
+
+    @Override
     protected void drawChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 

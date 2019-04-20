@@ -284,6 +284,10 @@ public class ChartViewDelegateLines implements Delegate {
         return 0f;
     }
 
+    float getYLinesCompressFactor() {
+        return 0.25f;
+    }
+
     private final GestureDetector gestureDetector;
     private final RectF panelRectOnScreen = new RectF();
 
@@ -548,7 +552,7 @@ public class ChartViewDelegateLines implements Delegate {
         pendingTotalMaxY = endTotalMaxY;
 
         final float dY = endMaxY - endMinY;
-        stepY = dY / (HOR_LINES - 0.25f);
+        stepY = dY / (HOR_LINES - getYLinesCompressFactor());
         for (int i = 0; i < stepsY.length; i++) {
             stepsY[i] = (endMinY + stepY * i);
         }
