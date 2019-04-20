@@ -263,6 +263,7 @@ public class ChartViewDelegateLines implements Delegate {
         final Drawable drawableCheck = resources.getDrawable(R.drawable.ic_done_black_24dp);
         drawablesCheck = new Drawable[chartData.xValues.length];
         for (int i = 0; i < chartData.lines.size(); i++) {
+            // todo: this is bad for performance.
             drawablesCheck[i] = drawableCheck.getConstantState().newDrawable().mutate();
         }
     }
