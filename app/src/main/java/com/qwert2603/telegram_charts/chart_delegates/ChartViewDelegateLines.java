@@ -59,7 +59,7 @@ public class ChartViewDelegateLines implements Delegate {
         dp4 = getResources().getDimension(R.dimen.dp4);
         dp6 = getResources().getDimension(R.dimen.dp6);
         dp8 = getResources().getDimension(R.dimen.dp8);
-        final float lineWidth = getResources().getDimension(R.dimen.line_width);
+        lineWidth = getResources().getDimension(R.dimen.line_width);
 
         periodSelectorBorderHor = dp2 / 2;
         periodSelectorBorderVer = dp12;
@@ -103,6 +103,7 @@ public class ChartViewDelegateLines implements Delegate {
             final ChartData.Line line = chartData.lines.get(i);
             final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(line.color);
+            paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(lineWidth * 0.9f);
             linesPaints[i] = paint;
         }
@@ -112,6 +113,7 @@ public class ChartViewDelegateLines implements Delegate {
             final ChartData.Line line = chartData.lines.get(i);
             final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(line.color);
+            paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(lineWidth / 2f * 0.9f);
             periodSelectorLinesPaints[i] = paint;
         }
@@ -164,12 +166,19 @@ public class ChartViewDelegateLines implements Delegate {
         selectedCircleFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         selectedCircleFillPaint.setStyle(Paint.Style.FILL);
 
+        final float panelTextSize = dp12 + dp2;
+
         panelDatePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        panelDatePaint.setTextSize(dp12 + dp2);
+        panelDatePaint.setTextSize(panelTextSize);
         panelDatePaint.setTypeface(Typeface.DEFAULT_BOLD);
 
+        panelPercentsPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelPercentsPaint.setTextSize(panelTextSize);
+        panelPercentsPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        panelPercentsPaint.setTextAlign(Paint.Align.RIGHT);
+
         panelLinesNamesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        panelLinesNamesPaint.setTextSize(dp12 + dp2);
+        panelLinesNamesPaint.setTextSize(panelTextSize);
 
         selectedCirclesStrokePaint = new Paint[chartData.lines.size()];
         for (int i = 0; i < chartData.lines.size(); i++) {
@@ -188,21 +197,19 @@ public class ChartViewDelegateLines implements Delegate {
         panelBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         panelBackgroundPaint.setStyle(Paint.Style.FILL);
 
-        final float panelValueTextSize = dp12 + dp2;
-
         panelYValuesPaint = new Paint[chartData.lines.size()];
         for (int i = 0; i < chartData.lines.size(); i++) {
             final ChartData.Line line = chartData.lines.get(i);
             final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(line.color);
-            paint.setTextSize(panelValueTextSize);
+            paint.setTextSize(panelTextSize);
             paint.setTypeface(Typeface.DEFAULT_BOLD);
             paint.setTextAlign(Paint.Align.RIGHT);
             panelYValuesPaint[i] = paint;
         }
 
         panelYValueAllPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        panelYValueAllPaint.setTextSize(panelValueTextSize);
+        panelYValueAllPaint.setTextSize(panelTextSize);
         panelYValueAllPaint.setTypeface(Typeface.DEFAULT_BOLD);
         panelYValueAllPaint.setTextAlign(Paint.Align.RIGHT);
 
@@ -260,8 +267,16 @@ public class ChartViewDelegateLines implements Delegate {
         return resources;
     }
 
-    boolean selectionPanelAllString() {
+    boolean isSelectionPanelWithAllString() {
         return false;
+    }
+
+    boolean isSelectionPanelWithPercents() {
+        return false;
+    }
+
+    float getPanelMarginTop() {
+        return 0f;
     }
 
     private final GestureDetector gestureDetector;
@@ -280,6 +295,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final float dp4;
     private final float dp6;
     private final float dp8;
+    protected final float lineWidth;
     protected final float dp12;
     private final float chipsMarginHorizontal;
     private final float chipMargin;
@@ -320,11 +336,12 @@ public class ChartViewDelegateLines implements Delegate {
     private final Paint[] chipsFillPaint;
     private final Paint[] chipsTextPaint;
 
-    private final Paint selectedXLinePaint;
+    protected final Paint selectedXLinePaint;
     private final Paint selectedCircleFillPaint;
     private final Paint[] selectedCirclesStrokePaint;
     private final Paint panelDatePaint;
     private final Paint panelLinesNamesPaint;
+    private final Paint panelPercentsPaint;
     private final Paint[] panelYValuesPaint;
     private final Paint panelYValueAllPaint;
 
@@ -879,6 +896,10 @@ public class ChartViewDelegateLines implements Delegate {
             if (0 < _x && _x < callbacks.getWidth()) {
                 final float changeFraction = (float) selectedIndexAnimator.getAnimatedValue();
 
+                final boolean isSelectionPanelWithAllString = isSelectionPanelWithAllString();
+                final boolean isSelectionPanelWithPercents = isSelectionPanelWithPercents();
+                final float panelMarginTop = getPanelMarginTop();
+
                 final boolean panelLefted = _x < callbacks.getWidth() / 2;
                 final float prevX = prevSelectedIndex < 0 ? _x : chartPadding + (chartData.xValues[prevSelectedIndex] - minX) / wid;
                 final float panelAnchor = _x + (prevX - _x) * (1 - changeFraction);
@@ -887,8 +908,9 @@ public class ChartViewDelegateLines implements Delegate {
                 final float panelContentRight = panelAnchor + (panelLefted ? dp12 * 14 : dp12 * -2);
 
                 final float lineHeight = dp12 * 2;
+                final float percentsWidth = dp12 + dp12 + dp8;
 
-                float lineY = lineHeight;
+                float lineY = panelMarginTop + lineHeight;
 
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
@@ -900,7 +922,7 @@ public class ChartViewDelegateLines implements Delegate {
                         }
                     }
                 }
-                if (selectionPanelAllString()) {
+                if (isSelectionPanelWithAllString) {
                     lineY += lineHeight;
                 }
 
@@ -908,25 +930,25 @@ public class ChartViewDelegateLines implements Delegate {
 
                 panelRectOnScreen.set(
                         panelContentLeft - panelPadding,
-                        chartTitleHeight,
+                        chartTitleHeight + panelMarginTop,
                         panelContentRight + panelPadding,
                         chartTitleHeight + lineY + panelPadding
                 );
 
                 canvas.drawRoundRect(
                         panelContentLeft - panelPadding,
-                        0,
+                        panelMarginTop,
                         panelContentRight + panelPadding,
                         lineY + panelPadding,
                         dp4, dp4, panelBackgroundPaint);
                 canvas.drawRoundRect(
                         panelContentLeft - panelPadding,
-                        0,
+                        panelMarginTop,
                         panelContentRight + panelPadding,
                         lineY + panelPadding,
                         dp4, dp4, panelShadowPaint);
 
-                lineY = lineHeight;
+                lineY = panelMarginTop + lineHeight;
 
                 final boolean isBack = selectedIndex < prevSelectedIndex;
                 final String selectedDate = chartData.selectedDates[selectedIndex];
@@ -954,12 +976,16 @@ public class ChartViewDelegateLines implements Delegate {
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
 
-                    if (line.isVisibleOrWillBe) {
+                    if (line.isVisible()) {
                         sum += line.values[selectedIndex];
                         if (prevSelectedIndex >= 0) {
                             prevSum += line.values[prevSelectedIndex];
                         }
                     }
+                }
+
+                for (int c = 0; c < chartData.lines.size(); c++) {
+                    final ChartData.Line line = chartData.lines.get(c);
 
                     if (line.isVisible()) {
 
@@ -977,20 +1003,35 @@ public class ChartViewDelegateLines implements Delegate {
                         }
 
                         panelLinesNamesPaint.setAlpha(maxAlpha);
-                        canvas.drawText(line.name, panelContentLeft, lineY, panelLinesNamesPaint);
+                        canvas.drawText(line.name, panelContentLeft + (isSelectionPanelWithPercents ? percentsWidth : 0), lineY, panelLinesNamesPaint);
 
-                        panelYValuesPaint[c].setAlpha(prevSelectedIndex >= 0 ? (int) (maxAlpha * changeFraction) : maxAlpha);
+                        final int alphaAppear = prevSelectedIndex >= 0 ? (int) (maxAlpha * changeFraction) : maxAlpha;
+                        final int alphaDisappear = maxAlpha - (int) (maxAlpha * changeFraction);
+
+                        panelYValuesPaint[c].setAlpha(alphaAppear);
                         String formatY = Utils.toStringWithSpaces(line.values[selectedIndex]);
                         canvas.drawText(formatY, panelContentRight, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelYValuesPaint[c]);
 
+                        if (isSelectionPanelWithPercents) {
+                            panelPercentsPaint.setAlpha(alphaAppear);
+                            String percentsFormatY = Utils.toStringWithSpaces(Math.round(line.values[selectedIndex] * 100f / sum)) + '%';
+                            canvas.drawText(percentsFormatY, panelContentLeft + percentsWidth - dp8, lineY + (prevSelectedIndex >= 0 ? translationAppear : 0), panelPercentsPaint);
+                        }
+
                         if (prevSelectedIndex >= 0) {
-                            panelYValuesPaint[c].setAlpha(maxAlpha - (int) (maxAlpha * changeFraction));
+                            panelYValuesPaint[c].setAlpha(alphaDisappear);
                             String formatPrevY = Utils.toStringWithSpaces(line.values[prevSelectedIndex]);
                             canvas.drawText(formatPrevY, panelContentRight, lineY + translationDisappear, panelYValuesPaint[c]);
+
+                            if (isSelectionPanelWithPercents) {
+                                panelPercentsPaint.setAlpha(alphaDisappear);
+                                String prevPercentsFormatY = Utils.toStringWithSpaces(Math.round(line.values[prevSelectedIndex] * 100f / prevSum)) + '%';
+                                canvas.drawText(prevPercentsFormatY, panelContentLeft + percentsWidth - dp8, lineY + translationDisappear, panelPercentsPaint);
+                            }
                         }
                     }
                 }
-                if (selectionPanelAllString()) {
+                if (isSelectionPanelWithAllString) {
                     lineY += lineHeight;
 
                     panelLinesNamesPaint.setAlpha(0xFF);

@@ -21,11 +21,18 @@ public class ChartViewDelegateBars extends ChartViewDelegateLines {
 
         lightenMaskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         lightenMaskPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            linesPaints[i].setAntiAlias(false);
+            linesPaints[i].setStyle(Paint.Style.FILL_AND_STROKE);
+            periodSelectorLinesPaints[i].setAntiAlias(false);
+            periodSelectorLinesPaints[i].setStyle(Paint.Style.FILL_AND_STROKE);
+        }
     }
 
     @Override
-    boolean selectionPanelAllString() {
-        return true;
+    boolean isSelectionPanelWithAllString() {
+        return chartData.lines.size() > 1;
     }
 
     @Override
