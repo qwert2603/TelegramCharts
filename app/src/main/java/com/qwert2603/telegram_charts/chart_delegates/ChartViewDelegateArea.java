@@ -38,6 +38,11 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     }
 
     @Override
+    float getChartTitleHeight() {
+        return dp12 * 6;
+    }
+
+    @Override
     float getPanelMarginTop() {
         return dp12;
     }
@@ -53,7 +58,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
 
         final float wid = (maxX - minX) / drawingWidth;
         final float dX = chartPadding;
-        final float dY = chartTitleHeight + chartHeight;
+        final float dY = getChartTitleHeight() + chartHeight;
 
         for (int i = 0; i < chartData.xValues.length; i++) {
             sums[i] = 0;

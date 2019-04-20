@@ -215,7 +215,6 @@ public class ChartViewDelegateLines implements Delegate {
 
         chartHeight = getResources().getDimension(R.dimen.chart_height);
         datesHeight = getResources().getDimension(R.dimen.dates_height);
-        chartTitleHeight = getResources().getDimension(R.dimen.chart_title_height);
         periodSelectorHeight = getResources().getDimension(R.dimen.period_selector_height);
         minPeriodSelectorWidth = getResources().getDimension(R.dimen.min_period_selector_width);
         periodSelectorDraggableWidth = getResources().getDimension(R.dimen.period_selector_draggable_width);
@@ -230,7 +229,7 @@ public class ChartViewDelegateLines implements Delegate {
         gestureDetector = new GestureDetector(this.context, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
-                if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
+                if (getChartTitleHeight() + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
                     List<ChartData.Line> lines = chartData.lines;
                     for (int i = 0; i < lines.size(); i++) {
                         if (chipsRectOnScreen[i].contains(e.getX(), e.getY())) {
@@ -245,7 +244,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             @Override
             public void onLongPress(MotionEvent e) {
-                if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
+                if (getChartTitleHeight() + chartHeight + datesHeight + periodSelectorHeight < e.getY()) {
                     List<ChartData.Line> lines = chartData.lines;
                     for (int i = 0; i < lines.size(); i++) {
                         if (chipsRectOnScreen[i].contains(e.getX(), e.getY())) {
@@ -280,6 +279,10 @@ public class ChartViewDelegateLines implements Delegate {
         return false;
     }
 
+    float getChartTitleHeight() {
+        return dp12 * 4 + dp4;
+    }
+
     float getPanelMarginTop() {
         return 0f;
     }
@@ -295,7 +298,6 @@ public class ChartViewDelegateLines implements Delegate {
 
     protected final float chartHeight;
     protected final float datesHeight;
-    protected final float chartTitleHeight;
     protected final float periodSelectorHeight;
     private final float minPeriodSelectorWidth;
     private final float periodSelectorDraggableWidth;
@@ -405,7 +407,7 @@ public class ChartViewDelegateLines implements Delegate {
         );
 
         float currentLineX = chartPadding;
-        float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginHorizontal + chipMargin;
+        float currentLineY = getChartTitleHeight() + chartHeight + datesHeight + periodSelectorHeight + chipsMarginHorizontal + chipMargin;
         if (chartData.lines.size() > 1) {
             for (int c = 0; c < chartData.lines.size(); c++) {
                 final float chipWidth = chipsWidth[c];
@@ -627,7 +629,7 @@ public class ChartViewDelegateLines implements Delegate {
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                if (chartTitleHeight + chartHeight + datesHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight) {
+                if (getChartTitleHeight() + chartHeight + datesHeight < event.getY() && event.getY() < getChartTitleHeight() + chartHeight + datesHeight + periodSelectorHeight) {
                     if (Math.abs(periodStartXRel - xRel) * drawingWidth < periodSelectorDraggableWidth) {
                         dragPointerId = pointerId;
                         currentDrag = DRAG_START;
@@ -643,7 +645,7 @@ public class ChartViewDelegateLines implements Delegate {
                         movePeriodSelectorTo(xRel + selectorDragCenterOffsetRel, selectorWidthRel);
                         callbacks.requestDisallowInterceptTouchEvent(true);
                     }
-                } else if (chartTitleHeight < event.getY() && event.getY() < chartTitleHeight + chartHeight) {
+                } else if (getChartTitleHeight() < event.getY() && event.getY() < getChartTitleHeight() + chartHeight) {
                     if (selectedIndex < 0) {
                         updateSelectedIndex(xRel);
                     } else {
@@ -660,7 +662,7 @@ public class ChartViewDelegateLines implements Delegate {
                     startSelectedIndexX = event.getX();
                     startSelectedIndexY = event.getY();
                     callbacks.requestDisallowInterceptTouchEvent(true);
-                } else if (chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight < event.getY()) {
+                } else if (getChartTitleHeight() + chartHeight + datesHeight + periodSelectorHeight < event.getY()) {
                     dragPointerId = pointerId;
                     lastChipsDownX = event.getX();
                     lastChipsDownY = event.getY();
@@ -799,7 +801,7 @@ public class ChartViewDelegateLines implements Delegate {
             float x = (index - startIndex * 1f) / (endIndex - startIndex - 1) * drawingWidth + chartPadding;
             legendDatesPaint.setAlpha(index % (stepX * 2) == 0 ? maxLegendAlpha : oddDatesAlpha);
             final String dateText = chartData.dates[index];
-            canvas.drawText(dateText, x, chartTitleHeight + chartHeight + dp12 + dp4, legendDatesPaint);
+            canvas.drawText(dateText, x, getChartTitleHeight() + chartHeight + dp12 + dp4, legendDatesPaint);
         }
     }
 
@@ -817,8 +819,8 @@ public class ChartViewDelegateLines implements Delegate {
         for (int i = 0; i < HOR_LINES; i++) {
             final float valueY = stepsY[i];
             final float y = yValueToYOnChart(valueY);
-            canvas.drawLine(chartPadding, chartTitleHeight + y, chartPadding + drawingWidth, chartTitleHeight + y, yLinesPaint);
-            canvas.drawText(Utils.formatY((int) valueY), chartPadding, chartTitleHeight + y - dp6, legendYStepsPaint);
+            canvas.drawLine(chartPadding, getChartTitleHeight() + y, chartPadding + drawingWidth, getChartTitleHeight() + y, yLinesPaint);
+            canvas.drawText(Utils.formatY((int) valueY), chartPadding, getChartTitleHeight() + y - dp6, legendYStepsPaint);
         }
         if (prevStepY > 0) {
             yLinesPaint.setAlpha((int) (0x19 - yLimitsAnimator.getAnimatedFraction() * 0x19));
@@ -826,8 +828,8 @@ public class ChartViewDelegateLines implements Delegate {
             for (int i = 0; i < HOR_LINES; i++) {
                 final float valueY = prevStepsY[i];
                 final float y = yValueToYOnChart(valueY);
-                canvas.drawLine(chartPadding, chartTitleHeight + y, chartPadding + drawingWidth, chartTitleHeight + y, yLinesPaint);
-                canvas.drawText(Utils.formatY((int) valueY), chartPadding, chartTitleHeight + y - dp6, legendYStepsPaint);
+                canvas.drawLine(chartPadding, getChartTitleHeight() + y, chartPadding + drawingWidth, getChartTitleHeight() + y, yLinesPaint);
+                canvas.drawText(Utils.formatY((int) valueY), chartPadding, getChartTitleHeight() + y - dp6, legendYStepsPaint);
             }
         }
     }
@@ -839,7 +841,7 @@ public class ChartViewDelegateLines implements Delegate {
         final float wid = (maxX - minX) / drawingWidth;
         final float hei = (maxY - minY) / chartHeight;
         final float dX = chartPadding;
-        final float dY = chartTitleHeight + chartHeight;
+        final float dY = getChartTitleHeight() + chartHeight;
 
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
@@ -864,7 +866,7 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, chartTitleHeight).
+    // canvas translation must be (0, getChartTitleHeight()).
     protected void drawSelectionOnChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -893,7 +895,7 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, chartTitleHeight).
+    // canvas translation must be (0, getChartTitleHeight()).
     private void drawSelectionPanel(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -940,9 +942,9 @@ public class ChartViewDelegateLines implements Delegate {
 
                 panelRectOnScreen.set(
                         panelContentLeft - panelPadding,
-                        chartTitleHeight + panelMarginTop,
+                        getChartTitleHeight() + panelMarginTop,
                         panelContentRight + panelPadding,
-                        chartTitleHeight + lineY + panelPadding
+                        getChartTitleHeight() + lineY + panelPadding
                 );
 
                 canvas.drawRoundRect(
@@ -1065,13 +1067,13 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, chartTitleHeight).
+    // canvas translation must be (0, getChartTitleHeight()).
     private void drawChartSelection(Canvas canvas) {
         drawSelectionOnChart(canvas);
         drawSelectionPanel(canvas);
     }
 
-    // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
+    // canvas translation must be (chartPadding, getChartTitleHeight() + chartHeight + datesHeight).
     protected void drawPeriodSelectorChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -1107,7 +1109,7 @@ public class ChartViewDelegateLines implements Delegate {
         canvas.restore();
     }
 
-    // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
+    // canvas translation must be (chartPadding, getChartTitleHeight() + chartHeight + datesHeight).
     private void drawPeriodSelectorUi(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
 
@@ -1161,7 +1163,7 @@ public class ChartViewDelegateLines implements Delegate {
         );
     }
 
-    // canvas translation must be (chartPadding, chartTitleHeight + chartHeight + datesHeight).
+    // canvas translation must be (chartPadding, getChartTitleHeight() + chartHeight + datesHeight).
     private void drawPeriodSelector(Canvas canvas) {
         drawPeriodSelectorChart(canvas);
         drawPeriodSelectorUi(canvas);
@@ -1174,7 +1176,7 @@ public class ChartViewDelegateLines implements Delegate {
         if (chartData.lines.size() > 1) {
             final float chipCornerRadius = dp12 * 4;
             float currentLineX = chartPadding;
-            float currentLineY = chartTitleHeight + chartHeight + datesHeight + periodSelectorHeight + chipsMarginHorizontal + chipMargin;
+            float currentLineY = getChartTitleHeight() + chartHeight + datesHeight + periodSelectorHeight + chipsMarginHorizontal + chipMargin;
             for (int c = 0; c < chartData.lines.size(); c++) {
                 final ChartData.Line line = chartData.lines.get(c);
                 float chipWidth = chipsWidth[c];
@@ -1230,7 +1232,7 @@ public class ChartViewDelegateLines implements Delegate {
         drawChart(canvas);
         drawChips(canvas);
 
-        canvas.translate(0, chartTitleHeight);
+        canvas.translate(0, getChartTitleHeight());
 
         drawChartSelection(canvas);
 

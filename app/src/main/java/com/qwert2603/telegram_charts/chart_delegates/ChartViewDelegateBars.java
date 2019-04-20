@@ -49,7 +49,7 @@ public class ChartViewDelegateBars extends ChartViewDelegateLines {
         final float hei = (maxY - minY) / chartHeight;
 
         final float dX = chartPadding;
-        final float dY = chartTitleHeight + chartHeight;
+        final float dY = getChartTitleHeight() + chartHeight;
 
         for (int i = 0; i < chartData.xValues.length; i++) {
             sums[i] = 0;
@@ -91,14 +91,14 @@ public class ChartViewDelegateBars extends ChartViewDelegateLines {
         if (selectedIndex >= 0 && chartData.isAnyLineVisible()) {
             canvas.drawRect(
                     chartPadding + ((float) chartData.xValues[0] - minX - chartData.xStep / 2) / wid,
-                    -chartTitleHeight,
+                    -getChartTitleHeight(),
                     chartPadding + ((float) chartData.xValues[selectedIndex] - minX - chartData.xStep / 2) / wid,
                     chartHeight,
                     lightenMaskPaint
             );
             canvas.drawRect(
                     chartPadding + ((float) chartData.xValues[selectedIndex] - minX + chartData.xStep / 2) / wid,
-                    -chartTitleHeight,
+                    -getChartTitleHeight(),
                     chartPadding + ((float) chartData.xValues[chartData.xValues.length - 1] - minX + chartData.xStep / 2) / wid,
                     chartHeight,
                     lightenMaskPaint
