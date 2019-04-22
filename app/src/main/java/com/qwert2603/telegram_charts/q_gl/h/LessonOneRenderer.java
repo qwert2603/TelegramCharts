@@ -43,7 +43,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
     private int mMVPMatrixHandle;
     private int mPositionHandle;
-    private int mColorHandle;
+    //    private int mColorHandle;
+    private int mStepHandle;
 
     private final int mBytesPerFloat = 4;
 
@@ -51,6 +52,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private final int mColorDataSize = 4;
 
     private float x;
+    private float step;
 
     private final int trianglesCount = 100;
     private Context context;
@@ -60,17 +62,31 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         final float[] trianglesVerticesData = new float[mPositionDataSize * 3 * trianglesCount];
         final float[] trianglesColorsData = new float[mColorDataSize * 3 * trianglesCount];
 
-        for (int i = 0; i < trianglesCount; i++) {
-            float q = i - trianglesCount / 2f;
-            trianglesVerticesData[i * 9] = q / trianglesCount;
-            trianglesVerticesData[i * 9 + 1] = 0f;
-            trianglesVerticesData[i * 9 + 2] = 0f;
-            trianglesVerticesData[i * 9 + 3] = (q + 1) / trianglesCount;
-            trianglesVerticesData[i * 9 + 4] = 0f;
-            trianglesVerticesData[i * 9 + 5] = 0f;
-            trianglesVerticesData[i * 9 + 6] = q / trianglesCount;
-            trianglesVerticesData[i * 9 + 7] = 0.5f;
-            trianglesVerticesData[i * 9 + 8] = 0f;
+        float z = 1f / trianglesCount;
+
+        for (int u = 0; u < trianglesCount; u++) {
+            int i = u - trianglesCount / 2;
+            if (i % 2 == 0) {
+                trianglesVerticesData[u * 9] = i * z;
+                trianglesVerticesData[u * 9 + 1] = 0f;
+                trianglesVerticesData[u * 9 + 2] = 0f;
+                trianglesVerticesData[u * 9 + 3] = (i + 2) * z;
+                trianglesVerticesData[u * 9 + 4] = 0f;
+                trianglesVerticesData[u * 9 + 5] = 0f;
+                trianglesVerticesData[u * 9 + 6] = i * z;
+                trianglesVerticesData[u * 9 + 7] = 0.5f;
+                trianglesVerticesData[u * 9 + 8] = 0f;
+            } else {
+                trianglesVerticesData[u * 9] = (i + 1) * z;
+                trianglesVerticesData[u * 9 + 1] = 0.5f;
+                trianglesVerticesData[u * 9 + 2] = 0f;
+                trianglesVerticesData[u * 9 + 3] = (i - 1) * z;
+                trianglesVerticesData[u * 9 + 4] = 0.5f;
+                trianglesVerticesData[u * 9 + 5] = 0f;
+                trianglesVerticesData[u * 9 + 6] = (i + 1) * z;
+                trianglesVerticesData[u * 9 + 7] = 0f;
+                trianglesVerticesData[u * 9 + 8] = 0f;
+            }
         }
 
         for (int i = 0; i < trianglesCount * 3; i++) {
@@ -106,12 +122,13 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         final String fragmentShader = DataParser.readAsset(context, "fragment_shader");
 
         int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-
         GLES20.glShaderSource(vertexShaderHandle, vertexShader);
         GLES20.glCompileShader(vertexShaderHandle);
+
         int fragmentShaderHandle = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
         GLES20.glShaderSource(fragmentShaderHandle, fragmentShader);
         GLES20.glCompileShader(fragmentShaderHandle);
+
         int programHandle = GLES20.glCreateProgram();
         GLES20.glAttachShader(programHandle, vertexShaderHandle);
         GLES20.glAttachShader(programHandle, fragmentShaderHandle);
@@ -124,7 +141,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
-        mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
+//        mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
+        mStepHandle = GLES20.glGetUniformLocation(programHandle, "a_step");
 
         GLES20.glUseProgram(programHandle);
     }
@@ -184,11 +202,15 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
                 3 * mBytesPerFloat, mTrianglesVertices);
 
-        GLES20.glEnableVertexAttribArray(mColorHandle);
-        mTrianglesColors.position(0);
-        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                4 * mBytesPerFloat, mTrianglesColors);
+//        GLES20.glEnableVertexAttribArray(mColorHandle);
+//        mTrianglesColors.position(0);
+//        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
+//                4 * mBytesPerFloat, mTrianglesColors);
 
+
+        GLES20.glUniform1f(mStepHandle, step);
+        step += 0.01;
+        if (step > 1) step = 0;
 
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);

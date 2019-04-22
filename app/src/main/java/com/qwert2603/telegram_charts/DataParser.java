@@ -136,6 +136,8 @@ public class DataParser {
                 stringBuilder.append(s);
             }
 
+            inputStream.close();
+
             return stringBuilder.toString();
         } catch (Exception e) {
             e.printStackTrace();
