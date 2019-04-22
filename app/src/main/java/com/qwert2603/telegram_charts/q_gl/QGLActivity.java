@@ -14,4 +14,16 @@ public class QGLActivity extends Activity {
         qglSurfaceView = new QGLSurfaceView(this);
         setContentView(qglSurfaceView);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        qglSurfaceView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        qglSurfaceView.onPause();
+        super.onPause();
+    }
 }
