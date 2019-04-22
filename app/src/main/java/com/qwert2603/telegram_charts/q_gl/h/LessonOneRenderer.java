@@ -1,7 +1,6 @@
 package com.qwert2603.telegram_charts.q_gl.h;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -118,8 +117,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 1.5f, 0.0f, 0.0f, -5.0f, 0.0f, 1.0f, 0.0f);
 
-        final String vertexShader = DataParser.readAsset(context, "vertex_shader");
-        final String fragmentShader = DataParser.readAsset(context, "fragment_shader");
+        final String vertexShader = DataParser.readAsset(context, "vertex_shader.glsl");
+        final String fragmentShader = DataParser.readAsset(context, "fragment_shader.glsl");
 
         int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
         GLES20.glShaderSource(vertexShaderHandle, vertexShader);
