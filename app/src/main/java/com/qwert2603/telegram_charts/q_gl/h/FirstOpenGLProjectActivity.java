@@ -14,7 +14,7 @@ public class FirstOpenGLProjectActivity extends Activity {
         mGLSurfaceView = new GLSurfaceView(this);
 
         mGLSurfaceView.setEGLContextClientVersion(2);
-        mGLSurfaceView.setRenderer(new LessonOneRenderer());
+        mGLSurfaceView.setRenderer(new LessonOneRenderer(this));
 
         setContentView(mGLSurfaceView);
     }

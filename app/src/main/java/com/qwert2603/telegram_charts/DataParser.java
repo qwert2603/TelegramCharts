@@ -120,4 +120,26 @@ public class DataParser {
             return null;
         }
     }
+
+    public static String readAsset(Context context, String name) {
+        try {
+            InputStream inputStream = context.getAssets().open(name);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            String s = bufferedReader.readLine();
+            stringBuilder.append(s);
+            while (true) {
+                s = bufferedReader.readLine();
+                if (s == null) break;
+                stringBuilder.append(s);
+            }
+
+            return stringBuilder.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

@@ -1,8 +1,12 @@
 package com.qwert2603.telegram_charts.q_gl.h;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+
+import com.qwert2603.telegram_charts.DataParser;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,204 +38,72 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
      */
     private float[] mMVPMatrix = new float[16];
 
-    /**
-     * Store our model data in a float buffer.
-     */
-    private final FloatBuffer mTriangle1Vertices;
-    private final FloatBuffer mTriangle2Vertices;
-    private final FloatBuffer mTriangle3Vertices;
-    private final FloatBuffer mTriangle4Vertices;
-    private final FloatBuffer mTriangle5Vertices;
-    private final FloatBuffer mTriangle6Vertices;
+    private final FloatBuffer mTrianglesVertices;
+    private final FloatBuffer mTrianglesColors;
 
-
-    /**
-     * This will be used to pass in the transformation matrix.
-     */
     private int mMVPMatrixHandle;
-
-    /**
-     * This will be used to pass in model position information.
-     */
     private int mPositionHandle;
-
-    /**
-     * This will be used to pass in model color information.
-     */
     private int mColorHandle;
 
-    /**
-     * How many bytes per float.
-     */
     private final int mBytesPerFloat = 4;
 
-    /**
-     * How many elements per vertex.
-     */
-    private final int mStrideBytes = 7 * mBytesPerFloat;
-
-    /**
-     * Offset of the position data.
-     */
-    private final int mPositionOffset = 0;
-
-    /**
-     * Size of the position data in elements.
-     */
     private final int mPositionDataSize = 3;
-
-    /**
-     * Offset of the color data.
-     */
-    private final int mColorOffset = 3;
-
-    /**
-     * Size of the color data in elements.
-     */
     private final int mColorDataSize = 4;
+
     private float x;
 
+    private final int trianglesCount = 100;
+    private Context context;
 
-    /**
-     * Initialize the model data.
-     */
-    public LessonOneRenderer() {
-        // Define points for equilateral triangles.
+    public LessonOneRenderer(Context context) {
+        this.context = context;
+        final float[] trianglesVerticesData = new float[mPositionDataSize * 3 * trianglesCount];
+        final float[] trianglesColorsData = new float[mColorDataSize * 3 * trianglesCount];
 
-        // This triangle is white_blue.First sail is mainsail
-        final float[] triangle1VerticesData = {
-                // X, Y, Z,
-                // R, G, B, A
-                -0.5f, -0.25f, 0.0f,
-                1.0f, 1.0f, 1.0f, 1.0f,
+        for (int i = 0; i < trianglesCount; i++) {
+            float q = i - trianglesCount / 2f;
+            trianglesVerticesData[i * 9] = q / trianglesCount;
+            trianglesVerticesData[i * 9 + 1] = 0f;
+            trianglesVerticesData[i * 9 + 2] = 0f;
+            trianglesVerticesData[i * 9 + 3] = (q + 1) / trianglesCount;
+            trianglesVerticesData[i * 9 + 4] = 0f;
+            trianglesVerticesData[i * 9 + 5] = 0f;
+            trianglesVerticesData[i * 9 + 6] = q / trianglesCount;
+            trianglesVerticesData[i * 9 + 7] = 0.5f;
+            trianglesVerticesData[i * 9 + 8] = 0f;
+        }
 
-                0.0f, -0.25f, 0.0f,
-                0.8f, 0.8f, 1.0f, 1.0f,
-
-                0.0f, 0.56f, 0.0f,
-                0.8f, 0.8f, 1.0f, 1.0f};
-        // This triangle is white_blue..The second is called the jib sail
-        final float[] triangle2VerticesData = {
-                // X, Y, Z,
-                // R, G, B, A
-                -0.25f, -0.25f, 0.0f,
-                0.8f, 0.8f, 1.0f, 1.0f,
-
-                0.03f, -0.25f, 0.0f,
-                1.0f, 1.0f, 1.0f, 1.0f,
-
-                -0.25f, 0.4f, 0.0f,
-                0.8f, 0.8f, 1.0f, 1.0f};
-
-        // This triangle3 is blue.
-        final float[] triangle3VerticesData = {
-                // X, Y, Z,
-                // R, G, B, A
-                -1.0f, -1.5f, 0.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-
-                1.0f, -0.35f, 0.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-
-                -1.0f, -0.35f, 0.0f,
-                0.0f, 0.0f, 1.0f, 1.0f};
+        for (int i = 0; i < trianglesCount * 3; i++) {
+            trianglesColorsData[i * 4] = i * 1f / (trianglesCount * 3);
+            trianglesColorsData[i * 4 + 1] = 1f - i * 1f / (trianglesCount * 3);
+            trianglesColorsData[i * 4 + 2] = 0f;
+            trianglesColorsData[i * 4 + 3] = 0.5f;
+        }
 
 
-        // This triangle4 is blue.
-        final float[] triangle4VerticesData = {
-                // X, Y, Z,
-                // R, G, B, A
-                -1.0f, -1.5f, 0.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
+        mTrianglesVertices = ByteBuffer
+                .allocateDirect(trianglesVerticesData.length * mBytesPerFloat)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
 
-                1.0f, -1.5f, 0.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
+        mTrianglesVertices.put(trianglesVerticesData).position(0);
 
-                1.0f, -0.35f, 0.0f,
-                0.0f, 0.0f, 1.0f, 1.0f};
+        mTrianglesColors = ByteBuffer
+                .allocateDirect(trianglesColorsData.length * mBytesPerFloat)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
 
-        // This triangle5 is brown.
-        final float[] triangle5VerticesData = {
-                // X, Y, Z,
-                // R, G, B, A
-                -0.4f, -0.3f, 0.0f,
-                0.7f, 0.3f, 0.4f, 1.0f,
-
-                -0.4f, -0.4f, 0.0f,
-                0.7f, 0.3f, 0.4f, 1.0f,
-
-                0.3f, -0.3f, 0.0f,
-                0.7f, 0.3f, 0.4f, 1.0f};
-
-        // This triangle6 is brown.
-        final float[] triangle6VerticesData = {
-                // X, Y, Z,
-                // R, G, B, A
-                -0.4f, -0.4f, 0.0f,
-                0.7f, 0.3f, 0.4f, 1.0f,
-
-                0.22f, -0.4f, 0.0f,
-                0.7f, 0.3f, 0.4f, 1.0f,
-
-                0.3f, -0.3f, 0.0f,
-                0.7f, 0.3f, 0.4f, 1.0f};
-
-
-        // Initialize the buffers.
-        mTriangle1Vertices = ByteBuffer.allocateDirect(triangle1VerticesData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTriangle2Vertices = ByteBuffer.allocateDirect(triangle2VerticesData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTriangle3Vertices = ByteBuffer.allocateDirect(triangle3VerticesData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTriangle4Vertices = ByteBuffer.allocateDirect(triangle4VerticesData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTriangle5Vertices = ByteBuffer.allocateDirect(triangle5VerticesData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTriangle6Vertices = ByteBuffer.allocateDirect(triangle6VerticesData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-
-
-        mTriangle1Vertices.put(triangle1VerticesData).position(0);
-        mTriangle2Vertices.put(triangle2VerticesData).position(0);
-        mTriangle3Vertices.put(triangle3VerticesData).position(0);
-
-        mTriangle4Vertices.put(triangle4VerticesData).position(0);
-        mTriangle5Vertices.put(triangle5VerticesData).position(0);
-        mTriangle6Vertices.put(triangle6VerticesData).position(0);
+        mTrianglesColors.put(trianglesColorsData).position(0);
     }
 
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-        GLES20.glClearColor(0.5f, 0.5f, 0.7f, 1.0f);
+        GLES20.glClearColor(1f, 1f, 1f, 1f);
 
         Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 1.5f, 0.0f, 0.0f, -5.0f, 0.0f, 1.0f, 0.0f);
 
-        final String vertexShader =
-                "uniform mat4 u_MVPMatrix;      \n"       // A constant representing the combined model/view/projection matrix.
-
-                        + "attribute vec4 a_Position;     \n"     // Per-vertex position information we will pass in.
-                        + "attribute vec4 a_Color;        \n"     // Per-vertex color information we will pass in.
-
-                        + "varying vec4 v_Color;          \n"     // This will be passed into the fragment shader.
-
-                        + "void main()                    \n"     // The entry point for our vertex shader.
-                        + "{                              \n"
-                        + "   v_Color = a_Color;          \n"     // Pass the color through to the fragment shader.
-                        // It will be interpolated across the triangle.
-                        + "   gl_Position = u_MVPMatrix   \n"  // gl_Position is a special variable used to store the final position.
-                        + "               * a_Position;   \n"     // Multiply the vertex by the matrix to get the final point in
-                        + "}                              \n";    // normalized screen coordinates.
-
-        final String fragmentShader =
-                "precision mediump float;       \n"       // Set the default precision to medium. We don't need as high of a
-                        // precision in the fragment shader.
-                        + "varying vec4 v_Color;          \n"     // This is the color from the vertex shader interpolated across the
-                        // triangle per fragment.
-                        + "void main()                    \n"     // The entry point for our fragment shader.
-                        + "{                              \n"
-                        + "   gl_FragColor = v_Color;     \n"     // Pass the color directly through the pipeline.
-                        + "}                              \n";
+        final String vertexShader = DataParser.readAsset(context, "vertex_shader");
+        final String fragmentShader = DataParser.readAsset(context, "fragment_shader");
 
         int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
 
@@ -278,58 +150,49 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, x, 0.0f, 0.0f);
-        drawTriangle(mTriangle1Vertices);
+        drawTriangle();
 
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, x + 0.3f, 0.0f, 0.0f);
-        drawTriangle(mTriangle2Vertices);
+//        Matrix.setIdentityM(mModelMatrix, 0);
+//        Matrix.translateM(mModelMatrix, 0, x + 0.3f, 0.0f, 0.0f);
+//        drawTriangle(mTriangle2Vertices);
 
-        if (x <= 1) {
-            x = x + 0.001f;
-        } else {
-            x = 0;
-        }
+//        if (x <= 1) {
+//            x = x + 0.001f;
+//        } else {
+//            x = 0;
+//        }
 
-        Matrix.setIdentityM(mModelMatrix, 0);
-        drawTriangle(mTriangle3Vertices);
-
-        Matrix.setIdentityM(mModelMatrix, 0);
-        drawTriangle(mTriangle4Vertices);
-
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, x, 0.0f, 0.0f);
-        drawTriangle(mTriangle5Vertices);
-
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, x, 0.0f, 0.0f);
-        drawTriangle(mTriangle6Vertices);
+//        Matrix.setIdentityM(mModelMatrix, 0);
+//        drawTriangle(mTriangle3Vertices);
+//
+//        Matrix.setIdentityM(mModelMatrix, 0);
+//        drawTriangle(mTriangle4Vertices);
+//
+//        Matrix.setIdentityM(mModelMatrix, 0);
+//        Matrix.translateM(mModelMatrix, 0, x, 0.0f, 0.0f);
+//        drawTriangle(mTriangle5Vertices);
+//
+//        Matrix.setIdentityM(mModelMatrix, 0);
+//        Matrix.translateM(mModelMatrix, 0, x, 0.0f, 0.0f);
+//        drawTriangle(mTriangle6Vertices);
 
     }
 
-    private void drawTriangle(final FloatBuffer aTriangleBuffer) {
-        // Pass in the position information
-        aTriangleBuffer.position(mPositionOffset);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, aTriangleBuffer);
-
+    private void drawTriangle(/*final FloatBuffer aTriangleBuffer*/) {
+        mTrianglesVertices.position(0);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Pass in the color information
-        aTriangleBuffer.position(mColorOffset);
-        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, aTriangleBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
+                3 * mBytesPerFloat, mTrianglesVertices);
 
         GLES20.glEnableVertexAttribArray(mColorHandle);
+        mTrianglesColors.position(0);
+        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
+                4 * mBytesPerFloat, mTrianglesColors);
 
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
+
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, trianglesCount * 3);
     }
 }
