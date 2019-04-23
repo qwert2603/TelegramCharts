@@ -1,6 +1,7 @@
 package com.qwert2603.telegram_charts.q_gl.h;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -8,23 +9,28 @@ import android.os.SystemClock;
 
 import com.qwert2603.telegram_charts.DataParser;
 import com.qwert2603.telegram_charts.LogUtils;
+import com.qwert2603.telegram_charts.entity.ChartData;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
-    private float[] mModelMatrix = new float[16];
+    private float[] mTranslateMatrix = new float[16];
+    private float[] mScaleMatrix = new float[16];
     private float[] mViewMatrix = new float[16];
     private float[] mProjectionMatrix = new float[16];
     private float[] mMVPMatrix = new float[16];
 
-    private FloatBuffer mPositions;
+    private List<FloatBuffer> mPositions = new ArrayList<>();
+    private List<float[]> yyy = new ArrayList<>();
+    private final float[] sums;
 
     private int mMVPMatrixHandle;
     private int mPositionHandle;
@@ -35,34 +41,55 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private static final int VERTICES_PER_TRIANGLE = 3;
     private static final int TRIANGLES_PER_AREA = 3;
 
-    private final int valuesCount = 5000;
+    private final int valuesCount;
     private Context context;
+    private ChartData chartData;
 
-    public LessonOneRenderer(Context context) {
+    public LessonOneRenderer(Context context, ChartData chartData) {
         this.context = context;
+        this.chartData = chartData;
+        valuesCount = chartData.xValues.length;
+
+        sums = new float[valuesCount];
+
+        for (int i = 0; i < chartData.xValues.length; i++) {
+            sums[i] = 0;
+            for (int c = 0; c < chartData.lines.size(); c++) {
+                sums[i] += chartData.lines.get(c).values[i];
+            }
+        }
+
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            fillArrays(i);
+        }
     }
 
-    private void fillArrays() {
+    private void fillArrays(int index) {
         final float[] valuesX = new float[valuesCount];
         final float[] valuesY = new float[valuesCount];
 
-        Random random = new Random(42);
+        yyy.add(valuesY);
 
         for (int i = 0; i < valuesCount; i++) {
-            valuesX[i] = (i * 1f / (valuesCount - 1)) * 1.4f - 0.7f;
-            valuesY[i] = random.nextFloat() + 0.1f;
+            valuesX[i] = chartData.xValues[i];
+            valuesY[i] = 0;
+            for (int j = 0; j <= index; j++) {
+                valuesY[i] += chartData.lines.get(j).values[i];
+            }
+            valuesY[i] /= sums[i];
         }
 
         final float[] valuesData = new float[(valuesCount - 1) * FLOATS_PER_VERTEX * VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA];
 
-        final float low = 0f;
-
         for (int u = 0; u < valuesCount - 1; u++) {
+            final float low = index == 0 ? 0f : yyy.get(index - 1)[u];
+            final float lowNext = index == 0 ? 0f : yyy.get(index - 1)[u + 1];
+
             valuesData[u * 18] = valuesX[u];
             valuesData[u * 18 + 1] = low;
             valuesData[u * 18 + 2] = 0f;
             valuesData[u * 18 + 3] = valuesX[u + 1];
-            valuesData[u * 18 + 4] = low;
+            valuesData[u * 18 + 4] = lowNext;
             valuesData[u * 12 + 5] = 0f;
             valuesData[u * 18 + 6] = valuesX[u + 1];
             valuesData[u * 18 + 7] = valuesY[u + 1];
@@ -79,12 +106,14 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
             valuesData[u * 18 + 17] = 0f;
         }
 
-        mPositions = ByteBuffer
+        FloatBuffer floatBuffer = ByteBuffer
                 .allocateDirect(valuesData.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
-        mPositions.put(valuesData).position(0);
+        floatBuffer.put(valuesData).position(0);
+
+        mPositions.add(floatBuffer);
     }
 
     @Override
@@ -131,8 +160,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         final float far = 10.0f;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
-
-        fillArrays();
     }
 
     @Override
@@ -142,24 +169,38 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0, -0.8f, 0.0f);
-        Matrix.scaleM(mModelMatrix, 0, 0.5f, 1, 1);
+        Matrix.setIdentityM(mTranslateMatrix, 0);
+        Matrix.setIdentityM(mScaleMatrix, 0);
 
-        mPositions.position(0);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES20.GL_FLOAT, false, 3 * BYTES_PER_FLOAT, mPositions);
+        float centerX = (chartData.xValues[0] + chartData.xValues[chartData.xValues.length - 1]) / 2f;
+        float centerY = 0.5f;
+        float dX = chartData.xValues[chartData.xValues.length - 1] - chartData.xValues[0];
 
-        GLES20.glUniform4f(mColorHandle, 1, 0, 1, 1);
+        Matrix.translateM(mTranslateMatrix, 0, -centerX, -centerY, 0.0f);
+        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 1.5f, 1f / centerY, 1f);
 
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mScaleMatrix, 0, mTranslateMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (valuesCount - 1) * 6);
 
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        for (int i = 0; i < chartData.lines.size(); i++) {
+            drawValues(i);
+        }
 
         LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
+    }
+
+    private void drawValues(int index) {
+        int color = chartData.lines.get(index).color;
+        GLES20.glUniform4f(mColorHandle, Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
+
+        FloatBuffer floatBuffer = mPositions.get(index);
+        floatBuffer.position(0);
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES20.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES20.GL_FLOAT, false, 3 * BYTES_PER_FLOAT, floatBuffer);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (valuesCount - 1) * 6);
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 
 }
