@@ -39,7 +39,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int FLOATS_PER_VERTEX = 3;
     private static final int VERTICES_PER_TRIANGLE = 3;
-    private static final int TRIANGLES_PER_AREA = 3;
+    private static final int TRIANGLES_PER_AREA = 2;
 
     private final int valuesCount;
     private Context context;
@@ -120,7 +120,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         GLES20.glClearColor(1f, 1f, 1f, 1f);
 
-        Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, 1.5f, 0.0f, 0.0f, -5.0f, 0.0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 3, 0f, 0.0f, 0f, 0f, 1.0f, 0.0f);
 
         final String vertexShader = DataParser.readAsset(context, "vertex_shader.glsl");
         final String fragmentShader = DataParser.readAsset(context, "fragment_shader.glsl");
@@ -139,7 +139,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glLinkProgram(programHandle);
 
-
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
         mColorHandle = GLES20.glGetUniformLocation(programHandle, "u_Color");
@@ -151,15 +150,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        final float ratio = (float) width / height;
-        final float left = -ratio;
-        final float right = ratio;
-        final float bottom = -1.0f;
-        final float top = 1.0f;
-        final float near = 1.0f;
-        final float far = 10.0f;
-
-        Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+//        final float ratio = (float) width / height;
+        Matrix.frustumM(mProjectionMatrix, 0, -1, 1, -1f, 1f, 3f, 3.000001f);
     }
 
     @Override
@@ -177,18 +169,47 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         float dX = chartData.xValues[chartData.xValues.length - 1] - chartData.xValues[0];
 
         Matrix.translateM(mTranslateMatrix, 0, -centerX, -centerY, 0.0f);
-        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 1.5f, 1f / centerY, 1f);
+        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 2f * 0.99f, 1f / centerY * 0.99f, 1f);
 
         Matrix.multiplyMM(mMVPMatrix, 0, mScaleMatrix, 0, mTranslateMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
+        drawSquare();
+
         for (int i = 0; i < chartData.lines.size(); i++) {
             drawValues(i);
         }
 
         LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
+    }
+
+    private void drawSquare() {
+        int color = 0xFFFF0000;
+        GLES20.glUniform4f(mColorHandle, Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
+
+        FloatBuffer floatBuffer = ByteBuffer
+                .allocateDirect(BYTES_PER_FLOAT * FLOATS_PER_VERTEX * VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+
+        float a = 0.99f;
+
+        floatBuffer.put(new float[]{
+                -a, -a, 0,
+                a, -a, 0,
+                a, a, 0,
+                a, a, 0,
+                -a, a, 0,
+                -a, -a, 0
+        });
+
+        floatBuffer.position(0);
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES20.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES20.GL_FLOAT, false, 3 * BYTES_PER_FLOAT, floatBuffer);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA);
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 
     private void drawValues(int index) {
