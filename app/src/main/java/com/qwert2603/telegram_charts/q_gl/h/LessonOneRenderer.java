@@ -12,50 +12,30 @@ import com.qwert2603.telegram_charts.LogUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class LessonOneRenderer implements GLSurfaceView.Renderer {
-    /**
-     * Store the model matrix. This matrix is used to move models from object space (where each model can be thought
-     * of being located at the center of the universe) to world space.
-     */
+
     private float[] mModelMatrix = new float[16];
-
-    /**
-     * Store the view matrix. This can be thought of as our camera. This matrix transforms world space to eye space;
-     * it positions things relative to our eye.
-     */
     private float[] mViewMatrix = new float[16];
-
-    /**
-     * Store the projection matrix. This is used to project the scene onto a 2D viewport.
-     */
     private float[] mProjectionMatrix = new float[16];
-
-    /**
-     * Allocate storage for the final combined matrix. This will be passed into the shader program.
-     */
     private float[] mMVPMatrix = new float[16];
 
-    private FloatBuffer mTrianglesVertices;
-    private FloatBuffer mTrianglesColors;
+    private FloatBuffer mPositions;
 
     private int mMVPMatrixHandle;
     private int mPositionHandle;
-    //    private int mColorHandle;
-    private int mStepHandle;
+    private int mColorHandle;
 
-    private final int mBytesPerFloat = 4;
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int FLOATS_PER_VERTEX = 3;
+    private static final int VERTICES_PER_TRIANGLE = 3;
+    private static final int TRIANGLES_PER_AREA = 3;
 
-    private final int mPositionDataSize = 3;
-    private final int mColorDataSize = 4;
-
-    private float x;
-    private float step;
-
-    private final int trianglesCount = 15000;
+    private final int valuesCount = 5000;
     private Context context;
 
     public LessonOneRenderer(Context context) {
@@ -63,59 +43,48 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     }
 
     private void fillArrays() {
-        final float[] trianglesVerticesData = new float[mPositionDataSize * 3 * trianglesCount];
-        final float[] trianglesColorsData = new float[mColorDataSize * 3 * trianglesCount];
+        final float[] valuesX = new float[valuesCount];
+        final float[] valuesY = new float[valuesCount];
 
-        float z = 1f / trianglesCount;
+        Random random = new Random(42);
 
-        for (int u = 0; u < trianglesCount; u++) {
-            int i = u - trianglesCount / 2;
-            float y1 = 0.5f + (i % 10) / 100f;
-            float y0 = -1.0f + Math.abs(step) / 3f;
-            if (i % 2 == 0) {
-                trianglesVerticesData[u * 9] = i * z;
-                trianglesVerticesData[u * 9 + 1] = y0;
-                trianglesVerticesData[u * 9 + 2] = 0;
-                trianglesVerticesData[u * 9 + 3] = (i + 2) * z;
-                trianglesVerticesData[u * 9 + 4] = y0;
-                trianglesVerticesData[u * 9 + 5] = 0;
-                trianglesVerticesData[u * 9 + 6] = i * z;
-                trianglesVerticesData[u * 9 + 7] = y1;
-                trianglesVerticesData[u * 9 + 8] = 0;
-            } else {
-                trianglesVerticesData[u * 9] = (i + 1) * z;
-                trianglesVerticesData[u * 9 + 1] = y1;
-                trianglesVerticesData[u * 9 + 2] = 0;
-                trianglesVerticesData[u * 9 + 3] = (i - 1) * z;
-                trianglesVerticesData[u * 9 + 4] = y1;
-                trianglesVerticesData[u * 9 + 5] = 0;
-                trianglesVerticesData[u * 9 + 6] = (i + 1) * z;
-                trianglesVerticesData[u * 9 + 7] = y0;
-                trianglesVerticesData[u * 9 + 8] = 0;
-            }
+        for (int i = 0; i < valuesCount; i++) {
+            valuesX[i] = (i * 1f / (valuesCount - 1)) * 1.4f - 0.7f;
+            valuesY[i] = random.nextFloat() + 0.1f;
         }
 
-        for (int i = 0; i < trianglesCount * 3; i++) {
-            trianglesColorsData[i * 4] = i * 1f / (trianglesCount * 3);
-            trianglesColorsData[i * 4 + 1] = 1f - i * 1f / (trianglesCount * 3);
-            trianglesColorsData[i * 4 + 2] = 0.01f;
-            trianglesColorsData[i * 4 + 3] = 0.51f;
+        final float[] valuesData = new float[(valuesCount - 1) * FLOATS_PER_VERTEX * VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA];
+
+        final float low = 0f;
+
+        for (int u = 0; u < valuesCount - 1; u++) {
+            valuesData[u * 18] = valuesX[u];
+            valuesData[u * 18 + 1] = low;
+            valuesData[u * 18 + 2] = 0f;
+            valuesData[u * 18 + 3] = valuesX[u + 1];
+            valuesData[u * 18 + 4] = low;
+            valuesData[u * 12 + 5] = 0f;
+            valuesData[u * 18 + 6] = valuesX[u + 1];
+            valuesData[u * 18 + 7] = valuesY[u + 1];
+            valuesData[u * 18 + 8] = 0f;
+
+            valuesData[u * 18 + 9] = valuesX[u + 1];
+            valuesData[u * 18 + 10] = valuesY[u + 1];
+            valuesData[u * 18 + 11] = 0f;
+            valuesData[u * 18 + 12] = valuesX[u];
+            valuesData[u * 18 + 13] = valuesY[u];
+            valuesData[u * 18 + 14] = 0f;
+            valuesData[u * 18 + 15] = valuesX[u];
+            valuesData[u * 18 + 16] = low;
+            valuesData[u * 18 + 17] = 0f;
         }
 
-
-        mTrianglesVertices = ByteBuffer
-                .allocateDirect(trianglesVerticesData.length * mBytesPerFloat)
+        mPositions = ByteBuffer
+                .allocateDirect(valuesData.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
-        mTrianglesVertices.put(trianglesVerticesData).position(0);
-
-        mTrianglesColors = ByteBuffer
-                .allocateDirect(trianglesColorsData.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-
-        mTrianglesColors.put(trianglesColorsData).position(0);
+        mPositions.put(valuesData).position(0);
     }
 
     @Override
@@ -139,16 +108,12 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         GLES20.glAttachShader(programHandle, vertexShaderHandle);
         GLES20.glAttachShader(programHandle, fragmentShaderHandle);
 
-        GLES20.glBindAttribLocation(programHandle, 0, "a_Position");
-        GLES20.glBindAttribLocation(programHandle, 1, "a_Color");
-
         GLES20.glLinkProgram(programHandle);
 
 
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
-//        mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
-        mStepHandle = GLES20.glGetUniformLocation(programHandle, "a_step");
+        mColorHandle = GLES20.glGetUniformLocation(programHandle, "u_Color");
 
         GLES20.glUseProgram(programHandle);
     }
@@ -166,43 +131,35 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         final float far = 10.0f;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+
+        fillArrays();
     }
 
     @Override
     public void onDrawFrame(GL10 glUnused) {
-        fillArrays();
+
         long l = SystemClock.elapsedRealtime();
 
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, x, 0.0f, 0.0f);
-        drawTriangle();
+        Matrix.translateM(mModelMatrix, 0, 0, -0.8f, 0.0f);
+        Matrix.scaleM(mModelMatrix, 0, 0.5f, 1, 1);
 
-        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
-    }
-
-    private void drawTriangle(/*final FloatBuffer aTriangleBuffer*/) {
-
-
-        mTrianglesVertices.position(0);
+        mPositions.position(0);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                3 * mBytesPerFloat, mTrianglesVertices);
+        GLES20.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES20.GL_FLOAT, false, 3 * BYTES_PER_FLOAT, mPositions);
 
-//        GLES20.glEnableVertexAttribArray(mColorHandle);
-//        mTrianglesColors.position(0);
-//        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-//                4 * mBytesPerFloat, mTrianglesColors);
-
-
-        GLES20.glUniform1f(mStepHandle, Math.abs(step));
-        step += 0.09;
-        if (step > 1) step = -1;
+        GLES20.glUniform4f(mColorHandle, 1, 0, 1, 1);
 
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, trianglesCount * 3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (valuesCount - 1) * 6);
+
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
+
+        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
     }
+
 }
