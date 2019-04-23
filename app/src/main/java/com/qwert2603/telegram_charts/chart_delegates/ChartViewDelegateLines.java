@@ -1068,12 +1068,6 @@ public class ChartViewDelegateLines implements Delegate {
         }
     }
 
-    // canvas translation must be (0, 0).
-    private void drawChartSelection(Canvas canvas) {
-        drawSelectionOnChart(canvas);
-        drawSelectionPanel(canvas);
-    }
-
     // canvas translation must be (chartPadding, getChartTitleHeight() + chartHeight + datesHeight).
     protected void drawPeriodSelectorChart(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
@@ -1164,12 +1158,6 @@ public class ChartViewDelegateLines implements Delegate {
         );
     }
 
-    // canvas translation must be (chartPadding, getChartTitleHeight() + chartHeight + datesHeight).
-    private void drawPeriodSelector(Canvas canvas) {
-        drawPeriodSelectorChart(canvas);
-        drawPeriodSelectorUi(canvas);
-    }
-
     // canvas translation must be (0, 0).
     private void drawChips(Canvas canvas) {
         final float drawingWidth = getDrawingWidth();
@@ -1227,15 +1215,17 @@ public class ChartViewDelegateLines implements Delegate {
     @Override
     public void onDraw(Canvas canvas) {
         drawChart(canvas);
-        drawChartSelection(canvas);
+        drawSelectionOnChart(canvas);
         drawTitle(canvas);
         drawDates(canvas);
         drawYSteps(canvas);
+        drawSelectionPanel(canvas);
         drawChips(canvas);
 
         canvas.translate(chartPadding, getChartTitleHeight() + chartHeight + datesHeight);
 
-        drawPeriodSelector(canvas);
+        drawPeriodSelectorChart(canvas);
+        drawPeriodSelectorUi(canvas);
     }
 
     protected float getDrawingWidth() {
