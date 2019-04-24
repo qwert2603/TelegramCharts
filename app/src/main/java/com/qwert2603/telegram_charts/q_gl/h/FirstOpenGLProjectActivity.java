@@ -79,7 +79,7 @@ public class FirstOpenGLProjectActivity extends Activity {
         }
         animator = ValueAnimator
                 .ofFloat(mGLSurfaceView.getAlpha(line), up[line] ? 0 : 1)
-                .setDuration(300);
+                .setDuration(200);
         animator.setInterpolator(new DecelerateInterpolator());
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
