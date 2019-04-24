@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.qwert2603.telegram_charts.DataParser;
 import com.qwert2603.telegram_charts.LogUtils;
@@ -23,6 +24,7 @@ public class FirstOpenGLProjectActivity extends Activity {
         LogUtils.d("configurationInfo.toString() " + configurationInfo.toString());
         LogUtils.d("configurationInfo reqGlEsVersion " + Integer.toHexString(configurationInfo.reqGlEsVersion));
         LogUtils.d("configurationInfo getGlEsVersion " + configurationInfo.getGlEsVersion());
+        Toast.makeText(this, configurationInfo.getGlEsVersion(), Toast.LENGTH_LONG).show();
 
         mGLSurfaceView = new GLSurfaceView(this);
 
