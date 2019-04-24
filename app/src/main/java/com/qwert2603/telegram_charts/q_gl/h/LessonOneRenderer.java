@@ -2,7 +2,7 @@ package com.qwert2603.telegram_charts.q_gl.h;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.opengl.GLES31;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.SystemClock;
@@ -60,34 +60,13 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         return alpha[line];
     }
 
-    private static FloatBuffer toFloatBuffer(long[] longs) {
-        float[] floats = new float[longs.length];
-        for (int i = 0; i < longs.length; i++) {
-            floats[i] = longs[i];
-        }
-        return toFloatBuffer(floats);
-    }
-
-    private static FloatBuffer toFloatBuffer(int[] ints) {
-        float[] floats = new float[ints.length];
-        for (int i = 0; i < ints.length; i++) {
-            floats[i] = ints[i];
-        }
-        return toFloatBuffer(floats);
-    }
-
     private static FloatBuffer toFloatBuffer(float[] floats) {
-        float[] twiced = new float[2 * floats.length];
-        for (int i = 0; i < twiced.length; i++) {
-            twiced[i] = floats[i / 2];
-        }
-
         FloatBuffer result = ByteBuffer
-                .allocateDirect(twiced.length * BYTES_PER_FLOAT)
+                .allocateDirect(floats.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
 
-        result.put(twiced);
+        result.put(floats);
         result.position(0);
 
         return result;
@@ -99,27 +78,35 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         valuesCount = chartData.xValues.length;
         linesCount = chartData.lines.size();
 
-        mX = toFloatBuffer(chartData.xValues);
+        float[] xs = new float[valuesCount * 2];
+        for (int i = 0; i < valuesCount; i++) {
+            xs[i * 2] = chartData.xValues[i];
+            xs[i * 2 + 1] = chartData.xValues[i];
+        }
+        mX = toFloatBuffer(xs);
 
-        float[] floats = new float[valuesCount * 4];
+        float[] floats1 = new float[valuesCount * 4 * 2];
         for (int i = 0; i < valuesCount; i++) {
             for (int j = 0; j < 4; j++) {
-                floats[i * 4 + j] = chartData.lines.get(j).values[i];
+                floats1[i * 8 + j] = chartData.lines.get(j).values[i];
+                floats1[i * 8 + 4 + j] = chartData.lines.get(j).values[i];
             }
         }
-        mY1 = toFloatBuffer(floats);
+        mY1 = toFloatBuffer(floats1);
 
-        floats = new float[valuesCount * 4];
+        float[] floats2 = new float[valuesCount * 4 * 2];
         for (int i = 0; i < valuesCount; i++) {
             for (int j = 0; j < 4; j++) {
-                if (4 + j < chartData.lines.size()) {
-                    floats[i * 4 + j] = chartData.lines.get(4 + j).values[i];
+                if (4 + j < linesCount) {
+                    floats2[i * 8 + j] = chartData.lines.get(4 + j).values[i];
+                    floats2[i * 8 + 4 + j] = chartData.lines.get(4 + j).values[i];
                 } else {
-                    floats[i * 4 + j] = 0;
+                    floats2[i * 8 + j] = 0f;
+                    floats2[i * 8 + 4 + j] = 0f;
                 }
             }
         }
-        mY2 = toFloatBuffer(floats);
+        mY2 = toFloatBuffer(floats2);
 
         mTop = ByteBuffer
                 .allocateDirect(valuesCount * BYTES_PER_FLOAT * 2)
@@ -135,44 +122,44 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-        GLES31.glClearColor(1f, 1f, 1f, 1f);
+        GLES20.glClearColor(1f, 1f, 1f, 1f);
 
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 3, 0f, 0.0f, 0f, 0f, 1.0f, 0.0f);
 
         final String vertexShader = DataParser.readAsset(context, "shaders/vertex_shader.glsl");
         final String fragmentShader = DataParser.readAsset(context, "shaders/fragment_shader.glsl");
 
-        int vertexShaderHandle = GLES31.glCreateShader(GLES31.GL_VERTEX_SHADER);
-        GLES31.glShaderSource(vertexShaderHandle, vertexShader);
-        GLES31.glCompileShader(vertexShaderHandle);
+        int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
+        GLES20.glShaderSource(vertexShaderHandle, vertexShader);
+        GLES20.glCompileShader(vertexShaderHandle);
 
-        int fragmentShaderHandle = GLES31.glCreateShader(GLES31.GL_FRAGMENT_SHADER);
-        GLES31.glShaderSource(fragmentShaderHandle, fragmentShader);
-        GLES31.glCompileShader(fragmentShaderHandle);
+        int fragmentShaderHandle = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
+        GLES20.glShaderSource(fragmentShaderHandle, fragmentShader);
+        GLES20.glCompileShader(fragmentShaderHandle);
 
-        int programHandle = GLES31.glCreateProgram();
-        GLES31.glAttachShader(programHandle, vertexShaderHandle);
-        GLES31.glAttachShader(programHandle, fragmentShaderHandle);
+        int programHandle = GLES20.glCreateProgram();
+        GLES20.glAttachShader(programHandle, vertexShaderHandle);
+        GLES20.glAttachShader(programHandle, fragmentShaderHandle);
 
-        GLES31.glLinkProgram(programHandle);
+        GLES20.glLinkProgram(programHandle);
 
-        mMVPMatrixHandle = GLES31.glGetUniformLocation(programHandle, "u_MVPMatrix");
-        mLinesCountHandle = GLES31.glGetUniformLocation(programHandle, "u_LinesCount");
-        mLineIndexHandle = GLES31.glGetUniformLocation(programHandle, "u_LineIndex");
-        mA1Handle = GLES31.glGetUniformLocation(programHandle, "u_A1");
-        mA2Handle = GLES31.glGetUniformLocation(programHandle, "u_A2");
-        mXHandle = GLES31.glGetAttribLocation(programHandle, "a_X");
-        mY1Handle = GLES31.glGetAttribLocation(programHandle, "a_Y1");
-        mY2Handle = GLES31.glGetAttribLocation(programHandle, "a_Y2");
-        mTopHandle = GLES31.glGetAttribLocation(programHandle, "a_Top");
-        mColorHandle = GLES31.glGetUniformLocation(programHandle, "u_Color");
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
+        mLinesCountHandle = GLES20.glGetUniformLocation(programHandle, "u_LinesCount");
+        mLineIndexHandle = GLES20.glGetUniformLocation(programHandle, "u_LineIndex");
+        mA1Handle = GLES20.glGetUniformLocation(programHandle, "u_A1");
+        mA2Handle = GLES20.glGetUniformLocation(programHandle, "u_A2");
+        mXHandle = GLES20.glGetAttribLocation(programHandle, "a_X");
+        mY1Handle = GLES20.glGetAttribLocation(programHandle, "a_Y1");
+        mY2Handle = GLES20.glGetAttribLocation(programHandle, "a_Y2");
+        mTopHandle = GLES20.glGetAttribLocation(programHandle, "a_Top");
+        mColorHandle = GLES20.glGetUniformLocation(programHandle, "u_Color");
 
-        GLES31.glUseProgram(programHandle);
+        GLES20.glUseProgram(programHandle);
     }
 
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
-        GLES31.glViewport(0, 0, width, height);
+        GLES20.glViewport(0, 0, width, height);
 
 //        final float ratio = (float) width / height;
         Matrix.frustumM(mProjectionMatrix, 0, -1, 1, -1f, 1f, 3f, 3.000001f);
@@ -183,7 +170,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         long l = SystemClock.elapsedRealtime();
 
-        GLES31.glClear(GLES31.GL_DEPTH_BUFFER_BIT | GLES31.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
         Matrix.setIdentityM(mTranslateMatrix, 0);
         Matrix.setIdentityM(mScaleMatrix, 0);
@@ -199,11 +186,11 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mScaleMatrix, 0, mTranslateMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-        GLES31.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
-        GLES31.glUniform1i(mLinesCountHandle, linesCount);
-        GLES31.glUniform4f(mA1Handle, alpha[0], alpha[1], alpha[2], alpha[3]);
-        GLES31.glUniform4f(mA2Handle, alpha[4], alpha[5], alpha[6], alpha[7]);
+        GLES20.glUniform1f(mLinesCountHandle, linesCount);
+        GLES20.glUniform4f(mA1Handle, alpha[0], alpha[1], alpha[2], alpha[3]);
+        GLES20.glUniform4f(mA2Handle, alpha[4], alpha[5], alpha[6], alpha[7]);
 
         for (int i = 0; i < linesCount; i++) {
             drawValues(i);
@@ -214,30 +201,29 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
     private void drawValues(int index) {
         int color = chartData.lines.get(index).color;
-        GLES31.glUniform4f(mColorHandle, Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
-        GLES31.glUniform1i(mLineIndexHandle, index);
+        GLES20.glUniform4f(mColorHandle, Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
+        GLES20.glUniform1f(mLineIndexHandle, index);
 
-        GLES31.glEnableVertexAttribArray(mXHandle);
-        GLES31.glEnableVertexAttribArray(mY1Handle);
-        GLES31.glEnableVertexAttribArray(mY2Handle);
-        GLES31.glEnableVertexAttribArray(mTopHandle);
+        GLES20.glEnableVertexAttribArray(mXHandle);
+        GLES20.glEnableVertexAttribArray(mY1Handle);
+        GLES20.glEnableVertexAttribArray(mY2Handle);
+        GLES20.glEnableVertexAttribArray(mTopHandle);
 
         mX.position(0);
         mY1.position(0);
         mY2.position(0);
         mTop.position(0);
 
-        GLES31.glVertexAttribPointer(mXHandle, 1, GLES31.GL_FLOAT, false, BYTES_PER_FLOAT, mX);
-        GLES31.glVertexAttribPointer(mY1Handle, 4, GLES31.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY1);
-        GLES31.glVertexAttribPointer(mY2Handle, 4, GLES31.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY2);
-        GLES31.glVertexAttribPointer(mTopHandle, 1, GLES31.GL_FLOAT, false, BYTES_PER_FLOAT, mTop);
+        GLES20.glVertexAttribPointer(mXHandle, 1, GLES20.GL_FLOAT, false, BYTES_PER_FLOAT, mX);
+        GLES20.glVertexAttribPointer(mY1Handle, 4, GLES20.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY1);
+        GLES20.glVertexAttribPointer(mY2Handle, 4, GLES20.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY2);
+        GLES20.glVertexAttribPointer(mTopHandle, 1, GLES20.GL_FLOAT, false, BYTES_PER_FLOAT, mTop);
 
-        GLES31.glDrawArrays(GLES31.GL_TRIANGLE_STRIP, 0, valuesCount * 2);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, valuesCount * 2);
 
-        GLES31.glDisableVertexAttribArray(mXHandle);
-        GLES31.glDisableVertexAttribArray(mY1Handle);
-        GLES31.glDisableVertexAttribArray(mY2Handle);
-        GLES31.glDisableVertexAttribArray(mTopHandle);
+        GLES20.glDisableVertexAttribArray(mXHandle);
+        GLES20.glDisableVertexAttribArray(mY1Handle);
+        GLES20.glDisableVertexAttribArray(mY2Handle);
+        GLES20.glDisableVertexAttribArray(mTopHandle);
     }
-
 }

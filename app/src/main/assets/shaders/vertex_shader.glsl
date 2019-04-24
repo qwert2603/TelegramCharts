@@ -1,6 +1,6 @@
 uniform mat4 u_MVPMatrix;
-uniform int u_LinesCount;
-uniform int u_LineIndex;
+uniform float u_LinesCount;
+uniform float u_LineIndex;
 uniform vec4 u_A1;
 uniform vec4 u_A2;
 
@@ -20,16 +20,19 @@ void main() {
     ys[6] = a_Y2.z * u_A2.z;
     ys[7] = a_Y2.w * u_A2.w;
 
+    int lineIndex = int(u_LineIndex + 0.5);
+    int linesCount = int(u_LinesCount + 0.5);
+
     float y = 0.0;
-    for (int i = 0; i < u_LineIndex; ++i) {
+    for (int i = 0; i < lineIndex; ++i) {
         y += ys[i];
     }
     if (a_Top > 0.5) {
-        y += ys[u_LineIndex];
+        y += ys[lineIndex];
     }
 
     float sum = 0.0;
-    for (int i = 0; i < u_LinesCount; ++i) {
+    for (int i = 0; i < linesCount; ++i) {
         sum += ys[i];
     }
     y /= sum;

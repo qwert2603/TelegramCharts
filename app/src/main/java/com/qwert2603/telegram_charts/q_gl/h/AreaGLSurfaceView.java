@@ -24,7 +24,7 @@ public class AreaGLSurfaceView extends GLSurfaceView {
     private void init() {
         ChartData chartData = DataParser.parseDataStage2(getContext()).get(4);
 
-        setEGLContextClientVersion(3);
+        setEGLContextClientVersion(2);
         renderer = new LessonOneRenderer(getContext(), chartData);
         setRenderer(renderer);
         setRenderMode(RENDERMODE_WHEN_DIRTY);
