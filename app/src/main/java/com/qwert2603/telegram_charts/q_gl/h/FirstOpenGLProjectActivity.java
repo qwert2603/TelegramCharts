@@ -1,23 +1,25 @@
 package com.qwert2603.telegram_charts.q_gl.h;
 
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 
 import com.qwert2603.telegram_charts.LogUtils;
 import com.qwert2603.telegram_charts.R;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class FirstOpenGLProjectActivity extends Activity {
     private AreaGLSurfaceView mGLSurfaceView;
 
-    ValueAnimator[] animators = new ValueAnimator[8];
-    boolean[] up = new boolean[8];
+    ExecutorService[] animators = new ExecutorService[8];
+    boolean[] down = new boolean[8];
+    float[] a = new float[8];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -73,23 +75,35 @@ public class FirstOpenGLProjectActivity extends Activity {
     }
 
     private void animateLine(final int line) {
-        ValueAnimator animator = animators[line];
-        if (animator != null) {
-            animator.cancel();
+        ExecutorService animator = animators[line];
+        if (animator == null) {
+            animator = Executors.newSingleThreadExecutor();
+            animators[line] = animator;
+            a[line] = 1;
+            animator.submit(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            if (down[line]) {
+                                a[line] -= 0.05;
+                                if (a[line] < 0) a[line] = 0;
+                            } else {
+                                a[line] += 0.05;
+                                if (a[line] > 1) a[line] = 1;
+                            }
+
+                            mGLSurfaceView.setAlpha(line, a[line]);
+
+                            Thread.sleep(10);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
         }
-        animator = ValueAnimator
-                .ofFloat(mGLSurfaceView.getAlpha(line), up[line] ? 0 : 1)
-                .setDuration(200);
-        animator.setInterpolator(new DecelerateInterpolator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mGLSurfaceView.setAlpha(line, (float) animation.getAnimatedValue());
-            }
-        });
-        animators[line] = animator;
-        up[line] = !up[line];
-        animator.start();
+        down[line] = !down[line];
     }
 
     @Override
