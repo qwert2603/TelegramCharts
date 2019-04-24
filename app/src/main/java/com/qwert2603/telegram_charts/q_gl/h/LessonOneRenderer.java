@@ -131,8 +131,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 3, 0f, 0.0f, 0f, 0f, 1.0f, 0.0f);
 
-        final String vertexShader = DataParser.readAsset(context, "vertex_shader.glsl");
-        final String fragmentShader = DataParser.readAsset(context, "fragment_shader.glsl");
+        final String vertexShader = DataParser.readAsset(context, "shaders/vertex_shader.glsl");
+        final String fragmentShader = DataParser.readAsset(context, "shaders/fragment_shader.glsl");
 
         int vertexShaderHandle = GLES31.glCreateShader(GLES31.GL_VERTEX_SHADER);
         GLES31.glShaderSource(vertexShaderHandle, vertexShader);
