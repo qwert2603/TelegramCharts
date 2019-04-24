@@ -30,7 +30,7 @@ public class FirstOpenGLProjectActivity extends Activity {
 
         ChartData chartData = DataParser.parseDataStage2(this).get(4);
 
-        mGLSurfaceView.setEGLContextClientVersion(2);
+        mGLSurfaceView.setEGLContextClientVersion(3);
         mGLSurfaceView.setRenderer(new LessonOneRenderer(this, chartData));
 
         setContentView(mGLSurfaceView);
