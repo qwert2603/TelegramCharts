@@ -36,6 +36,5 @@ public class AreaGLSurfaceView extends GLSurfaceView {
 
     public void setAlpha(int line, float alpha) {
         renderer.setAlpha(line, alpha);
-        requestRender();
     }
 }

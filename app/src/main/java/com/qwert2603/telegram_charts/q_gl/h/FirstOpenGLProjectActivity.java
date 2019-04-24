@@ -17,13 +17,39 @@ import java.util.concurrent.Executors;
 public class FirstOpenGLProjectActivity extends Activity {
     private AreaGLSurfaceView mGLSurfaceView;
 
-    ExecutorService[] animators = new ExecutorService[8];
+    ExecutorService animator = Executors.newSingleThreadExecutor();
     boolean[] down = new boolean[8];
     float[] a = new float[8];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        animator.submit(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        for (int line = 0; line < 8; line++) {
+                            if (down[line]) {
+                                a[line] -= 0.5;
+                                if (a[line] < 0) a[line] = 0;
+                            } else {
+                                a[line] += 0.05;
+                                if (a[line] > 1) a[line] = 1;
+                            }
+
+                            mGLSurfaceView.setAlpha(line, a[line]);
+                            mGLSurfaceView.requestRender();
+                        }
+
+                        Thread.sleep(10);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
 
         ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
@@ -75,34 +101,6 @@ public class FirstOpenGLProjectActivity extends Activity {
     }
 
     private void animateLine(final int line) {
-        ExecutorService animator = animators[line];
-        if (animator == null) {
-            animator = Executors.newSingleThreadExecutor();
-            animators[line] = animator;
-            a[line] = 1;
-            animator.submit(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        try {
-                            if (down[line]) {
-                                a[line] -= 0.05;
-                                if (a[line] < 0) a[line] = 0;
-                            } else {
-                                a[line] += 0.05;
-                                if (a[line] > 1) a[line] = 1;
-                            }
-
-                            mGLSurfaceView.setAlpha(line, a[line]);
-
-                            Thread.sleep(10);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-        }
         down[line] = !down[line];
     }
 
