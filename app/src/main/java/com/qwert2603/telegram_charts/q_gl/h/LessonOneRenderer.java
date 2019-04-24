@@ -37,7 +37,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private int mColorHandle;
 
     private static final int BYTES_PER_FLOAT = 4;
-    private static final int FLOATS_PER_VERTEX = 3;
+    private static final int FLOATS_PER_VERTEX = 2;
     private static final int VERTICES_PER_TRIANGLE = 3;
     private static final int TRIANGLES_PER_AREA = 2;
 
@@ -85,25 +85,19 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
             final float low = index == 0 ? 0f : yyy.get(index - 1)[u];
             final float lowNext = index == 0 ? 0f : yyy.get(index - 1)[u + 1];
 
-            valuesData[u * 18] = valuesX[u];
-            valuesData[u * 18 + 1] = low;
-            valuesData[u * 18 + 2] = 0f;
-            valuesData[u * 18 + 3] = valuesX[u + 1];
-            valuesData[u * 18 + 4] = lowNext;
-            valuesData[u * 12 + 5] = 0f;
-            valuesData[u * 18 + 6] = valuesX[u + 1];
-            valuesData[u * 18 + 7] = valuesY[u + 1];
-            valuesData[u * 18 + 8] = 0f;
+            valuesData[u * 12] = valuesX[u];
+            valuesData[u * 12 + 1] = low;
+            valuesData[u * 12 + 2] = valuesX[u + 1];
+            valuesData[u * 12 + 3] = lowNext;
+            valuesData[u * 12 + 4] = valuesX[u + 1];
+            valuesData[u * 12 + 5] = valuesY[u + 1];
 
-            valuesData[u * 18 + 9] = valuesX[u + 1];
-            valuesData[u * 18 + 10] = valuesY[u + 1];
-            valuesData[u * 18 + 11] = 0f;
-            valuesData[u * 18 + 12] = valuesX[u];
-            valuesData[u * 18 + 13] = valuesY[u];
-            valuesData[u * 18 + 14] = 0f;
-            valuesData[u * 18 + 15] = valuesX[u];
-            valuesData[u * 18 + 16] = low;
-            valuesData[u * 18 + 17] = 0f;
+            valuesData[u * 12 + 6] = valuesX[u + 1];
+            valuesData[u * 12 + 7] = valuesY[u + 1];
+            valuesData[u * 12 + 8] = valuesX[u];
+            valuesData[u * 12 + 9] = valuesY[u];
+            valuesData[u * 12 + 10] = valuesX[u];
+            valuesData[u * 12 + 11] = low;
         }
 
         FloatBuffer floatBuffer = ByteBuffer
@@ -169,14 +163,15 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         float dX = chartData.xValues[chartData.xValues.length - 1] - chartData.xValues[0];
 
         Matrix.translateM(mTranslateMatrix, 0, -centerX, -centerY, 0.0f);
-        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 2f * 0.99f, 1f / centerY * 0.99f, 1f);
+        float a = 0.99f;
+        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 2f * a, 1f / centerY * a, 1f);
 
         Matrix.multiplyMM(mMVPMatrix, 0, mScaleMatrix, 0, mTranslateMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
-        drawSquare();
+//        drawSquare();
 
         for (int i = 0; i < chartData.lines.size(); i++) {
             drawValues(i);
@@ -219,8 +214,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         FloatBuffer floatBuffer = mPositions.get(index);
         floatBuffer.position(0);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES20.GL_FLOAT, false, 3 * BYTES_PER_FLOAT, floatBuffer);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (valuesCount - 1) * 6);
+        GLES20.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES20.GL_FLOAT, false, FLOATS_PER_VERTEX * BYTES_PER_FLOAT, floatBuffer);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, (valuesCount - 1) * VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA);
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 
