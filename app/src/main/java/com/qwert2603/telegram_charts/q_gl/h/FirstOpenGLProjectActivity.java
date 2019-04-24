@@ -1,10 +1,14 @@
 package com.qwert2603.telegram_charts.q_gl.h;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 
 import com.qwert2603.telegram_charts.DataParser;
+import com.qwert2603.telegram_charts.LogUtils;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
 public class FirstOpenGLProjectActivity extends Activity {
@@ -13,6 +17,12 @@ public class FirstOpenGLProjectActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
+        LogUtils.d("configurationInfo.toString() " + configurationInfo.toString());
+        LogUtils.d("configurationInfo reqGlEsVersion " + Integer.toHexString(configurationInfo.reqGlEsVersion));
+        LogUtils.d("configurationInfo getGlEsVersion " + configurationInfo.getGlEsVersion());
 
         mGLSurfaceView = new GLSurfaceView(this);
 

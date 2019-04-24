@@ -8,7 +8,6 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 
 import com.qwert2603.telegram_charts.DataParser;
-import com.qwert2603.telegram_charts.LogUtils;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
 import java.nio.ByteBuffer;
@@ -177,7 +176,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
             drawValues(i);
         }
 
-        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
+//        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
     }
 
     private void drawSquare() {
