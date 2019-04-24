@@ -8,13 +8,11 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 
 import com.qwert2603.telegram_charts.DataParser;
-import com.qwert2603.telegram_charts.LogUtils;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -31,10 +29,13 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private FloatBuffer mY2;
     private FloatBuffer mX;
     private FloatBuffer mTop;
+    private float[] alpha = {1, 1, 1, 1, 1, 1, 1, 1};
 
     private int mMVPMatrixHandle;
     private int mLinesCountHandle;
     private int mLineIndexHandle;
+    private int mA1Handle;
+    private int mA2Handle;
     private int mXHandle;
     private int mY1Handle;
     private int mY2Handle;
@@ -120,7 +121,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         for (int i = 0; i < valuesCount * 2; i++) {
             isTop[i] = i % 2;
         }
-        LogUtils.d("isTop " + Arrays.toString(isTop));
         mTop.put(isTop);
         mTop.position(0);
     }
@@ -151,6 +151,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         mMVPMatrixHandle = GLES31.glGetUniformLocation(programHandle, "u_MVPMatrix");
         mLinesCountHandle = GLES31.glGetUniformLocation(programHandle, "u_LinesCount");
         mLineIndexHandle = GLES31.glGetUniformLocation(programHandle, "u_LineIndex");
+        mA1Handle = GLES31.glGetUniformLocation(programHandle, "u_A1");
+        mA2Handle = GLES31.glGetUniformLocation(programHandle, "u_A2");
         mXHandle = GLES31.glGetAttribLocation(programHandle, "a_X");
         mY1Handle = GLES31.glGetAttribLocation(programHandle, "a_Y1");
         mY2Handle = GLES31.glGetAttribLocation(programHandle, "a_Y2");
@@ -194,6 +196,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 //        drawSquare();
 
         GLES31.glUniform1i(mLinesCountHandle, linesCount);
+        GLES31.glUniform4fv(mA1Handle, 1, alpha, 0);
+        GLES31.glUniform4fv(mA2Handle, 1, alpha, 4);
 
         for (int i = 0; i < linesCount; i++) {
             drawValues(i);
