@@ -52,6 +52,14 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private ChartData chartData;
     private final int linesCount;
 
+    public void setAlpha(int line, float alpha) {
+        this.alpha[line] = alpha;
+    }
+
+    public float getAlpha(int line) {
+        return alpha[line];
+    }
+
     private static FloatBuffer toFloatBuffer(long[] longs) {
         float[] floats = new float[longs.length];
         for (int i = 0; i < longs.length; i++) {
@@ -193,44 +201,15 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES31.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
-//        drawSquare();
-
         GLES31.glUniform1i(mLinesCountHandle, linesCount);
-        GLES31.glUniform4fv(mA1Handle, 1, alpha, 0);
-        GLES31.glUniform4fv(mA2Handle, 1, alpha, 4);
+        GLES31.glUniform4f(mA1Handle, alpha[0], alpha[1], alpha[2], alpha[3]);
+        GLES31.glUniform4f(mA2Handle, alpha[4], alpha[5], alpha[6], alpha[7]);
 
         for (int i = 0; i < linesCount; i++) {
             drawValues(i);
         }
 
 //        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
-    }
-
-    private void drawSquare() {
-        int color = 0xFFFF0000;
-        GLES31.glUniform4f(mColorHandle, Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
-
-        FloatBuffer floatBuffer = ByteBuffer
-                .allocateDirect(BYTES_PER_FLOAT * FLOATS_PER_VERTEX * VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-
-        float a = 0.99f;
-
-        floatBuffer.put(new float[]{
-                -a, -a, 0,
-                a, -a, 0,
-                a, a, 0,
-                a, a, 0,
-                -a, a, 0,
-                -a, -a, 0
-        });
-
-        floatBuffer.position(0);
-//        GLES31.glEnableVertexAttribArray(mPositionHandle);
-//        GLES31.glVertexAttribPointer(mPositionHandle, FLOATS_PER_VERTEX, GLES31.GL_FLOAT, false, 3 * BYTES_PER_FLOAT, floatBuffer);
-//        GLES31.glDrawArrays(GLES31.GL_TRIANGLES, 0, VERTICES_PER_TRIANGLE * TRIANGLES_PER_AREA);
-//        GLES31.glDisableVertexAttribArray(mPositionHandle);
     }
 
     private void drawValues(int index) {
