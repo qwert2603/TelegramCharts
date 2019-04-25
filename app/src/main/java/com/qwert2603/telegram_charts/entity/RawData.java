@@ -50,20 +50,15 @@ public class RawData {
 
         chartData.lines = new ArrayList<>();
 
-        for (String name : names.keySet()) {
+        for (int c = 1; c < columns.size(); c++) {
+            String name = (String) columns.get(c).get(0);
             ChartData.Line line = new ChartData.Line();
             chartData.lines.add(line);
             line.name = names.get(name);
             line.color = Color.parseColor(colors.get(name));
             line.values = new int[valuesCount];
 
-            List<Object> values = null;
-            for (List<Object> column : columns) {
-                if (column.get(0).equals(name)) {
-                    values = column;
-                    break;
-                }
-            }
+            List<Object> values = columns.get(c);
             for (int i = 0; i < valuesCount; i++) {
                 line.values[i] = (int) values.get(i + 1);
             }

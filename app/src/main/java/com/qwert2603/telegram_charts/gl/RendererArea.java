@@ -95,6 +95,9 @@ public class RendererArea implements GLSurfaceView.Renderer {
         for (int i = 0; i < 8; i++) {
             alpha[i] = 1f;
         }
+        startIndex = 0;
+        endIndex = valuesCount;
+        setChartsSizes(1, 0, 0);
 
         float[] xs = new float[valuesCount * 2];
         for (int i = 0; i < valuesCount; i++) {
