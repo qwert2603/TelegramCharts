@@ -32,6 +32,7 @@ public class GLSurfaceViewArea extends GLSurfaceView {
         }
 
         setEGLContextClientVersion(2);
+        setEGLConfigChooser(new AntiAliasConfigChooser());
         renderer = new RendererArea(getContext(), chartData);
         setRenderer(renderer);
         setRenderMode(RENDERMODE_WHEN_DIRTY);
