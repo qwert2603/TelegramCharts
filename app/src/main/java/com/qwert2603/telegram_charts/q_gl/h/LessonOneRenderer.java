@@ -29,12 +29,13 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private FloatBuffer mY2;
     private FloatBuffer mX;
     private FloatBuffer mTop;
-    public final float[] alpha = new float[16];
+    public final float[] alpha = new float[8];
 
     private int mMVPMatrixHandle;
     private int mLinesCountHandle;
     private int mLineIndexHandle;
-    private int mAHandle;
+    private int mA1Handle;
+    private int mA2Handle;
     private int mXHandle;
     private int mY1Handle;
     private int mY2Handle;
@@ -134,7 +135,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle, "u_MVPMatrix");
         mLinesCountHandle = GLES20.glGetUniformLocation(programHandle, "u_LinesCount");
         mLineIndexHandle = GLES20.glGetUniformLocation(programHandle, "u_LineIndex");
-        mAHandle = GLES20.glGetUniformLocation(programHandle, "u_A");
+        mA1Handle = GLES20.glGetUniformLocation(programHandle, "u_A1");
+        mA2Handle = GLES20.glGetUniformLocation(programHandle, "u_A2");
         mXHandle = GLES20.glGetAttribLocation(programHandle, "a_X");
         mY1Handle = GLES20.glGetAttribLocation(programHandle, "a_Y1");
         mY2Handle = GLES20.glGetAttribLocation(programHandle, "a_Y2");
@@ -176,7 +178,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
         GLES20.glUniform1f(mLinesCountHandle, linesCount);
-        GLES20.glUniformMatrix4fv(mAHandle, 1, false, alpha, 0);
+        GLES20.glUniform4f(mA1Handle, alpha[0], alpha[1], alpha[2], alpha[3]);
+        GLES20.glUniform4f(mA2Handle, alpha[4], alpha[5], alpha[6], alpha[7]);
 
         for (int i = 0; i < linesCount; i++) {
             drawValues(i);
