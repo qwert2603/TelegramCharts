@@ -1,4 +1,4 @@
-package com.qwert2603.telegram_charts.q_gl.h;
+package com.qwert2603.telegram_charts.gl;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -17,7 +17,7 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class LessonOneRenderer implements GLSurfaceView.Renderer {
+public class RendererArea implements GLSurfaceView.Renderer {
 
     private float[] mTranslateXMatrix = new float[16];
     private float[] mScaleXMatrix = new float[16];
@@ -68,9 +68,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private int mColorHandle;
 
     private static final int BYTES_PER_FLOAT = 4;
-    private static final int FLOATS_PER_VERTEX = 2;
-    private static final int VERTICES_PER_TRIANGLE = 3;
-    private static final int TRIANGLES_PER_AREA = 2;
 
     private final int valuesCount;
     private Context context;
@@ -89,7 +86,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         return result;
     }
 
-    public LessonOneRenderer(Context context, ChartData chartData) {
+    public RendererArea(Context context, ChartData chartData) {
         this.context = context;
         this.chartData = chartData;
         valuesCount = chartData.xValues.length;
@@ -181,9 +178,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 glUnused) {
-
-//        LogUtils.d("onDrawFrame " + Arrays.toString(alpha));
-
         long l = SystemClock.elapsedRealtime();
 
         final int color = isNight ? 0xFF242f3e : Color.WHITE;

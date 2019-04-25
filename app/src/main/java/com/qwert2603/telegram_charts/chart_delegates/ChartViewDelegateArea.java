@@ -8,11 +8,11 @@ import android.graphics.Path;
 import android.view.ViewGroup;
 
 import com.qwert2603.telegram_charts.entity.ChartData;
-import com.qwert2603.telegram_charts.q_gl.h.AreaGLSurfaceView;
+import com.qwert2603.telegram_charts.gl.GLSurfaceViewArea;
 
 public class ChartViewDelegateArea extends ChartViewDelegateLines {
 
-    private AreaGLSurfaceView areaGLSurfaceView;
+    private GLSurfaceViewArea mGLSurfaceViewArea;
 
     private final Path periodSelectorOutClipPath = new Path();
     private final Paint periodSelectorOutClipPaint;
@@ -56,7 +56,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     @Override
     public void setNightMode(boolean night) {
         super.setNightMode(night);
-        if (areaGLSurfaceView != null) areaGLSurfaceView.setNight(night);
+        if (mGLSurfaceViewArea != null) mGLSurfaceViewArea.setNight(night);
         periodSelectorOutClipPaint.setColor(night ? 0xFF242f3e : Color.WHITE);
     }
 
@@ -88,26 +88,26 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
 
     @Override
     protected void drawChart(Canvas canvas) {
-        if (areaGLSurfaceView == null) {
-            areaGLSurfaceView = new AreaGLSurfaceView(context, chartData);
+        if (mGLSurfaceViewArea == null) {
+            mGLSurfaceViewArea = new GLSurfaceViewArea(context, chartData);
             int height = (int) (chartHeight + datesHeight + periodSelectorHeight);
             ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height);
             final int marginHor = (int) this.chartPadding;
             final int marginTop = (int) getChartTitleHeight();
             layoutParams.setMargins(marginHor, marginTop, marginHor, 0);
-            callbacks.addView(areaGLSurfaceView, layoutParams);
+            callbacks.addView(mGLSurfaceViewArea, layoutParams);
 
-            areaGLSurfaceView.setNight(night);
-            areaGLSurfaceView.setChartsSizes(chartHeight, datesHeight, periodSelectorHeight);
-            areaGLSurfaceView.onResume();
+            mGLSurfaceViewArea.setNight(night);
+            mGLSurfaceViewArea.setChartsSizes(chartHeight, datesHeight, periodSelectorHeight);
+            mGLSurfaceViewArea.onResume();
         }
 
-        areaGLSurfaceView.setPeriodIndices(startIndex, endIndex);
+        mGLSurfaceViewArea.setPeriodIndices(startIndex, endIndex);
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
-            areaGLSurfaceView.setAlpha(c, line.alpha / 255f);
+            mGLSurfaceViewArea.setAlpha(c, line.alpha / 255f);
         }
-        areaGLSurfaceView.requestRender();
+        mGLSurfaceViewArea.requestRender();
     }
 
     @Override

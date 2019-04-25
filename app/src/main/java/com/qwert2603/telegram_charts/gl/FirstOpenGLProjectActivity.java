@@ -1,4 +1,4 @@
-package com.qwert2603.telegram_charts.q_gl.h;
+package com.qwert2603.telegram_charts.gl;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FirstOpenGLProjectActivity extends Activity {
-    private AreaGLSurfaceView mGLSurfaceView;
+    private GLSurfaceViewArea mGLSurfaceView;
 
     ExecutorService animator = Executors.newSingleThreadExecutor();
     boolean[] down = new boolean[8];

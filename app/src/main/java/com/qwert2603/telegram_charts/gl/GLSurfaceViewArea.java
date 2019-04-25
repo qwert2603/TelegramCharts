@@ -1,4 +1,4 @@
-package com.qwert2603.telegram_charts.q_gl.h;
+package com.qwert2603.telegram_charts.gl;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -7,21 +7,21 @@ import android.util.AttributeSet;
 import com.qwert2603.telegram_charts.DataParser;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
-public class AreaGLSurfaceView extends GLSurfaceView {
+public class GLSurfaceViewArea extends GLSurfaceView {
 
-    private LessonOneRenderer renderer;
+    private RendererArea renderer;
 
-    public AreaGLSurfaceView(Context context) {
+    public GLSurfaceViewArea(Context context) {
         super(context);
         init(null);
     }
 
-    public AreaGLSurfaceView(Context context, ChartData chartData) {
+    public GLSurfaceViewArea(Context context, ChartData chartData) {
         super(context);
         init(chartData);
     }
 
-    public AreaGLSurfaceView(Context context, AttributeSet attrs) {
+    public GLSurfaceViewArea(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(null);
     }
@@ -32,7 +32,7 @@ public class AreaGLSurfaceView extends GLSurfaceView {
         }
 
         setEGLContextClientVersion(2);
-        renderer = new LessonOneRenderer(getContext(), chartData);
+        renderer = new RendererArea(getContext(), chartData);
         setRenderer(renderer);
         setRenderMode(RENDERMODE_WHEN_DIRTY);
     }

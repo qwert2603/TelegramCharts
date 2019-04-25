@@ -23,16 +23,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".q_gl.QGLActivity">
-            <!--<intent-filter>-->
-            <!--<action android:name="android.intent.action.MAIN" />-->
-
-            <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
-        </activity>
-
         <activity
-            android:name=".q_gl.h.FirstOpenGLProjectActivity"
+            android:name=".gl.FirstOpenGLProjectActivity"
             android:label="GL">
             <!--<intent-filter>-->
             <!--<action android:name="android.intent.action.MAIN" />-->
