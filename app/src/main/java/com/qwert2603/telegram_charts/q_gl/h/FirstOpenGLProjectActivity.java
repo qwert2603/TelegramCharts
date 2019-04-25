@@ -30,17 +30,19 @@ public class FirstOpenGLProjectActivity extends Activity {
             public void run() {
                 while (true) {
                     try {
-                        for (int line = 0; line < 8; line++) {
-                            if (down[line]) {
-                                a[line] -= 0.05;
-                                if (a[line] < 0) a[line] = 0;
-                            } else {
-                                a[line] += 0.05;
-                                if (a[line] > 1) a[line] = 1;
-                            }
+                        if (mGLSurfaceView != null) {
+                            for (int line = 0; line < 8; line++) {
+                                if (down[line]) {
+                                    a[line] -= 0.05;
+                                    if (a[line] < 0) a[line] = 0;
+                                } else {
+                                    a[line] += 0.05;
+                                    if (a[line] > 1) a[line] = 1;
+                                }
 
-                            mGLSurfaceView.setAlpha(line, a[line]);
-                            mGLSurfaceView.requestRender();
+                                mGLSurfaceView.setAlpha(line, a[line]);
+                                mGLSurfaceView.requestRender();
+                            }
                         }
 
                         Thread.sleep(10);
