@@ -91,6 +91,26 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        for (View view : views) {
+            if (view instanceof ChartCustomViewGroup) {
+                ((ChartCustomViewGroup) view).onResume();
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        for (View view : views) {
+            if (view instanceof ChartCustomViewGroup) {
+                ((ChartCustomViewGroup) view).onPause();
+            }
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);

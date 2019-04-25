@@ -1,6 +1,8 @@
 package com.qwert2603.telegram_charts;
 
 import android.content.Context;
+import android.opengl.GLSurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -24,5 +26,23 @@ public class ChartCustomViewGroup extends FrameLayout {
 
     public void setNightMode(boolean night) {
         chartCustomView.setNightMode(night);
+    }
+
+    public void onResume() {
+        for (int i = 0; i < getChildCount(); i++) {
+            View view = getChildAt(i);
+            if (view instanceof GLSurfaceView) {
+                ((GLSurfaceView) view).onResume();
+            }
+        }
+    }
+
+    public void onPause() {
+        for (int i = 0; i < getChildCount(); i++) {
+            View view = getChildAt(i);
+            if (view instanceof GLSurfaceView) {
+                ((GLSurfaceView) view).onPause();
+            }
+        }
     }
 }

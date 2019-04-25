@@ -57,6 +57,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
             callbacks.addView(areaGLSurfaceView, layoutParams);
 
             areaGLSurfaceView.setChartsSizes(chartHeight, datesHeight, periodSelectorHeight);
+            areaGLSurfaceView.onResume();
         }
 
         areaGLSurfaceView.setPeriodIndices(startIndex, endIndex);
