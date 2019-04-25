@@ -81,7 +81,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         for (int i = 0; i < valuesCount; i++) {
             for (int j = 0; j < 4; j++) {
                 floats1[i * 8 + j] = chartData.lines.get(j).values[i];
-                floats1[i * 8 + 4 + j] = chartData.lines.get(j).values[i];
             }
         }
         mY1 = toFloatBuffer(floats1);
@@ -91,10 +90,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
             for (int j = 0; j < 4; j++) {
                 if (4 + j < linesCount) {
                     floats2[i * 8 + j] = chartData.lines.get(4 + j).values[i];
-                    floats2[i * 8 + 4 + j] = chartData.lines.get(4 + j).values[i];
                 } else {
                     floats2[i * 8 + j] = 0f;
-                    floats2[i * 8 + 4 + j] = 0f;
                 }
             }
         }
