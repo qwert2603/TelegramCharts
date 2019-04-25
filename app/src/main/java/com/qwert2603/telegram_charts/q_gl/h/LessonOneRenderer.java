@@ -167,9 +167,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         mColorHandle = GLES20.glGetUniformLocation(programHandle, "u_Color");
 
         GLES20.glUseProgram(programHandle);
-
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-        GLES20.glCullFace(GLES20.GL_FRONT);
     }
 
     @Override
