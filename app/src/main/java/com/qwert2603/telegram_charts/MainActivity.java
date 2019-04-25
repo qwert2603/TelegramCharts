@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
             linearLayout.addView(view);
 
             final ChartData chartData = chartDataList.get(i);
-            final ChartCustomView chartView = new ChartCustomView(this, CHART_NAMES[i], chartData);
+            final ChartCustomViewGroup chartView = new ChartCustomViewGroup(this, CHART_NAMES[i], chartData);
             views.add(chartView);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             view.addView(chartView, layoutParams);
@@ -117,8 +117,8 @@ public class MainActivity extends Activity {
         linearLayout.setBackgroundColor(NIGHT_MODE ? 0xFF242f3e : Color.WHITE);
 
         for (View view : views) {
-            if (view instanceof ChartCustomView) {
-                ((ChartCustomView) view).setNightMode(NIGHT_MODE);
+            if (view instanceof ChartCustomViewGroup) {
+                ((ChartCustomViewGroup) view).setNightMode(NIGHT_MODE);
             }
             view.invalidate();
         }

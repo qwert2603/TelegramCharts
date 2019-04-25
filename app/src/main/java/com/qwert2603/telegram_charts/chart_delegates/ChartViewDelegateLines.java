@@ -29,7 +29,7 @@ public class ChartViewDelegateLines implements Delegate {
     private static final long ANIMATION_DURATION = 300L;
 
     private final Resources resources;
-    private final Context context;
+    protected final Context context;
 
     protected final Callbacks callbacks;
 
@@ -357,8 +357,8 @@ public class ChartViewDelegateLines implements Delegate {
 
     private float periodStartXRel = 0;
     private float periodEndXRel = 1;
-    private int startIndex;
-    private int endIndex;
+    protected int startIndex;
+    protected int endIndex;
 
     protected int selectedIndex = -1;
     private int prevSelectedIndex = -1;

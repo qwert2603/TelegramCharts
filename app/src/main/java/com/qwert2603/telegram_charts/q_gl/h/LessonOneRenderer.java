@@ -29,7 +29,15 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private FloatBuffer mY2;
     private FloatBuffer mX;
     private FloatBuffer mTop;
+
     public final float[] alpha = new float[8];
+    private int startIndex;
+    private int endIndex;
+
+    public void setPeriodIndices(int startIndex, int endIndex) {
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+    }
 
     private int mMVPMatrixHandle;
     private int mLinesCountHandle;
@@ -70,6 +78,10 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         valuesCount = chartData.xValues.length;
         linesCount = chartData.lines.size();
 
+        for (int i = 0; i < 8; i++) {
+            alpha[i] = 1f;
+        }
+
         float[] xs = new float[valuesCount * 2];
         for (int i = 0; i < valuesCount; i++) {
             xs[i * 2] = chartData.xValues[i];
@@ -79,7 +91,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         float[] floats1 = new float[valuesCount * 4 * 2];
         for (int i = 0; i < valuesCount; i++) {
-            for (int j = 0; j < 4; j++) {
+            for (int j = 0; j < Math.min(linesCount, 4); j++) {
                 floats1[i * 8 + j] = chartData.lines.get(j).values[i];
             }
         }
@@ -149,13 +161,13 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-
-//        final float ratio = (float) width / height;
         Matrix.frustumM(mProjectionMatrix, 0, -1, 1, -1f, 1f, 3f, 3.000001f);
     }
 
     @Override
     public void onDrawFrame(GL10 glUnused) {
+
+//        LogUtils.d("onDrawFrame " + Arrays.toString(alpha));
 
         long l = SystemClock.elapsedRealtime();
 
@@ -164,13 +176,12 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(mTranslateMatrix, 0);
         Matrix.setIdentityM(mScaleMatrix, 0);
 
-        float centerX = (chartData.xValues[0] + chartData.xValues[valuesCount - 1]) / 2f;
+        float centerX = (chartData.xValues[startIndex] + chartData.xValues[endIndex - 1]) / 2f;
         float centerY = 0.5f;
-        float dX = chartData.xValues[valuesCount - 1] - chartData.xValues[0];
+        float dX = chartData.xValues[endIndex - 1] - chartData.xValues[startIndex];
 
         Matrix.translateM(mTranslateMatrix, 0, -centerX, -centerY, 0.0f);
-        float a = 0.99f;
-        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 2f * a, 1f / centerY * a, 1f);
+        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 2f, 1f / centerY, 1f);
 
         Matrix.multiplyMM(mMVPMatrix, 0, mScaleMatrix, 0, mTranslateMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);

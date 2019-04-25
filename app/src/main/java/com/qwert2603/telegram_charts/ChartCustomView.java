@@ -3,7 +3,8 @@ package com.qwert2603.telegram_charts;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
-import android.widget.FrameLayout;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.qwert2603.telegram_charts.chart_delegates.Callbacks;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateArea;
@@ -13,11 +14,11 @@ import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateLines_2Y;
 import com.qwert2603.telegram_charts.chart_delegates.Delegate;
 import com.qwert2603.telegram_charts.entity.ChartData;
 
-public class ChartCustomView extends FrameLayout {
+public class ChartCustomView extends View {
 
     private final Delegate delegate;
 
-    public ChartCustomView(Context context, String title, ChartData chartData) {
+    public ChartCustomView(final Context context, String title, ChartData chartData) {
         super(context);
 
         setWillNotDraw(false);
@@ -41,6 +42,12 @@ public class ChartCustomView extends FrameLayout {
                 } else {
                     return getResources().getDisplayMetrics().widthPixels;
                 }
+            }
+
+            @Override
+            public void addView(View view, ViewGroup.LayoutParams layoutParams) {
+                ChartCustomViewGroup parent = (ChartCustomViewGroup) ChartCustomView.this.getParent();
+                parent.addView(view, 0, layoutParams);
             }
         };
         switch (chartData.type) {
