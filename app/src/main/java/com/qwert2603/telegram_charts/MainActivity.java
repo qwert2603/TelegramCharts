@@ -128,8 +128,7 @@ public class MainActivity extends Activity {
     private void setNightMode(boolean night, MenuItem menuItem) {
         NIGHT_MODE = night;
 
-        Drawable drawable = getDrawable(R.drawable.ic_moon);
-        drawable.setTint(NIGHT_MODE ? Color.WHITE : 0xFF8e8e93);
+        Drawable drawable = getDrawable(night ? R.drawable.ic_sun : R.drawable.ic_moon);
         if (menuItem != null) menuItem.setIcon(drawable);
 
         toolbar.setTitleTextColor(NIGHT_MODE ? Color.WHITE : Color.BLACK);
