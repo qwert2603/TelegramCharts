@@ -2,7 +2,9 @@ package com.qwert2603.telegram_charts.chart_delegates;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.view.ViewGroup;
 
 import com.qwert2603.telegram_charts.entity.ChartData;
@@ -11,6 +13,9 @@ import com.qwert2603.telegram_charts.q_gl.h.AreaGLSurfaceView;
 public class ChartViewDelegateArea extends ChartViewDelegateLines {
 
     private AreaGLSurfaceView areaGLSurfaceView;
+
+    private final Path periodSelectorOutClipPath = new Path();
+    private final Paint periodSelectorOutClipPaint;
 
     public ChartViewDelegateArea(Context context, String title, ChartData chartData, Callbacks callbacks) {
         super(context, title, chartData, callbacks);
@@ -23,6 +28,9 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
         }
 
         selectedXLinePaint.setStrokeWidth(lineWidth);
+
+        periodSelectorOutClipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        periodSelectorOutClipPaint.setStyle(Paint.Style.FILL);
     }
 
     @Override
@@ -49,6 +57,33 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     public void setNightMode(boolean night) {
         super.setNightMode(night);
         if (areaGLSurfaceView != null) areaGLSurfaceView.setNight(night);
+        periodSelectorOutClipPaint.setColor(night ? 0xFF242f3e : Color.WHITE);
+    }
+
+    @Override
+    public int measureHeight(int width) {
+        float drawingWidth = width - 2 * chartPadding;
+
+        periodSelectorOutClipPath.rewind();
+        periodSelectorOutClipPath.addRoundRect(
+                0,
+                0,
+                drawingWidth,
+                periodSelectorHeight,
+                new float[]{psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius, psFillRadius},
+                Path.Direction.CW
+        );
+        periodSelectorOutClipPath.addRect(
+                0,
+                0,
+                drawingWidth,
+                periodSelectorHeight,
+                Path.Direction.CW
+        );
+        periodSelectorOutClipPath.setFillType(Path.FillType.EVEN_ODD);
+
+
+        return super.measureHeight(width);
     }
 
     @Override
@@ -94,5 +129,6 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
 
     @Override
     protected void drawPeriodSelectorChart(Canvas canvas) {
+        canvas.drawPath(periodSelectorOutClipPath, periodSelectorOutClipPaint);
     }
 }

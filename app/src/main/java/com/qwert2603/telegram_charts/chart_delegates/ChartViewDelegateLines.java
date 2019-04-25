@@ -314,7 +314,7 @@ public class ChartViewDelegateLines implements Delegate {
     private final float chipHeight;
     private final float periodSelectorBorderHor;
     private final float periodSelectorBorderVer;
-    private final float psFillRadius;
+    protected final float psFillRadius;
 
     private final Path path = new Path();
     private final float[] radiiLeft;
