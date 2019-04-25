@@ -19,8 +19,10 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
-    private float[] mTranslateMatrix = new float[16];
-    private float[] mScaleMatrix = new float[16];
+    private float[] mTranslateXMatrix = new float[16];
+    private float[] mScaleXMatrix = new float[16];
+    private float[] mTranslateYMatrix = new float[16];
+    private float[] mScaleYMatrix = new float[16];
     private float[] mViewMatrix = new float[16];
     private float[] mProjectionMatrix = new float[16];
     private float[] mMVPMatrix = new float[16];
@@ -34,9 +36,18 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private int startIndex;
     private int endIndex;
 
+    private float mainHeight;
+    private float periodSelectorHeight;
+
     public void setPeriodIndices(int startIndex, int endIndex) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
+    }
+
+    public void setChartsSizes(float main, float divider, float periodSelector) {
+        float sum = main + divider + periodSelector;
+        mainHeight = main / sum;
+        periodSelectorHeight = periodSelector / sum;
     }
 
     private int mMVPMatrixHandle;
@@ -161,7 +172,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-        Matrix.frustumM(mProjectionMatrix, 0, -1, 1, -1f, 1f, 3f, 3.000001f);
+        Matrix.frustumM(mProjectionMatrix, 0, -1, 1, 0f, 1f, 3f, 3.000001f);
     }
 
     @Override
@@ -173,30 +184,40 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
-        Matrix.setIdentityM(mTranslateMatrix, 0);
-        Matrix.setIdentityM(mScaleMatrix, 0);
-
-        float centerX = (chartData.xValues[startIndex] + chartData.xValues[endIndex - 1]) / 2f;
-        float centerY = 0.5f;
-        float dX = chartData.xValues[endIndex - 1] - chartData.xValues[startIndex];
-
-        Matrix.translateM(mTranslateMatrix, 0, -centerX, -centerY, 0.0f);
-        Matrix.scaleM(mScaleMatrix, 0, 1f / dX * 2f, 1f / centerY, 1f);
-
-        Matrix.multiplyMM(mMVPMatrix, 0, mScaleMatrix, 0, mTranslateMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-
         GLES20.glUniform1f(mLinesCountHandle, linesCount);
         GLES20.glUniform4f(mA1Handle, alpha[0], alpha[1], alpha[2], alpha[3]);
         GLES20.glUniform4f(mA2Handle, alpha[4], alpha[5], alpha[6], alpha[7]);
 
+        drawChart(startIndex, endIndex, 1 - mainHeight, mainHeight);
+        drawChart(0, chartData.xValues.length - 1, 0, periodSelectorHeight);
+
+//        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
+    }
+
+    private void drawChart(int startIndex, int endIndex, float dY, float sY) {
+        Matrix.setIdentityM(mTranslateXMatrix, 0);
+        Matrix.setIdentityM(mScaleXMatrix, 0);
+        Matrix.setIdentityM(mTranslateYMatrix, 0);
+        Matrix.setIdentityM(mScaleYMatrix, 0);
+
+        float centerX = (chartData.xValues[startIndex] + chartData.xValues[endIndex - 1]) / 2f;
+        float dX = chartData.xValues[endIndex - 1] - chartData.xValues[startIndex];
+
+        Matrix.translateM(mTranslateXMatrix, 0, -centerX, 0, 0.0f);
+        Matrix.scaleM(mScaleXMatrix, 0, 1f / dX * 2f, 1, 1f);
+        Matrix.translateM(mTranslateYMatrix, 0, 0, dY, 0.0f);
+        Matrix.scaleM(mScaleYMatrix, 0, 1, sY, 1f);
+
+        Matrix.multiplyMM(mMVPMatrix, 0, mScaleXMatrix, 0, mTranslateXMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mScaleYMatrix, 0, mMVPMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mTranslateYMatrix, 0, mMVPMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mMVPMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+
         for (int i = 0; i < linesCount; i++) {
             drawValues(i);
         }
-
-//        LogUtils.d("SystemClock.elapsedRealtime()-l " + (SystemClock.elapsedRealtime() - l));
     }
 
     private void drawValues(int index) {

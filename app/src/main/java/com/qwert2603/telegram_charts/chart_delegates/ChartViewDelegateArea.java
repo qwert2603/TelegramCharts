@@ -49,11 +49,14 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     protected void drawChart(Canvas canvas) {
         if (areaGLSurfaceView == null) {
             areaGLSurfaceView = new AreaGLSurfaceView(context, chartData);
-            ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) chartHeight);
+            int height = (int) (chartHeight + datesHeight + periodSelectorHeight);
+            ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height);
             final int marginHor = (int) this.chartPadding;
             final int marginTop = (int) getChartTitleHeight();
             layoutParams.setMargins(marginHor, marginTop, marginHor, 0);
             callbacks.addView(areaGLSurfaceView, layoutParams);
+
+            areaGLSurfaceView.setChartsSizes(chartHeight, datesHeight, periodSelectorHeight);
         }
 
         areaGLSurfaceView.setPeriodIndices(startIndex, endIndex);

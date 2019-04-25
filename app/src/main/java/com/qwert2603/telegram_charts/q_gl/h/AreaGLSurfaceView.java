@@ -37,6 +37,9 @@ public class AreaGLSurfaceView extends GLSurfaceView {
         setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
 
+    public void setChartsSizes(float main, float divider, float periodSelector) {
+        renderer.setChartsSizes(main, divider, periodSelector);
+    }
 
     public void setAlpha(int line, float alpha) {
         renderer.alpha[line] = alpha;
