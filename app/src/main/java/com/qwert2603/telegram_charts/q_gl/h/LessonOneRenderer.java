@@ -29,7 +29,7 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private FloatBuffer mY2;
     private FloatBuffer mX;
     private FloatBuffer mTop;
-    private float[] alpha = {1, 1, 1, 1, 1, 1, 1, 1};
+    public float[] alpha = {1, 1, 1, 1, 1, 1, 1, 1};
 
     private int mMVPMatrixHandle;
     private int mLinesCountHandle;
@@ -51,14 +51,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private Context context;
     private ChartData chartData;
     private final int linesCount;
-
-    public void setAlpha(int line, float alpha) {
-        this.alpha[line] = alpha;
-    }
-
-    public float getAlpha(int line) {
-        return alpha[line];
-    }
 
     private static FloatBuffer toFloatBuffer(float[] floats) {
         FloatBuffer result = ByteBuffer

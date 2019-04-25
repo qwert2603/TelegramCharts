@@ -30,11 +30,8 @@ public class AreaGLSurfaceView extends GLSurfaceView {
         setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
 
-    public float getAlpha(int line) {
-        return renderer.getAlpha(line);
-    }
 
     public void setAlpha(int line, float alpha) {
-        renderer.setAlpha(line, alpha);
+        renderer.alpha[line] = alpha;
     }
 }

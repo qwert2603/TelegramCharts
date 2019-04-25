@@ -32,7 +32,7 @@ public class FirstOpenGLProjectActivity extends Activity {
                     try {
                         for (int line = 0; line < 8; line++) {
                             if (down[line]) {
-                                a[line] -= 0.5;
+                                a[line] -= 0.05;
                                 if (a[line] < 0) a[line] = 0;
                             } else {
                                 a[line] += 0.05;
