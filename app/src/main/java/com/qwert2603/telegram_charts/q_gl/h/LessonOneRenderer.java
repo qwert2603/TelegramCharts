@@ -39,6 +39,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
     private float mainHeight;
     private float periodSelectorHeight;
 
+    private boolean isNight;
+
     public void setPeriodIndices(int startIndex, int endIndex) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -48,6 +50,10 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
         float sum = main + divider + periodSelector;
         mainHeight = main / sum;
         periodSelectorHeight = periodSelector / sum;
+    }
+
+    public void setNight(boolean night) {
+        isNight = night;
     }
 
     private int mMVPMatrixHandle;
@@ -134,8 +140,6 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
-        GLES20.glClearColor(1f, 1f, 1f, 1f);
-
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 3, 0f, 0.0f, 0f, 0f, 1.0f, 0.0f);
 
         final String vertexShader = DataParser.readAsset(context, "shaders/vertex_shader.glsl");
@@ -182,6 +186,8 @@ public class LessonOneRenderer implements GLSurfaceView.Renderer {
 
         long l = SystemClock.elapsedRealtime();
 
+        final int color = isNight ? 0xFF242f3e : Color.WHITE;
+        GLES20.glClearColor(Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
         GLES20.glUniform1f(mLinesCountHandle, linesCount);

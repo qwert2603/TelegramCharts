@@ -48,4 +48,8 @@ public class AreaGLSurfaceView extends GLSurfaceView {
     public void setPeriodIndices(int startIndex, int endIndex) {
         renderer.setPeriodIndices(startIndex, endIndex);
     }
+
+    public void setNight(boolean night) {
+        renderer.setNight(night);
+    }
 }

@@ -46,6 +46,12 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
     }
 
     @Override
+    public void setNightMode(boolean night) {
+        super.setNightMode(night);
+        if (areaGLSurfaceView != null) areaGLSurfaceView.setNight(night);
+    }
+
+    @Override
     protected void drawChart(Canvas canvas) {
         if (areaGLSurfaceView == null) {
             areaGLSurfaceView = new AreaGLSurfaceView(context, chartData);
@@ -56,6 +62,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
             layoutParams.setMargins(marginHor, marginTop, marginHor, 0);
             callbacks.addView(areaGLSurfaceView, layoutParams);
 
+            areaGLSurfaceView.setNight(night);
             areaGLSurfaceView.setChartsSizes(chartHeight, datesHeight, periodSelectorHeight);
             areaGLSurfaceView.onResume();
         }

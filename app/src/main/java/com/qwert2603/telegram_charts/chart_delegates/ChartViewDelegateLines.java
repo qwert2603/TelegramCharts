@@ -32,6 +32,7 @@ public class ChartViewDelegateLines implements Delegate {
     protected final Context context;
 
     protected final Callbacks callbacks;
+    protected boolean night;
 
     public ChartViewDelegateLines(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
         this.callbacks = callbacks;
@@ -428,6 +429,7 @@ public class ChartViewDelegateLines implements Delegate {
 
     @Override
     public void setNightMode(boolean night) {
+        this.night = night;
         titlePaint.setColor(night ? Color.WHITE : Color.BLACK);
         datesRangePaint.setColor(night ? Color.WHITE : Color.BLACK);
         maxLegendAlpha = night ? 0x99 : 0xFF;
