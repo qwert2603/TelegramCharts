@@ -879,7 +879,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
-            if (0 < _x && _x < callbacks.getWidth()) {
+            if (chartPadding <= _x && _x <= callbacks.getWidth() - chartPadding) {
                 canvas.drawLine(_x, titleHeight, _x, titleHeight + chartHeight, selectedXLinePaint);
 
                 for (int c = 0; c < chartData.lines.size(); c++) {
@@ -908,7 +908,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
-            if (0 < _x && _x < callbacks.getWidth()) {
+            if (chartPadding <= _x && _x <= callbacks.getWidth() - chartPadding) {
                 final float changeFraction = (float) selectedIndexAnimator.getAnimatedValue();
 
                 final boolean isSelectionPanelWithAllString = isSelectionPanelWithAllString();
