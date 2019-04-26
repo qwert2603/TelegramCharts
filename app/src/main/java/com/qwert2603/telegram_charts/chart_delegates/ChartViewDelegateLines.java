@@ -741,7 +741,7 @@ public class ChartViewDelegateLines implements Delegate {
             newSelectedIndex = 0;
         }
         if (newSelectedIndex > chartData.xValues.length - 1) {
-            newSelectedIndex = endIndex - chartData.xValues.length - 1;
+            newSelectedIndex = chartData.xValues.length - 1;
         }
 
         if (newSelectedIndex == selectedIndex) return;
@@ -881,7 +881,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
-            if (chartPadding <= _x && _x <= callbacks.getWidth() - chartPadding) {
+            if (startIndex <= selectedIndex && selectedIndex < endIndex) {
                 canvas.drawLine(_x, titleHeight, _x, titleHeight + chartHeight, selectedXLinePaint);
 
                 for (int c = 0; c < chartData.lines.size(); c++) {
@@ -910,7 +910,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
-            if (chartPadding <= _x && _x <= callbacks.getWidth() - chartPadding) {
+            if (startIndex <= selectedIndex && selectedIndex < endIndex) {
                 final float changeFraction = (float) selectedIndexAnimator.getAnimatedValue();
 
                 final boolean isSelectionPanelWithAllString = isSelectionPanelWithAllString();

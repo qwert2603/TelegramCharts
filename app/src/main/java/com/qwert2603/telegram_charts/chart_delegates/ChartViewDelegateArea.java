@@ -122,7 +122,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
 
             final float _x = chartPadding + (chartData.xValues[selectedIndex] - minX) / wid;
 
-            if (chartPadding <= _x && _x <= callbacks.getWidth() - chartPadding) {
+            if (startIndex <= selectedIndex && selectedIndex < endIndex) {
                 canvas.drawLine(_x, titleHeight, _x, titleHeight + chartHeight, selectedXLinePaint);
             }
         }
