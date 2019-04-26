@@ -113,6 +113,9 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        MenuItem menuItem = menu.findItem(R.id.night_mode);
+        Drawable drawable = getDrawable(NIGHT_MODE ? R.drawable.ic_sun : R.drawable.ic_moon);
+        if (menuItem != null) menuItem.setIcon(drawable);
         return super.onCreateOptionsMenu(menu);
     }
 

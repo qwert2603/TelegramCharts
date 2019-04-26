@@ -45,9 +45,10 @@ public class ChartCustomView extends View {
             }
 
             @Override
-            public void addView(View view, ViewGroup.LayoutParams layoutParams) {
+            public void addView(View view) {
                 ChartCustomViewGroup parent = (ChartCustomViewGroup) ChartCustomView.this.getParent();
-                parent.addView(view, 0, layoutParams);
+                parent.addView(view, 0);
+                parent.requestLayout();
             }
         };
         switch (chartData.type) {

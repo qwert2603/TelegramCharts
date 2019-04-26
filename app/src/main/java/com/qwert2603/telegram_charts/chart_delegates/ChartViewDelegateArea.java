@@ -95,7 +95,8 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
             final int marginHor = (int) this.chartPadding;
             final int marginTop = (int) getChartTitleHeight();
             layoutParams.setMargins(marginHor, marginTop, marginHor, 0);
-            callbacks.addView(mGLSurfaceViewArea, layoutParams);
+            mGLSurfaceViewArea.setLayoutParams(layoutParams);
+            callbacks.addView(mGLSurfaceViewArea);
 
             mGLSurfaceViewArea.setNight(night);
             mGLSurfaceViewArea.setChartsSizes(chartHeight, datesHeight, periodSelectorHeight);
