@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.qwert2603.telegram_charts.chart_delegates.Callbacks;
 import com.qwert2603.telegram_charts.chart_delegates.ChartViewDelegateArea;
@@ -20,8 +19,6 @@ public class ChartCustomView extends View {
 
     public ChartCustomView(final Context context, String title, ChartData chartData) {
         super(context);
-
-        setWillNotDraw(false);
 
         Callbacks callbacks = new Callbacks() {
             @Override
