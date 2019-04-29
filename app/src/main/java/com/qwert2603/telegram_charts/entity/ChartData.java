@@ -19,10 +19,14 @@ public class ChartData {
         public String name;
         public int[] values;
 
-        public int alpha = 0xFF;
+        public float alpha = 1f;
 
         public boolean isVisible() {
-            return alpha > 0;
+            return alpha > 0f;
+        }
+
+        public int alphaInt() {
+            return (int) (alpha * 255f);
         }
 
         public boolean isVisibleOrWillBe = true;

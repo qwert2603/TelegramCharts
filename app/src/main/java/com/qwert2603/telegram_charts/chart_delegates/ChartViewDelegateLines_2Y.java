@@ -31,6 +31,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
     public void setNightMode(boolean night) {
 
     }
+
     private static final long ANIMATION_DURATION = 200L;
 
     private final Resources resources;
@@ -277,7 +278,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
             ValueAnimator animator = opacityAnimators.get(line.name);
             if (animator == null) {
                 animator = ValueAnimator
-                        .ofInt(0x00)
+                        .ofFloat(0)
                         .setDuration(ANIMATION_DURATION);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -292,7 +293,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
 
             line.isVisibleOrWillBe = visible;
 
-            animator.setIntValues(line.alpha, visible ? 0xFF : 0x00);
+            animator.setFloatValues(line.alpha, visible ? 1 : 0);
             animator.start();
         }
 
@@ -308,7 +309,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                 ValueAnimator animator = opacityAnimators.get(line.name);
                 if (animator == null) {
                     animator = ValueAnimator
-                            .ofInt(0x00)
+                            .ofFloat(0)
                             .setDuration(ANIMATION_DURATION);
                     animator.setInterpolator(new DecelerateInterpolator());
                     animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -323,7 +324,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
 
                 line.isVisibleOrWillBe = visible;
 
-                animator.setIntValues(line.alpha, visible ? 0xFF : 0x00);
+                animator.setFloatValues(line.alpha, visible ? 1 : 0);
                 animator.start();
 
                 break;
@@ -670,7 +671,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                     }
                 }
 
-                line.linePaint.setAlpha(line.alpha);
+                line.linePaint.setAlpha(line.alphaInt());
                 canvas.drawLines(points, line.linePaint);
 
                 q = 0;
@@ -686,7 +687,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                     }
                 }
 
-                line.linePeriodPaint.setAlpha(line.alpha);
+                line.linePeriodPaint.setAlpha(line.alphaInt());
                 canvas.save();
                 canvas.clipPath(periodSelectorClipPath);
                 canvas.drawLines(points, 0, q, line.linePeriodPaint);
@@ -755,7 +756,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisibleOrWillBe) {
                         linesPaint.setColor(line.color);
-                        linesPaint.setAlpha(line.alpha);
+                        linesPaint.setAlpha(line.alphaInt());
 
                         final float hei = (maxY[c] - minY[c]) / chartHeight;
                         final float _y = chartHeight - ((float) line.values[selectedIndex] - minY[c]) / hei;

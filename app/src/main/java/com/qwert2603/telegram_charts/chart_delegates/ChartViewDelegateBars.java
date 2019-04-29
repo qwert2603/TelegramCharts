@@ -62,7 +62,7 @@ public class ChartViewDelegateBars extends ChartViewDelegateLines {
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = dX + ((float) chartData.xValues[i] - minX) / wid;
                     final float _yBottom = dY - (sums[i] - minY) / hei;
-                    sums[i] += line.values[i] * (line.alpha / 255f);
+                    sums[i] += line.values[i] * line.alpha;
                     final float _yTop = dY - (sums[i] - minY) / hei;
 
                     if (_x < -dp12 || _x > callbacks.getWidth() + dp12) {
@@ -128,7 +128,7 @@ public class ChartViewDelegateBars extends ChartViewDelegateLines {
                 for (int i = 0; i < chartData.xValues.length; i++) {
                     final float _x = ((float) chartData.xValues[i] - totalMinX) / wid;
                     final float _yBottom = periodSelectorHeight - (totalSums[i] - totalMinY) / hei;
-                    totalSums[i] += line.values[i] * (line.alpha / 255f);
+                    totalSums[i] += line.values[i] * line.alpha;
                     final float _yTop = periodSelectorHeight - (totalSums[i] - totalMinY) / hei;
 
                     points[q++] = _x;

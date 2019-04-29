@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class ChartViewDelegateLines implements Delegate {
 
-    private static final long ANIMATION_DURATION = 300L;
+    private static final long ANIMATION_DURATION = 3000L;
 
     private final Resources resources;
     protected final Context context;
@@ -464,7 +464,7 @@ public class ChartViewDelegateLines implements Delegate {
 
             line.isVisibleOrWillBe = visible;
 
-            animator.setIntValues(line.alpha, visible ? 0xFF : 0x00);
+            animator.setFloatValues(line.alpha, visible ? 1f : 0f);
             animator.start();
         }
 
@@ -483,7 +483,7 @@ public class ChartViewDelegateLines implements Delegate {
 
                 line.isVisibleOrWillBe = visible;
 
-                animator.setIntValues(line.alpha, visible ? 0xFF : 0x00);
+                animator.setFloatValues(line.alpha, visible ? 1f : 0f);
                 animator.start();
 
                 break;
@@ -495,13 +495,13 @@ public class ChartViewDelegateLines implements Delegate {
 
     private ValueAnimator createAnimatorForLineOpacity(final ChartData.Line line) {
         ValueAnimator animator = ValueAnimator
-                .ofInt(0x00)
+                .ofFloat(0f)
                 .setDuration(ANIMATION_DURATION);
         animator.setInterpolator(new DecelerateInterpolator());
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                line.alpha = (int) animation.getAnimatedValue();
+                line.alpha = (float) animation.getAnimatedValue();
                 callbacks.invalidate();
             }
         });
@@ -863,7 +863,7 @@ public class ChartViewDelegateLines implements Delegate {
                 }
 
                 final Paint paint = linesPaints[c];
-                paint.setAlpha(line.alpha);
+                paint.setAlpha(line.alphaInt());
                 canvas.drawLines(points, 0, q, paint);
             }
         }
@@ -887,8 +887,8 @@ public class ChartViewDelegateLines implements Delegate {
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisible()) {
-                        selectedCircleFillPaint.setAlpha(line.alpha);
-                        selectedCirclesStrokePaint[c].setAlpha(line.alpha);
+                        selectedCircleFillPaint.setAlpha(line.alphaInt());
+                        selectedCirclesStrokePaint[c].setAlpha(line.alphaInt());
 
                         final float _y = titleHeight + chartHeight - ((float) line.values[selectedIndex] - minY) / hei;
                         canvas.drawCircle(_x, _y, dp4, selectedCircleFillPaint);
@@ -932,8 +932,8 @@ public class ChartViewDelegateLines implements Delegate {
                 for (int c = 0; c < chartData.lines.size(); c++) {
                     final ChartData.Line line = chartData.lines.get(c);
                     if (line.isVisible()) {
-                        if (line.alpha <= 0x80) {
-                            lineY += lineHeight * line.alpha / 128f;
+                        if (line.alpha <= 0.5f) {
+                            lineY += lineHeight * line.alpha * 2;
                         } else {
                             lineY += lineHeight;
                         }
@@ -1006,17 +1006,17 @@ public class ChartViewDelegateLines implements Delegate {
 
                     if (line.isVisible()) {
 
-                        if (line.alpha <= 0x80) {
-                            lineY += lineHeight * line.alpha / 128f;
+                        if (line.alpha <= 0.5f) {
+                            lineY += lineHeight * line.alpha * 2;
                         } else {
                             lineY += lineHeight;
                         }
 
                         final int maxAlpha;
-                        if (line.alpha <= 0x80) {
+                        if (line.alpha <= 0.5f) {
                             maxAlpha = 0;
                         } else {
-                            maxAlpha = (line.alpha - 0x80) * 2;
+                            maxAlpha = (int) ((line.alpha - 0.5f) * 2 * 255f);
                         }
 
                         panelLinesNamesPaint.setAlpha(maxAlpha);
@@ -1100,7 +1100,7 @@ public class ChartViewDelegateLines implements Delegate {
                 }
 
                 final Paint paint = periodSelectorLinesPaints[c];
-                paint.setAlpha(line.alpha);
+                paint.setAlpha(line.alphaInt());
                 canvas.drawLines(points, 0, q, paint);
             }
         }
@@ -1194,12 +1194,12 @@ public class ChartViewDelegateLines implements Delegate {
                         checkLeft + drawableCheck.getIntrinsicWidth(),
                         checkTop + drawableCheck.getIntrinsicHeight()
                 );
-                drawableCheck.setAlpha(line.alpha);
+                drawableCheck.setAlpha(line.alphaInt());
                 drawableCheck.draw(canvas);
 
                 canvas.drawRoundRect(chipsRectOnScreen[c], chipCornerRadius, chipCornerRadius, chipsBorderPaint[c]);
 
-                float textTransitionX = line.alpha / 255f * (chipPadding / 4 + dp2);
+                float textTransitionX = line.alpha * (chipPadding / 4 + dp2);
                 canvas.drawText(
                         line.name,
                         currentLineX + chipPadding + textTransitionX,

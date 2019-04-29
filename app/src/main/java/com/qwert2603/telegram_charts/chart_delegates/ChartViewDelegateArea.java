@@ -106,7 +106,7 @@ public class ChartViewDelegateArea extends ChartViewDelegateLines {
         mGLSurfaceViewArea.setPeriodIndices(startIndex, endIndex);
         for (int c = 0; c < chartData.lines.size(); c++) {
             final ChartData.Line line = chartData.lines.get(c);
-            mGLSurfaceViewArea.setAlpha(c, line.alpha / 255f);
+            mGLSurfaceViewArea.setAlpha(c, line.alpha);
         }
         mGLSurfaceViewArea.requestRender();
     }
