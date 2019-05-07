@@ -171,6 +171,21 @@ public class RendererArea implements GLSurfaceView.Renderer {
         mColorHandle = GLES20.glGetUniformLocation(programHandle, "u_Color");
 
         GLES20.glUseProgram(programHandle);
+
+        GLES20.glEnableVertexAttribArray(mXHandle);
+        GLES20.glEnableVertexAttribArray(mY1Handle);
+        GLES20.glEnableVertexAttribArray(mY2Handle);
+        GLES20.glEnableVertexAttribArray(mTopHandle);
+
+        mX.position(0);
+        mY1.position(0);
+        mY2.position(0);
+        mTop.position(0);
+
+        GLES20.glVertexAttribPointer(mXHandle, 1, GLES20.GL_FLOAT, false, BYTES_PER_FLOAT, mX);
+        GLES20.glVertexAttribPointer(mY1Handle, 4, GLES20.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY1);
+        GLES20.glVertexAttribPointer(mY2Handle, 4, GLES20.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY2);
+        GLES20.glVertexAttribPointer(mTopHandle, 1, GLES20.GL_FLOAT, false, BYTES_PER_FLOAT, mTop);
     }
 
     @Override
@@ -228,26 +243,6 @@ public class RendererArea implements GLSurfaceView.Renderer {
         GLES20.glUniform4f(mColorHandle, Color.red(color) / 255f, Color.green(color) / 255f, Color.blue(color) / 255f, 1f);
         GLES20.glUniform1f(mLineIndexHandle, index);
 
-        GLES20.glEnableVertexAttribArray(mXHandle);
-        GLES20.glEnableVertexAttribArray(mY1Handle);
-        GLES20.glEnableVertexAttribArray(mY2Handle);
-        GLES20.glEnableVertexAttribArray(mTopHandle);
-
-        mX.position(0);
-        mY1.position(0);
-        mY2.position(0);
-        mTop.position(0);
-
-        GLES20.glVertexAttribPointer(mXHandle, 1, GLES20.GL_FLOAT, false, BYTES_PER_FLOAT, mX);
-        GLES20.glVertexAttribPointer(mY1Handle, 4, GLES20.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY1);
-        GLES20.glVertexAttribPointer(mY2Handle, 4, GLES20.GL_FLOAT, false, 4 * BYTES_PER_FLOAT, mY2);
-        GLES20.glVertexAttribPointer(mTopHandle, 1, GLES20.GL_FLOAT, false, BYTES_PER_FLOAT, mTop);
-
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, valuesCount * 2);
-
-        GLES20.glDisableVertexAttribArray(mXHandle);
-        GLES20.glDisableVertexAttribArray(mY1Handle);
-        GLES20.glDisableVertexAttribArray(mY2Handle);
-        GLES20.glDisableVertexAttribArray(mTopHandle);
     }
 }
