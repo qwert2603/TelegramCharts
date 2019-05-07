@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class ChartViewDelegateLines implements Delegate {
 
-    private static final long ANIMATION_DURATION = 3000L;
+    private static final long ANIMATION_DURATION = 300L;
 
     private final Resources resources;
     protected final Context context;
