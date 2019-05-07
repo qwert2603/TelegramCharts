@@ -284,7 +284,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                 animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
-                        line.alpha = (int) animation.getAnimatedValue();
+                        line.alpha = (float) animation.getAnimatedValue();
                         callbacks.invalidate();
                     }
                 });
@@ -315,7 +315,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                     animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animation) {
-                            line.alpha = (int) animation.getAnimatedValue();
+                            line.alpha = (float) animation.getAnimatedValue();
                             callbacks.invalidate();
                         }
                     });
@@ -698,7 +698,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
         // Y lines and axis-values
         for (int c = 0; c < 2; c++) {
             final ValueAnimator opacityAnimator = opacityAnimators.get(chartData.lines.get(c).name);
-            final float opacityFraction = opacityAnimator != null ? (int) opacityAnimator.getAnimatedValue() / 255f : 1;
+            final float opacityFraction = opacityAnimator != null ? (float) opacityAnimator.getAnimatedValue() : 1;
             legendPaint.setColor(chartData.lines.get(c).color);
 
             if (stepY[c] > 0) {
@@ -713,7 +713,7 @@ public class ChartViewDelegateLines_2Y implements Delegate {
                     canvas.drawText(formatY, c == 0 ? 0 : (drawingWidth - legendPaint.measureText(formatY)), y - dp6, legendPaint);
                 }
             }
-            if (prevStepY[c] > 0) {
+            if (prevStepY[c] > 0 && chartData.lines.get(c).isVisibleOrWillBe) {
                 linesPaint.setAlpha((int) (0x10 - yLimitsAnimator[c].getAnimatedFraction() * 0x10 / 2));
                 legendPaint.setAlpha((int) (maxLegendAlpha - yLimitsAnimator[c].getAnimatedFraction() * maxLegendAlpha * (1 - opacityFraction)));
 

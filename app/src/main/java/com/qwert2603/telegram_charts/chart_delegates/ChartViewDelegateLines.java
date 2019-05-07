@@ -34,6 +34,8 @@ public class ChartViewDelegateLines implements Delegate {
     protected final Callbacks callbacks;
     protected boolean night;
 
+    private static final DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+
     public ChartViewDelegateLines(Context context, String title, final ChartData chartData, final Callbacks callbacks) {
         this.callbacks = callbacks;
         this.context = context;
@@ -497,7 +499,7 @@ public class ChartViewDelegateLines implements Delegate {
         ValueAnimator animator = ValueAnimator
                 .ofFloat(0f)
                 .setDuration(ANIMATION_DURATION);
-        animator.setInterpolator(new DecelerateInterpolator());
+        animator.setInterpolator(decelerateInterpolator);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -562,7 +564,7 @@ public class ChartViewDelegateLines implements Delegate {
 
         if (yLimitsAnimator == null) {
             yLimitsAnimator = ValueAnimator.ofFloat(0f, 1f);
-            yLimitsAnimator.setInterpolator(new DecelerateInterpolator());
+            yLimitsAnimator.setInterpolator(decelerateInterpolator);
             yLimitsAnimator.setDuration(ANIMATION_DURATION);
             yLimitsAnimator.addListener(new AnimatorListenerAdapter() {
                 private boolean isCanceled = false;
@@ -750,7 +752,7 @@ public class ChartViewDelegateLines implements Delegate {
 
         if (selectedIndexAnimator == null) {
             selectedIndexAnimator = ValueAnimator.ofFloat(0f, 1f);
-            selectedIndexAnimator.setInterpolator(new DecelerateInterpolator());
+            selectedIndexAnimator.setInterpolator(decelerateInterpolator);
             selectedIndexAnimator.setDuration(ANIMATION_DURATION);
             selectedIndexAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
