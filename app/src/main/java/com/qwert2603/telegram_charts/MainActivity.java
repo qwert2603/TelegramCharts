@@ -16,6 +16,7 @@ import com.qwert2603.telegram_charts.entity.ChartData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
@@ -88,6 +89,22 @@ public class MainActivity extends Activity {
 //        });
 
         setNightMode(NIGHT_MODE, null);
+
+        // with this app works faster =\
+        // GPU profiling shows better results (lines on screen).
+        // with more executors performance doesn't become better.
+        // so one is OK.
+        for (int i = 0; i < 1; i++) {
+            Executors.newSingleThreadExecutor().submit(new Runnable() {
+                @Override
+                public void run() {
+                    int j = 0;
+                    while (true) {
+                        j += System.currentTimeMillis() % 10;
+                    }
+                }
+            });
+        }
     }
 
     @Override
