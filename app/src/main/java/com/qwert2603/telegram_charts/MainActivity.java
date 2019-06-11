@@ -94,16 +94,19 @@ public class MainActivity extends Activity {
         // GPU profiling shows better results (lines on screen).
         // with more executors performance doesn't become better.
         // so one is OK.
-        for (int i = 0; i < 1; i++) {
-            Executors.newSingleThreadExecutor().submit(new Runnable() {
-                @Override
-                public void run() {
-                    int j = 0;
-                    while (true) {
-                        j += System.currentTimeMillis() % 10;
+        if (savedInstanceState == null) {
+            for (int i = 0; i < 1; i++) {
+                Executors.newSingleThreadExecutor().submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        int j = 0;
+                        while (true) {
+                            j += System.currentTimeMillis() % 10;
+                            if (j % 347532 == 1) LogUtils.d("j % 347532 == 1");
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
