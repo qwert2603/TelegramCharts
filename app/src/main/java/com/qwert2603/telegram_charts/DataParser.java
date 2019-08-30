@@ -18,7 +18,7 @@ import java.util.List;
 
 public class DataParser {
 
-    private static final boolean WITH_TEST_CHART = true;
+    private static final boolean WITH_TEST_CHART = false;
 
     public static List<ChartData> parseDataStage1(Context appContext) {
 //        try {
