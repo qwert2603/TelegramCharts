@@ -8,6 +8,8 @@ App doesn't use any dependencies (even AndroidX). Everything is implemented usin
 
 Last Chart (Fruits) uses OpenGL.
 
+### [Release-APK](https://github.com/qwert2603/TelegramCharts/blob/master/telegram_charts-release.apk)
+
 ---
 
 Приложение, разработанное для Telegram Chart Coding Competition (https://t.me/contest/59).
